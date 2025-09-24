@@ -1,0 +1,18 @@
+.navbar {
+  height: 64px;
+  padding: 0.5rem 1rem;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1020;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  // En escritorio, el navbar debe dejar espacio para el sidebar
+  @media (min-width: 992px) {
+    left: 250px; // El mismo ancho que el sidebar
+  }
+}
+
+// ... resto de los estilos del navbar ...

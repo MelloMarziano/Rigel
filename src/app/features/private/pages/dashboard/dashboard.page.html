@@ -1,0 +1,47 @@
+<div class="container-fluid">
+  <h5>Dashboard</h5>
+  <span>Resumen general de tu negocio</span>
+
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-primary mb-0">{{ totalProductos }}</h1>
+          <span class="text-muted">Total Productos</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-danger mb-0">{{ productosBajosEnStock }}</h1>
+          <span class="text-muted">Productos bajos en stock</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-success mb-0">{{ totalStockValue | currency }}</h1>
+          <span class="text-muted">Valor total del stock</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-info mb-0">{{ totalCategorias }}</h1>
+          <span class="text-muted">Total Categorías</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-warning mb-0">{{ totalProveedores }}</h1>
+          <span class="text-muted">Total Proveedores</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

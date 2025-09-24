@@ -1,0 +1,66 @@
+// Contenedor principal que ocupa toda la pantalla
+.wrapper {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+// Estilos del sidebar
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1040; // Mayor que el z-index del navbar pero menor que el overlay
+  transition: transform 0.3s ease;
+
+  // En móvil, el sidebar se oculta por defecto
+  @media (max-width: 991px) {
+    transform: translateX(-100%);
+
+    &.show {
+      transform: translateX(0);
+    }
+  }
+}
+
+// Contenedor principal que contiene el appbar y el contenido
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  margin-left: 250px; // El mismo ancho que el sidebar
+  transition: margin-left 0.3s ease;
+
+  @media (max-width: 991px) {
+    margin-left: 0;
+  }
+}
+
+// Área de contenido dentro del main-content
+.content-area {
+  padding: 20px;
+  margin-top: 64px; // Altura del navbar
+  min-height: calc(100vh - 64px);
+  background-color: #f8f4e4;
+  overflow-y: auto;
+}
+
+// Overlay para cerrar el sidebar en móvil
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1030; // Mayor que el navbar pero menor que el sidebar
+
+  @media (max-width: 991px) {
+    &.show {
+      display: block;
+    }
+  }
+}

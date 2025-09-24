@@ -1,0 +1,44 @@
+<div class="sidebar-container">
+  <!-- Header del Sidebar -->
+  <div class="sidebar-header">
+  <div class="logo-container">
+    <lucide-icon size="54" name="star" class="logo-icon"></lucide-icon>
+    <div class="brand">
+      <span class="brand-title">Rigel</span>
+      <span class="brand-subtitle">Orion System</span>
+    </div>
+  </div>
+</div>
+
+  <!-- Lista de navegación con secciones -->
+  <nav class="sidebar-nav">
+          <div
+      *ngFor="let item of filteredSidebarMenu"
+      class="nav-link px-3 py-2 rounded mb-1 d-flex align-items-center"
+      [routerLink]="['/private' + item.route]"
+      routerLinkActive="active-link"
+      (click)="closeSidebar()"
+      style="cursor: pointer"
+    >
+      <!-- Ícono con componente Lucide -->
+      <lucide-icon [name]="item.icon" [size]="24" [strokeWidth]="1.5"></lucide-icon>
+
+      <!-- Texto centrado -->
+       &nbsp;
+       &nbsp;
+      <div class="d-flex flex-column justify-content-center">
+        <span class="fw-semibold text-title">{{ item.name }}</span>
+        <!-- <small class="text-subtitle">{{ item.subtitle }}</small> -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Footer del Sidebar -->
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-details">
+        <span class="user-name">{{ yearActual }} Orion System </span>
+      </div>
+    </div>
+  </div>
+</div>

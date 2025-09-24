@@ -1,0 +1,181 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-8">
+      <h5>Gestión de Productos</h5>
+      <span>Crea, edita y organiza todos tus productos.</span>
+    </div>
+    <div class="col text-end">
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus-lg me-2"></i> Nuevo Producto
+      </button>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <div class="row d-flex align-items-center">
+                    <div class="col-12 col-sm-4 mt-2">
+                        <input type="text" class="form-control" placeholder="Buscar productos..." [formControl]="productSearch">
+                    </div>
+                    <div class="col-12 col-sm-3 mt-2">
+                        <select class="form-select" [formControl]="categoryFilter">
+                            <option value="all">Todas las categorías</option>
+                            <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.nombre }}</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-3 mt-2">
+                        <select class="form-select" [formControl]="supplierFilter">
+                            <option value="all">Todos los proveedores</option>
+                            <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.nombre }}</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-2">
+                        <span><i class="bi bi-box text-primary"></i>&nbsp;{{ filteredProducts.length }}&nbsp;Productos</span>&nbsp;&nbsp;
+                        <span><i class="bi bi-exclamation-circle text-danger"></i>&nbsp;{{ productosBajosEnStock }}&nbsp;Stock</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div *ngIf="filteredProducts.length === 0" class="col-12 text-center">
+      <p class="text-muted">No se encontraron productos con los filtros seleccionados.</p>
+    </div>
+    <div class="col-12 col-sm-3 mb-4" *ngFor="let producto of filteredProducts">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body p-3">
+          <!-- Header con título y acciones -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="flex-grow-1">
+              <h6 class="mb-1 fw-bold text-dark">{{producto.nombre}}</h6>
+              <p class="text-muted small mb-2">{{producto.descripcion}}</p>
+              <span class="badge rounded-pill"
+                    [ngClass]="getCategoryBadgeClass(producto.categoriaId)"
+                    style="font-size: 0.75rem;">
+                {{ getCategoryName(producto.categoriaId) }}
+              </span>
+            </div>
+            <div class="d-flex gap-1">
+              <button class="btn btn-outline-primary btn-sm"
+                      (click)="editarProducto(producto)"
+                      style="width: 32px; height: 32px; padding: 0;">
+                <i class="bi bi-pencil-fill" style="font-size: 0.75rem;"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-sm"
+                      (click)="eliminarProducto(producto.id)"
+                      style="width: 32px; height: 32px; padding: 0;">
+                <i class="bi bi-trash3-fill" style="font-size: 0.75rem;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Precios -->
+          <div class="row mb-3">
+
+            <div class="col-6">
+              <div class="text-muted small">Costo</div>
+              <div class="fw-bold text-danger" style="font-size: 1.1rem;">
+                {{ producto.costo | currency }}
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Stock Actual</div>
+              <div class="fw-bold"
+                  >
+                {{ producto.stock  }}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="productModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ productoForm.get('id')?.value ? 'Editar Producto' : 'Nuevo Producto' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Coca-Cola">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción <span class="text-danger">*</span></label>
+            <textarea class="form-control" formControlName="descripcion" placeholder="Descripción del producto"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Costo <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" formControlName="costo" placeholder="0.00">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">IVA(%) <span class="text-danger">*</span></label>
+              <select formControlName="IVA" class="form-control">
+                <option selected disabled>Selecciona un IVA</option>
+                <option value="4">4%</option>
+                <option value="10">10%</option>
+                <option value="21">21%</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Categoría <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="categoriaId">
+              <option value="" disabled>Selecciona una categoría</option>
+              <option *ngFor="let categoria of categorias" [value]="categoria.id">{{categoria.nombre}}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Proveedor <small class="text-muted">(Opcional)</small></label>
+            <select class="form-select" formControlName="proveedorId">
+              <option [ngValue]="null">Ninguno</option>
+              <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{proveedor.nombre}}</option>
+            </select>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" formControlName="esCombinado" id="esCombinadoCheck">
+            <label class="form-check-label" for="esCombinadoCheck">
+              Es Receta/Combinado (sin control de stock)
+            </label>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3" *ngIf="!productoForm.get('esCombinado')?.value">
+              <label class="form-label">Stock Actual</label>
+              <input type="number" class="form-control" formControlName="stock" placeholder="0">
+            </div>
+            <div class="col-md-4 mb-3" *ngIf="!productoForm.get('esCombinado')?.value">
+              <label class="form-label">Stock Mínimo</label>
+              <input type="number" class="form-control" formControlName="stockMinimo" placeholder="0">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Cantidad <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" formControlName="cantidad" placeholder="0">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
+              <select class="form-select" formControlName="unidadMedida">
+                <option value="" disabled>Selecciona una unidad</option>
+                <option *ngFor="let unidad of unidadesDisponibles" [value]="unidad">{{unidad}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger" [disabled]="productoForm.invalid">{{ productoForm.get('id')?.value ? 'Actualizar' : 'Crear' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

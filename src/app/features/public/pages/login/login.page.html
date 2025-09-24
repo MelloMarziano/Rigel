@@ -1,0 +1,36 @@
+<div class="container-login">
+  <div class="card p-4">
+    <div class="row text-center">
+      <div class="col">
+        <img src="assets/logoEB.png" width="150" alt="" />
+      </div>
+    </div>
+    <h2 class="text-center mb-1">Bienvenido</h2>
+    <p class="text-muted text-center mb-2">
+      Ingresa tu usuario y contraseña para acceder a tu cuenta
+    </p>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="row mt-3">
+        <div class="col">
+          <label for="">Usuario</label>
+          <input type="text" class="form-control" formControlName="username" />
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col">
+          <label for="">Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            formControlName="password"
+          />
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col">
+          <button class="btn btn-custom-blue w-100">Ingresar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

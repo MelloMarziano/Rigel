@@ -1,0 +1,25 @@
+<div class="wrapper">
+  <!-- Sidebar con clase dinámica basada en visibilidad -->
+  <div class="sidebar" [ngClass]="{'show': isSidebarVisible}">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <!-- AppBar con evento de toggle -->
+    <app-appbar (menuClick)="toggleSidebar()"></app-appbar>
+
+    <!-- Área de contenido -->
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <!-- Overlay para cerrar el sidebar en móvil -->
+  <div
+    class="sidebar-overlay"
+    [ngClass]="{'show': isSidebarVisible}"
+    (click)="toggleSidebar()"
+    *ngIf="isSidebarVisible"
+  ></div>
+</div>

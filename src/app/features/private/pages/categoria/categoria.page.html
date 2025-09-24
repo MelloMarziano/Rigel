@@ -1,0 +1,329 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-8">
+      <h5>Gestión de Categorías</h5>
+      <span>Organiza tus productos por categorías</span>
+    </div>
+    <div class="col text-end">
+      <button
+        class="btn btn-danger"
+        data-bs-toggle="modal"
+        data-bs-target="#modalCategoria"
+      >
+        <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
+      </button>
+    </div>
+  </div>
+
+  <!-- Header Stats -->
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-danger mb-0">{{stats.totalCategorias}}</h1>
+          <span class="text-muted">Total Categorías</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-primary mb-0">{{stats.totalProductos}}</h1>
+          <span class="text-muted">Total Productos</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-dark mb-0">{{stats.unidadesMedida}}</h1>
+          <span class="text-muted">Unidades de Medida</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-info mb-0">{{stats.productosCombo}}</h1>
+          <span class="text-muted">Productos Combo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories List -->
+  <div class="row mt-4">
+    <div class="col-12 col-md-4 mb-4" *ngFor="let categoria of categorias">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+              <div
+                class="rounded-circle p-3 me-3"
+                [style.background-color]="categoria.colorFondo"
+              >
+                <i [class]="'bi ' + categoria.icono + ' text-white fs-4'"></i>
+              </div>
+              <div>
+                <h5 class="mb-1">{{categoria.nombre}}</h5>
+                <p class="text-muted mb-0">{{categoria.descripcion}}</p>
+              </div>
+            </div>
+            <div>
+              <button
+                class="btn btn-outline-primary btn-sm me-2"
+                [disabled]="!categoria.id"
+                (click)="categoria.id && editarCategoria(categoria)">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                [disabled]="!categoria.id"
+                (click)="categoria.id && eliminarCategoria(categoria.id)">
+                <i class="bi bi-trash3-fill"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-box-seam-fill me-2 text-primary"></i>
+              <div>
+                <small class="text-muted d-block"
+                  >Productos: <span>{{categoria.productos}}</span></small
+                >
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <small class="text-muted d-block mb-2">Unidades disponibles</small>
+            <div class="d-flex flex-wrap gap-2">
+              <span
+                class="badge rounded-1 bg-light text-dark border"
+                *ngFor="let unidad of categoria.unidadesDisponibles"
+              >
+                {{unidad}}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalCategoria"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="staticBackdropLabel">
+          Nueva Categoría
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body px-4">
+        <form [formGroup]="categoriaForm">
+          <!-- Información Básica -->
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="bi bi-tag-fill me-2"></i>
+                  <h6 class="mb-0">Información Básica</h6>
+                </div>
+                <div>
+                  <div class="mb-3">
+                    <label class="form-label">Nombre de la Categoría *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Ej: Bebidas Alcohólicas"
+                      formControlName="nombre"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Descripción *</label>
+                    <textarea
+                      class="form-control"
+                      placeholder="Descripción de la categoría"
+                      formControlName="descripcion"
+                    ></textarea>
+                  </div>
+                  <div>
+                    <label class="form-label">Icono</label>
+                    <select class="form-select" formControlName="icono">
+                      <option value="bi-cup-straw">🥤 Bebida</option>
+                      <option value="bi-egg-fried">🍳 Comida</option>
+                      <option value="bi-cup-fill">🍸 Coctel</option>
+                      <option value="bi-globe">🌎 Global</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="bi bi-palette-fill me-2"></i>
+                  <h6 class="mb-0">Apariencia</h6>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Color de la Categoría</label>
+                  <div class="form-control p-0" style="height: auto">
+                    <div
+                      class="p-3"
+                      [style.background-color]="categoriaForm.get('colorFondo')?.value"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <button
+                    *ngFor="let color of coloresPaleta"
+                    type="button"
+                    class="btn rounded-3 p-3 border-0"
+                    [style.background-color]="color"
+                    (click)="seleccionarColor(color)"
+                  ></button>
+                </div>
+
+                <label class="form-label">Vista Previa</label>
+                <div class="border rounded-3 p-3">
+                  <div class="d-flex align-items-center">
+                    <div
+                      class="rounded-circle p-2"
+                      [style.background-color]="categoriaForm.get('colorFondo')?.value"
+                    >
+                      <i
+                        [class]="'bi ' + categoriaForm.get('icono')?.value + ' text-white'"
+                      ></i>
+                    </div>
+                    <div class="ms-2">
+                      <div>
+                        {{categoriaForm.get('nombre')?.value || 'Nombre de
+                        Categoría'}}
+                      </div>
+                      <small class="text-muted"
+                        >{{categoriaForm.get('descripcion')?.value ||
+                        'Descripción de la categoría'}}</small
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div>
+            <div class="d-flex align-items-center mb-3">
+              <i class="bi bi-rulers me-2"></i>
+              <h6 class="mb-0">Unidades de Medida</h6>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Agregar Unidad Personalizada</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Ej: litros"
+                    [(ngModel)]="nuevaUnidad"
+                    [ngModelOptions]="{standalone: true}"
+                  />
+                  <button
+                    class="btn btn-primary rounded-end"
+                    type="button"
+                    (click)="agregarUnidadPersonalizada()"
+                  >
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Unidades para Bebidas</label>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary w-100"
+                  (click)="seleccionarUnidadesBebidas()"
+                >
+                  Agregar Unidades de Bebidas
+                </button>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Unidades para Comida</label>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary w-100"
+                  (click)="seleccionarUnidadesComida()"
+                >
+                  Agregar Unidades de Comida
+                </button>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Unidades Seleccionadas *</label>
+                <div class="form-control p-2" style="height: auto">
+                  <div
+                    *ngIf="unidadesSeleccionadas.length === 0"
+                    class="text-muted"
+                  >
+                    No hay unidades seleccionadas
+                  </div>
+                  <div
+                    class="d-flex flex-wrap gap-2"
+                    *ngIf="unidadesSeleccionadas.length > 0"
+                  >
+                    <span
+                      *ngFor="let unidad of unidadesSeleccionadas"
+                      class="badge bg-light text-dark border d-flex align-items-center"
+                    >
+                      {{unidad}}
+                      <button
+                        type="button"
+                        class="btn-close ms-2"
+                        (click)="eliminarUnidad(unidad)"
+                      ></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-link text-dark text-decoration-none"
+          data-bs-dismiss="modal"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger px-4"
+          [disabled]="!categoriaForm.valid || unidadesSeleccionadas.length === 0"
+          (click)="guardarCategoria()"
+        >
+          Crear Categoría
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

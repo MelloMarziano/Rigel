@@ -1,0 +1,269 @@
+<div class="row">
+  <div class="col-8">
+    <h5>Gestión de Proveedores</h5>
+    <span>Administra tus proveedores y contactos</span>
+  </div>
+  <div class="col text-end">
+    <button class="btn btn-danger" (click)="abrirModalNuevo()">
+      <i class="bi bi-plus-lg me-2"></i> Nuevo Proveedor
+    </button>
+  </div>
+</div>
+
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-primary mb-0">{{ totalProductos }}</h1>
+          <span class="text-muted">Total Productos</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h1 class="text-danger mb-0">{{ productosBajosEnStock }}</h1>
+          <span class="text-muted">Productos bajos en stock</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+      <div class="card">
+        <div class="card-body d-flex gap-2">
+          <input type="text" placeholder="Buscar proveedor..." class="form-control" [formControl]="proveedorSearch">
+          <select class="form-select" [formControl]="categoryFilter">
+            <option value="all">Todas las categorías</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.nombre }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div *ngIf="filteredProveedores.length === 0" class="col-12 text-center">
+      <p class="text-muted">No se encontraron proveedores con los filtros seleccionados.</p>
+    </div>
+    <div class="col-12 col-md-4 mb-4" *ngFor="let proveedor of filteredProveedores">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle me-3 d-flex justify-content-center align-items-center" style="background-color: #03204c; width: 48px; height: 48px">
+              <i class="bi bi-building-fill text-white fs-4"></i>
+            </div>
+            <div>
+              <h6 class="mb-0 fw-bold">{{proveedor.nombre}}</h6>
+              <small class="text-muted">CIF: {{proveedor.cif}}</small>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-outline-primary btn-sm me-2 rounded-1" (click)="editarProveedor(proveedor)">
+              <i class="bi bi-pencil-fill"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm rounded-1" (click)="eliminarProveedor(proveedor.id)">
+              <i class="bi bi-trash3-fill"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-person-fill me-2 text-primary"></i>
+            <span>Contacto: {{proveedor.contacto.nombre}}</span>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-envelope-fill me-2 text-primary"></i>
+            <span>{{proveedor.contacto.email}}</span>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-telephone-fill me-2 text-primary"></i>
+            <span>{{proveedor.contacto.telefono}}</span>
+          </div>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+            <span>{{proveedor.direccion.calle}}, {{proveedor.direccion.ciudad}}</span>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-calendar3 me-2 text-primary"></i>
+              <div>
+                <small class="text-muted d-block">Pago: <span>{{proveedor.plazoPago}} días</span></small>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-box-seam-fill me-2 text-primary"></i>
+              <div>
+                <small class="text-muted d-block">Productos:</small>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                  <span class="badge bg-light text-dark border" *ngFor="let productId of proveedor.productos">
+                    {{ getProductName(productId) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-success bg-opacity-10 text-success px-3 py-2 rounded-1 mb-3">
+          <small>Descuento: {{proveedor.descuento}}%</small>
+        </div>
+
+        <div *ngIf="proveedor.metodoPago"
+             class="px-3 py-2 rounded-1"
+             [ngClass]="{
+               'bg-info bg-opacity-10 text-primary': proveedor.metodoPago === 'SEPA',
+               'bg-warning bg-opacity-10 text-danger': proveedor.metodoPago === 'TRANSFERENCIA'
+             }">
+          <small>Método de Pago: {{proveedor.metodoPago}}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="proveedorForm" (ngSubmit)="guardarProveedor()">
+        <div class="modal-header">
+          <h4 class="modal-title" id="staticBackdropLabel">
+            {{ proveedorForm.get('id')?.value ? 'Editar Proveedor' : 'Nuevo Proveedor' }}
+          </h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <h6><i class="bi bi-building"></i>&nbsp;Información de la Empresa</h6>
+              <div class="row mt-2">
+                <div class="col-12 col-sm-6">
+                  <label>Nombre Comercial <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" placeholder="Nombre del proveedor" formControlName="nombre">
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label>CIF <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" placeholder="B12345678" formControlName="cif">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label>Razón Social <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" placeholder="Distribuciones S.L." formControlName="razonSocial">
+                </div>
+              </div>
+              <div formGroupName="contacto">
+                <div class="row mt-3">
+                  <div class="col-12 col-sm-6">
+                    <label>Persona de Contacto <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Carlos Mendoza" formControlName="nombre">
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label>Teléfono <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" placeholder="+34 91 123 4567" formControlName="telefono">
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-12">
+                    <label>Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" placeholder="contacto@proveedor.com" formControlName="email">
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="checkDefault" formControlName="activo">
+                    <label class="form-check-label" for="checkDefault">Proveedor activo</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <h6><i class="bi bi-geo-alt-fill"></i>&nbsp;Dirección y Datos Fiscales</h6>
+              <div formGroupName="direccion">
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <label>Dirección <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Calle Gran Via, 15" formControlName="calle">
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-12 col-sm-6">
+                    <label>Código Postal <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="28013" formControlName="codigoPostal">
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label>Ciudad <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Madrid" formControlName="ciudad">
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-12">
+                    <label>Provincia <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Madrid" formControlName="provincia">
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label>IBAN <small class="text-muted">(Opcional)</small></label>
+                  <input type="text" class="form-control" placeholder="ES91 2100 0418 4502 0005 1332" formControlName="iban">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12 col-sm-6">
+                  <label>Días de Pago</label>
+                  <input type="number" class="form-control" placeholder="30" formControlName="plazoPago">
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label>Descuentos <small class="text-muted">(%)</small></label>
+                  <input type="number" class="form-control" placeholder="5" formControlName="descuento">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col">
+                  <label for="">Tipo de Pago</label>
+                  <select name="" id="" class="form-select" formControlName="metodoPago">
+                    <option value="SEPA">SEPA</option>
+                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr class="my-4">
+          <div class="row">
+            <div class="col-12">
+              <h6><i class="bi bi-box-seam-fill"></i>&nbsp;Productos Suministrados</h6>
+              <p class="text-muted">Selecciona los productos que este proveedor suministra.</p>
+              <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Buscar producto..." [formControl]="productSearch">
+              </div>
+              <div class="list-group" style="max-height: 200px; overflow-y: auto;" formArrayName="productos">
+                <label class="list-group-item" *ngFor="let control of productosFormArray.controls; let i = index" [hidden]="!shouldShowProduct(i)">
+                  <input class="form-check-input me-1" type="checkbox" [formControlName]="i">
+                  {{ productos[i]?.nombre || 'Producto sin nombre' }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger" [disabled]="proveedorForm.invalid">
+            {{ proveedorForm.get('id')?.value ? 'Actualizar Proveedor' : 'Crear Proveedor' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>>
