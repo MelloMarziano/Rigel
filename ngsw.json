@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1758793125566,
-  "index": "/Rigel/index.html",
+  "timestamp": 1758794075697,
+  "index": "/Rigel/Rigel/index.html",
   "assetGroups": [
     {
       "name": "app",
@@ -93,7 +93,7 @@
     "/Rigel/favicon.ico": "987340a008b3381ab72a4e260aa141cce9e38aab",
     "/Rigel/index.html": "d1c6cc3a059640b561d19f03d87f172a8db690dc",
     "/Rigel/main.6661d9db86261fbc.js": "01270abccffbb15e62a0124881cfa5174e08fc4d",
-    "/Rigel/manifest.webmanifest": "87a71a74d497f8b245ca70cc8ab3f25848dfda98",
+    "/Rigel/manifest.webmanifest": "afbb9f510c0017d006f85f1cc8ddf03a4d7b7247",
     "/Rigel/polyfills.b9d4372f94ae59f5.js": "bea6dbcabd38c59db701c8a3f9f4f10f469a4fd0",
     "/Rigel/runtime.00ac25d08f90f794.js": "4ce4a117cc2e10c6949d0759673551422e7253f9",
     "/Rigel/scripts.c02c320f138afaea.js": "630ff716b00f77d8d18a6597e7c957db08803c2d",

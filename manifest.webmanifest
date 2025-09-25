@@ -4,8 +4,8 @@
   "theme_color": "#dc3545",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
+  "scope": "/Rigel/",
+  "start_url": "/Rigel/",
   "icons": [
     {
       "src": "assets/icon.png",
