@@ -1,27 +1,19 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth/auth.service';
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
+import { AuthService } from '../../services/auth/auth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class NoAuthGuardService {
-  constructor(private authService: AuthService, private router: Router) { }
-
-  canActivate(): boolean {
-    // console.log(this.authService.isLoggedIn());
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/private']);
-      return false;
-    } else {
-      return true;
-    }
-  }
-}
-
+/**
+ * Guard funcional para evitar que usuarios autenticados accedan a rutas públicas como login.
+ */
 export const noAuthGuard: CanActivateFn = (route, state) => {
-  const noAuthGuardService = inject(NoAuthGuardService);
-  return noAuthGuardService.canActivate();
+  const router = inject(Router);
+  const authService = inject(AuthService);
+
+  // Si el usuario ya está logueado, redirigir al dashboard
+  if (authService.isLoggedIn()) {
+    return router.parseUrl('/private/dashboard');
+  }
+
+  // Si no está logueado, permitir acceso a la ruta pública
+  return true;
 };

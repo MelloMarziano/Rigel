@@ -1,0 +1,348 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-8">
+      <h3>Gestión de Inventario</h3>
+      <span>Control y conteo de stock por fechas</span>
+    </div>
+    <div class="col text-end">
+      <button
+        class="btn btn-danger"
+        (click)="crearNuevoInventario()"
+        [disabled]="isLoading"
+      >
+        <i class="bi bi-plus-lg me-2"></i> Nuevo Inventario
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mt-4">
+    <div class="col">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-12 col-md-3 mb-2 mb-md-0">
+              <label class="form-label small text-muted"
+                >Fecha del Inventario</label
+              >
+              <input
+                type="date"
+                class="form-control"
+                [formControl]="fechaFiltro"
+                [value]="fechaSeleccionada | date:'yyyy-MM-dd'"
+              />
+            </div>
+            <div class="col-12 col-md-3 mb-2 mb-md-0">
+              <label class="form-label small text-muted">Categoría</label>
+              <select class="form-select" [formControl]="categoriaFiltro">
+                <option value="">Todas las categorías</option>
+                <option
+                  *ngFor="let categoria of categorias"
+                  [value]="categoria.id"
+                >
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3 mb-2 mb-md-0">
+              <label class="form-label small text-muted">Proveedor</label>
+              <select class="form-select" [formControl]="proveedorFiltro">
+                <option value="">Todos los proveedores</option>
+                <option
+                  *ngFor="let proveedor of proveedores"
+                  [value]="proveedor.id"
+                >
+                  {{ proveedor.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3 text-end mt-4">
+              <button
+                class="btn btn-outline-danger w-100"
+                (click)="buscarInventario()"
+                [disabled]="isLoading"
+              >
+                <span
+                  *ngIf="isLoading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                <i class="bi bi-search me-2" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Buscando...' : 'Buscar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado sin inventario -->
+  <div class="row mt-4" *ngIf="!inventarioActual && !isLoading">
+    <div class="col-12">
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <i class="bi bi-archive text-muted" style="font-size: 4rem"></i>
+        </div>
+        <h4 class="text-muted mb-3">No hay inventario para esta fecha</h4>
+        <p class="text-muted mb-4">
+          Selecciona una fecha y crea un nuevo inventario o busca uno existente
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventario existente -->
+  <div *ngIf="inventarioActual && !isCreatingInventory">
+    <!-- Alerta de estado borrador -->
+    <div class="row mt-4" *ngIf="inventarioActual.estado === 'borrador'">
+      <div class="col-12">
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <div class="flex-grow-1">
+            <strong>Inventario en borrador</strong> - Este inventario no está
+            finalizado. Recuerda guardarlo o cancelarlo.
+          </div>
+          <div class="ms-3">
+            <button
+              class="btn btn-outline-secondary btn-sm me-2"
+              (click)="cancelarInventario()"
+              [disabled]="isSaving"
+            >
+              <i class="bi bi-x-lg me-1"></i> Cancelar
+            </button>
+            <button
+              class="btn btn-warning btn-sm"
+              (click)="guardarInventario()"
+              [disabled]="isSaving"
+            >
+              <span
+                *ngIf="isSaving"
+                class="spinner-border spinner-border-sm me-2"
+              ></span>
+              <i class="bi bi-save me-1" *ngIf="!isSaving"></i>
+              {{ isSaving ? 'Guardando...' : 'Finalizar Inventario' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badge de estado -->
+    <div class="row mt-3" *ngIf="inventarioActual.estado === 'finalizado'">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="badge bg-success fs-6">
+            <i class="bi bi-check-circle me-1"></i>
+            Inventario Finalizado
+          </span>
+          <small class="text-muted">
+            Finalizado el {{ inventarioActual.fechaActualizacion |
+            date:'dd/MM/yyyy HH:mm' }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mt-4">
+      <div class="col-12 col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Inversión Total</span>
+              <i class="bi bi-currency-euro text-danger"></i>
+            </div>
+            <h3 class="text-danger fw-bold mb-0">
+              {{ inventarioActual.inversionTotal |
+              currency:'EUR':'symbol':'1.0-0' }}
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Total Productos</span>
+              <i class="bi bi-box text-info"></i>
+            </div>
+            <h3 class="text-info fw-bold mb-0">
+              {{ inventarioActual.totalProductos }}
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Total Unidades</span>
+              <i class="bi bi-graph-up text-success"></i>
+            </div>
+            <h3 class="text-success fw-bold mb-0">
+              {{ inventarioActual.totalUnidades | number:'1.1-1' }}
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Costo Promedio</span>
+              <i class="bi bi-calculator text-warning"></i>
+            </div>
+            <h3 class="text-warning fw-bold mb-0">
+              {{ inventarioActual.costoPromedio |
+              currency:'EUR':'symbol':'1.0-0' }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                Productos del Inventario ({{ inventarioActual.productos.length
+                }})
+                <span
+                  *ngIf="inventarioActual.estado === 'borrador'"
+                  class="badge bg-warning ms-2"
+                  >Borrador</span
+                >
+                <span
+                  *ngIf="inventarioActual.estado === 'finalizado'"
+                  class="badge bg-success ms-2"
+                  >Finalizado</span
+                >
+              </h5>
+              <div *ngIf="inventarioActual.estado === 'borrador'">
+                <button
+                  class="btn btn-outline-secondary btn-sm me-2"
+                  (click)="cancelarInventario()"
+                  [disabled]="isSaving"
+                >
+                  <i class="bi bi-x-lg me-1"></i> Cancelar
+                </button>
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="guardarInventario()"
+                  [disabled]="isSaving"
+                >
+                  <span
+                    *ngIf="isSaving"
+                    class="spinner-border spinner-border-sm me-2"
+                  ></span>
+                  <i class="bi bi-save me-2" *ngIf="!isSaving"></i>
+                  {{ isSaving ? 'Finalizando...' : 'Finalizar Inventario' }}
+                </button>
+              </div>
+              <div *ngIf="inventarioActual.estado === 'finalizado'">
+                <span class="text-muted small">
+                  <i class="bi bi-lock me-1"></i>
+                  Inventario finalizado - Solo lectura
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>PRODUCTO</th>
+                    <th>CATEGORÍA</th>
+                    <th>PROVEEDOR</th>
+                    <th>STOCK ACTUAL</th>
+                    <th>COSTO UNITARIO</th>
+                    <th>STOCK CONTADO</th>
+                    <th>VALOR TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let producto of inventarioActual.productos; trackBy: trackByProducto"
+                  >
+                    <td>
+                      <div>
+                        <strong>{{ producto.nombre }}</strong>
+                        <br /><small class="text-muted"
+                          >{{ producto.unidadMedida }}</small
+                        >
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-primary rounded-pill"
+                        >{{ producto.categoria }}</span
+                      >
+                    </td>
+                    <td>{{ producto.proveedor }}</td>
+                    <td>
+                      <span [class]="getStockClass(producto.stockActual)">
+                        {{ producto.stockActual | number:'1.1-1' }}
+                      </span>
+                    </td>
+                    <td>
+                      {{ producto.costoUnitario |
+                      currency:'EUR':'symbol':'1.2-2' }}
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="producto.stockContado"
+                        (ngModelChange)="calcularValorTotal(producto)"
+                        [class.is-invalid]="producto.diferencia !== 0"
+                        [disabled]="inventarioActual.estado === 'finalizado'"
+                        step="0.1"
+                        min="0"
+                        style="width: 100px"
+                      />
+                      <small
+                        *ngIf="producto.diferencia !== 0"
+                        [class]="producto.diferencia > 0 ? 'text-success' : 'text-danger'"
+                      >
+                        {{ producto.diferencia > 0 ? '+' : '' }}{{
+                        producto.diferencia | number:'1.1-1' }}
+                      </small>
+                    </td>
+                    <td>
+                      <strong
+                        [class]="producto.diferencia !== 0 ? 'text-warning' : 'text-success'"
+                      >
+                        {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
+                        }}
+                      </strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de creación de inventario -->
+  <div class="row mt-4" *ngIf="isCreatingInventory">
+    <div class="col-12">
+      <div class="text-center py-5">
+        <div class="spinner-border text-danger mb-3" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <h4 class="text-muted mb-3">Creando inventario...</h4>
+        <p class="text-muted">
+          Cargando productos y preparando el inventario para la fecha
+          seleccionada
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

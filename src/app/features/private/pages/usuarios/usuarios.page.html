@@ -1,0 +1,658 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-8">
+      <h3>Gestión de Usuarios</h3>
+      <span>Administra los usuarios y sus permisos del sistema</span>
+    </div>
+    <div class="col text-end">
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus-lg me-2"></i> Nuevo Usuario
+      </button>
+    </div>
+  </div>
+
+  <!-- Cards de estadísticas -->
+  <div class="row mt-4">
+    <div class="col-12 col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-danger fw-bold mb-1">{{ totalUsuarios }}</h2>
+          <p class="text-muted mb-0">Total Usuarios</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-info fw-bold mb-1">{{ usuariosActivos }}</h2>
+          <p class="text-muted mb-0">Usuarios Activos</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-primary fw-bold mb-1">{{ administradores }}</h2>
+          <p class="text-muted mb-0">Administradores</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-secondary fw-bold mb-1">{{ activosHoy }}</h2>
+          <p class="text-muted mb-0">Activos Hoy</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mt-4">
+    <div class="col">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-12 col-md-4 mb-2 mb-md-0">
+              <div class="position-relative">
+                <i
+                  class="bi bi-search position-absolute"
+                  style="
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #6c757d;
+                  "
+                ></i>
+                <input
+                  type="text"
+                  class="form-control ps-5"
+                  placeholder="Buscar usuarios..."
+                  [formControl]="userSearch"
+                />
+              </div>
+            </div>
+            <div class="col-12 col-md-4 mb-2 mb-md-0">
+              <select class="form-select" [formControl]="roleFilter">
+                <option value="all">Todos los roles</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Gerente">Gerente</option>
+                <option value="Empleado">Empleado</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4 text-end">
+              <span class="text-muted">
+                <i class="bi bi-people me-1"></i>{{ filteredUsers.length }}
+                usuarios
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de usuarios -->
+  <div class="row mt-4">
+    <div *ngIf="filteredUsers.length === 0" class="col-12 text-center">
+      <p class="text-muted">
+        No se encontraron usuarios con los filtros seleccionados.
+      </p>
+    </div>
+    <div class="col-12 col-lg-4 mb-4" *ngFor="let usuario of filteredUsers">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4">
+          <!-- Header con avatar y acciones -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+              <div
+                class="rounded-circle bg-dark d-flex align-items-center justify-content-center me-3"
+                style="width: 48px; height: 48px"
+              >
+                <i class="bi bi-person-fill text-white fs-5"></i>
+              </div>
+              <div>
+                <h6 class="mb-1 fw-bold">{{ usuario.nombre }}</h6>
+                <p class="text-muted small mb-0">{{ usuario.email }}</p>
+              </div>
+            </div>
+            <div class="d-flex gap-1">
+              <button
+                class="btn btn-outline-primary btn-sm"
+                (click)="editarUsuario(usuario)"
+                style="width: 32px; height: 32px; padding: 0"
+              >
+                <i class="bi bi-pencil-fill" style="font-size: 0.75rem"></i>
+              </button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                (click)="eliminarUsuario(usuario.id!)"
+                style="width: 32px; height: 32px; padding: 0"
+              >
+                <i class="bi bi-trash3-fill" style="font-size: 0.75rem"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Badge de rol -->
+          <div class="mb-3">
+            <span
+              class="badge rounded-pill"
+              [ngClass]="getRoleBadgeClass(usuario.rol)"
+            >
+              {{ usuario.rol }}
+            </span>
+          </div>
+
+          <!-- Información de contacto -->
+          <div class="mb-3">
+            <div
+              class="d-flex align-items-center mb-2"
+              *ngIf="usuario.telefono"
+            >
+              <i class="bi bi-telephone text-muted me-2"></i>
+              <small class="text-muted">{{ usuario.telefono }}</small>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-envelope text-muted me-2"></i>
+              <small class="text-muted">{{ usuario.email }}</small>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-clock text-muted me-2"></i>
+              <small class="text-muted">
+                Último acceso: {{ formatearFecha(usuario.ultimoAcceso) }}
+              </small>
+            </div>
+          </div>
+
+          <!-- Permisos -->
+          <div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-shield-check text-muted me-2"></i>
+              <small class="text-muted fw-bold">Permisos:</small>
+            </div>
+            <div class="d-flex flex-wrap gap-1">
+              <span
+                *ngFor="let permiso of usuario.permisos"
+                class="badge bg-light text-dark border small"
+              >
+                {{ permiso }}
+              </span>
+              <span
+                *ngIf="usuario.permisos && usuario.permisos.length > 3"
+                class="badge bg-secondary small"
+              >
+                +{{ usuario.permisos.length - 3 }} más
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar usuario -->
+  <div
+    class="modal fade"
+    id="userModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+          <div class="modal-header border-0 pb-0">
+            <h4 class="modal-title fw-bold text-dark">
+              {{ usuarioForm.get('id')?.value ? 'Editar Usuario' : 'Nuevo
+              Usuario' }}
+            </h4>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body px-4 py-3">
+            <div class="row">
+              <!-- Columna izquierda - Información Personal -->
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-4">
+                  <i class="bi bi-person-circle me-2 text-primary fs-5"></i>
+                  <h6 class="mb-0 fw-bold text-dark">Información Personal</h6>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-dark fw-medium">
+                    Nombre Completo <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control border-1 py-2"
+                    formControlName="nombre"
+                    placeholder="Juan Pérez"
+                    style="border-color: #e0e0e0; border-radius: 8px"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-dark fw-medium">
+                    Email <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    class="form-control border-1 py-2"
+                    formControlName="email"
+                    placeholder="juan@orionsystem.com"
+                    style="border-color: #e0e0e0; border-radius: 8px"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-dark fw-medium">Teléfono</label>
+                  <input
+                    type="tel"
+                    class="form-control border-1 py-2"
+                    formControlName="telefono"
+                    placeholder="+34 91 123 4567"
+                    style="border-color: #e0e0e0; border-radius: 8px"
+                  />
+                </div>
+
+                <div class="mb-3" *ngIf="!usuarioForm.get('id')?.value">
+                  <label class="form-label text-dark fw-medium">
+                    Contraseña <span class="text-danger">*</span>
+                  </label>
+                  <div class="position-relative">
+                    <input
+                      [type]="showPassword ? 'text' : 'password'"
+                      class="form-control border-1 py-2 pe-5"
+                      formControlName="password"
+                      placeholder="Mínimo 6 caracteres"
+                      style="border-color: #e0e0e0; border-radius: 8px"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-link position-absolute end-0 top-50 translate-middle-y pe-3"
+                      (click)="togglePasswordVisibility()"
+                      style="border: none; background: none"
+                    >
+                      <i
+                        [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"
+                        class="text-muted"
+                      ></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mb-3" *ngIf="!usuarioForm.get('id')?.value">
+                  <label class="form-label text-dark fw-medium">
+                    Confirmar Contraseña <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    class="form-control border-1 py-2"
+                    formControlName="confirmPassword"
+                    placeholder="Repetir contraseña"
+                    style="border-color: #e0e0e0; border-radius: 8px"
+                  />
+                </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    formControlName="activo"
+                    id="usuarioActivo"
+                  />
+                  <label
+                    class="form-check-label text-dark fw-medium"
+                    for="usuarioActivo"
+                  >
+                    Usuario activo
+                  </label>
+                </div>
+              </div>
+
+              <!-- Columna derecha - Rol y Permisos -->
+              <div class="col-md-6">
+                <div class="d-flex align-items-center mb-4">
+                  <i class="bi bi-shield-check me-2 text-primary fs-5"></i>
+                  <h6 class="mb-0 fw-bold text-dark">Rol y Permisos</h6>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label text-dark fw-medium mb-3"
+                    >Rol del Usuario</label
+                  >
+
+                  <div class="mb-3">
+                    <div
+                      class="form-check p-3 border rounded-3"
+                      style="border-color: #e0e0e0"
+                    >
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="rol"
+                        value="Administrador"
+                        formControlName="rol"
+                        id="rolAdmin"
+                      />
+                      <label class="form-check-label w-100" for="rolAdmin">
+                        <div class="fw-bold text-dark">Administrador</div>
+                        <small class="text-muted"
+                          >Acceso completo al sistema</small
+                        >
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div
+                      class="form-check p-3 border rounded-3"
+                      style="border-color: #e0e0e0"
+                    >
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="rol"
+                        value="Gerente"
+                        formControlName="rol"
+                        id="rolGerente"
+                      />
+                      <label class="form-check-label w-100" for="rolGerente">
+                        <div class="fw-bold text-dark">Gerente</div>
+                        <small class="text-muted"
+                          >Gestión de productos, ventas y reportes</small
+                        >
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div
+                      class="form-check p-3 border rounded-3"
+                      style="border-color: #e0e0e0"
+                    >
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="rol"
+                        value="Empleado"
+                        formControlName="rol"
+                        id="rolEmpleado"
+                      />
+                      <label class="form-check-label w-100" for="rolEmpleado">
+                        <div class="fw-bold text-dark">Empleado</div>
+                        <small class="text-muted"
+                          >Operaciones básicas de venta</small
+                        >
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div
+                      class="form-check p-3 border rounded-3"
+                      style="border-color: #e0e0e0"
+                    >
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="rol"
+                        value="Visualizador"
+                        formControlName="rol"
+                        id="rolVisualizador"
+                      />
+                      <label
+                        class="form-check-label w-100"
+                        for="rolVisualizador"
+                      >
+                        <div class="fw-bold text-dark">Visualizador</div>
+                        <small class="text-muted"
+                          >Solo lectura de reportes</small
+                        >
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+
+            <!-- Sección de Permisos Específicos - Debajo de las dos columnas -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="bi bi-shield-check me-2 text-primary fs-5"></i>
+                  <h6 class="mb-0 fw-bold text-dark">Permisos Específicos</h6>
+                </div>
+
+                <div class="row">
+                  <!-- Columna izquierda de permisos -->
+                  <div class="col-md-6">
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="dashboard"
+                          (change)="onPermisoChange($event, 'dashboard')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('dashboard')"
+                          id="permisoDashboard"
+                        />
+                        <label class="form-check-label w-100" for="permisoDashboard">
+                          <div class="fw-bold text-dark">Dashboard</div>
+                          <small class="text-muted">Ver métricas principales</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="productos"
+                          (change)="onPermisoChange($event, 'productos')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('productos')"
+                          id="permisoProductos"
+                        />
+                        <label class="form-check-label w-100" for="permisoProductos">
+                          <div class="fw-bold text-dark">Productos</div>
+                          <small class="text-muted">Gestionar inventario</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="categorias"
+                          (change)="onPermisoChange($event, 'categorias')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('categorias')"
+                          id="permisoCategorias"
+                        />
+                        <label class="form-check-label w-100" for="permisoCategorias">
+                          <div class="fw-bold text-dark">Categorías</div>
+                          <small class="text-muted">Gestionar categorías</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="recetas"
+                          (change)="onPermisoChange($event, 'recetas')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('recetas')"
+                          id="permisoRecetas"
+                        />
+                        <label class="form-check-label w-100" for="permisoRecetas">
+                          <div class="fw-bold text-dark">Recetas</div>
+                          <small class="text-muted">Crear y editar recetas</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="ventas"
+                          (change)="onPermisoChange($event, 'ventas')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('ventas')"
+                          id="permisoVentas"
+                        />
+                        <label class="form-check-label w-100" for="permisoVentas">
+                          <div class="fw-bold text-dark">Ventas</div>
+                          <small class="text-muted">Procesar ventas</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="reportes"
+                          (change)="onPermisoChange($event, 'reportes')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('reportes')"
+                          id="permisoReportes"
+                        />
+                        <label class="form-check-label w-100" for="permisoReportes">
+                          <div class="fw-bold text-dark">Reportes</div>
+                          <small class="text-muted">Ver reportes y estadísticas</small>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Columna derecha de permisos -->
+                  <div class="col-md-6">
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="proveedores"
+                          (change)="onPermisoChange($event, 'proveedores')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('proveedores')"
+                          id="permisoProveedores"
+                        />
+                        <label class="form-check-label w-100" for="permisoProveedores">
+                          <div class="fw-bold text-dark">Proveedores</div>
+                          <small class="text-muted">Gestionar proveedores</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="albaranes"
+                          (change)="onPermisoChange($event, 'albaranes')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('albaranes')"
+                          id="permisoAlbaranes"
+                        />
+                        <label class="form-check-label w-100" for="permisoAlbaranes">
+                          <div class="fw-bold text-dark">Albaranes</div>
+                          <small class="text-muted">Gestionar albaranes</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="usuarios"
+                          (change)="onPermisoChange($event, 'usuarios')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('usuarios')"
+                          id="permisoUsuarios"
+                        />
+                        <label class="form-check-label w-100" for="permisoUsuarios">
+                          <div class="fw-bold text-dark">Usuarios</div>
+                          <small class="text-muted">Gestionar usuarios del sistema</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="inventario"
+                          (change)="onPermisoChange($event, 'inventario')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('inventario')"
+                          id="permisoInventario"
+                        />
+                        <label class="form-check-label w-100" for="permisoInventario">
+                          <div class="fw-bold text-dark">Inventario</div>
+                          <small class="text-muted">Control de inventario</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="ajustes"
+                          (change)="onPermisoChange($event, 'ajustes')"
+                          [checked]="usuarioForm.get('permisos')?.value?.includes('ajustes')"
+                          id="permisoAjustes"
+                        />
+                        <label class="form-check-label w-100" for="permisoAjustes">
+                          <div class="fw-bold text-dark">Ajustes</div>
+                          <small class="text-muted">Configurar sistema</small>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <small class="text-muted mt-2 d-block">
+                  Los permisos se asignan automáticamente según el rol, pero puedes personalizarlos aquí.
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0 px-4 pb-4">
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-4 py-2"
+              data-bs-dismiss="modal"
+              style="border-radius: 8px"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-danger px-4 py-2 ms-2"
+              [disabled]="usuarioForm.invalid"
+              style="border-radius: 8px"
+            >
+              {{ usuarioForm.get('id')?.value ? 'Actualizar Usuario' : 'Crear
+              Usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

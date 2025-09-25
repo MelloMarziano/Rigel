@@ -1,18 +1,335 @@
 .navbar {
   height: 64px;
-  padding: 0.5rem 1rem;
+  padding: 0;
   position: fixed;
   top: 0;
   right: 0;
   left: 0;
   z-index: 1020;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
-  // En escritorio, el navbar debe dejar espacio para el sidebar
   @media (min-width: 992px) {
-    left: 250px; // El mismo ancho que el sidebar
+    left: 250px;
+  }
+
+  .container-fluid {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    max-width: none;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
-// ... resto de los estilos del navbar ...
+// Botón de toggle del sidebar
+.sidebar-toggle {
+  border: none;
+  padding: 0.5rem;
+  color: #495057;
+  background: transparent;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  min-width: 44px; // Tamaño mínimo para touch
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+// Logo y branding
+.logo-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+
+  i {
+    font-size: 0.9rem;
+  }
+}
+
+.brand-text {
+  font-weight: 600;
+  color: #212529;
+  font-size: 1rem;
+  letter-spacing: -0.025em;
+}
+
+// Mensaje de bienvenida
+.welcome-message {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  .welcome-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #212529;
+  }
+}
+
+// Botones de navegación
+.nav-icon-btn {
+  border: none;
+  padding: 0.5rem;
+  color: #6c757d;
+  background: transparent;
+  border-radius: 0.375rem;
+  position: relative;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #007bff;
+    background-color: #f8f9fa;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  i {
+    font-size: 1.1rem;
+  }
+}
+
+// Badge de notificaciones
+.notification-badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #dc3545;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  min-width: 1.25rem;
+  text-align: center;
+  line-height: 1;
+}
+
+// Dropdown del usuario
+.user-dropdown {
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  &::after {
+    display: none; // Ocultar la flecha por defecto de Bootstrap
+  }
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.user-info {
+  text-align: left;
+  line-height: 1.2;
+
+  .user-name {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.875rem;
+    margin-bottom: 0;
+  }
+
+  .user-role {
+    color: #6c757d;
+    font-size: 0.75rem;
+    margin-bottom: 0;
+  }
+}
+
+// Dropdown menu
+.dropdown-menu {
+  border: 1px solid #e9ecef;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  min-width: 220px;
+  padding: 0.5rem 0;
+}
+
+.dropdown-header {
+  padding: 0.75rem 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 0.5rem;
+}
+
+.user-info-dropdown {
+  .fw-bold {
+    color: #212529;
+    font-size: 0.9rem;
+  }
+
+  .text-muted {
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.5em;
+  }
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  &.text-danger:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+// Responsive
+@media (max-width: 991.98px) {
+  .navbar {
+    left: 0 !important;
+
+    .container-fluid {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  .brand-text {
+    font-size: 0.95rem;
+  }
+
+  .logo-circle {
+    width: 26px;
+    height: 26px;
+
+    i {
+      font-size: 0.8rem;
+    }
+  }
+
+  // Ocultar elementos de desktop en móvil
+  .d-none.d-lg-block {
+    display: none !important;
+  }
+
+  // Mostrar elementos de móvil
+  .d-lg-none {
+    display: flex !important;
+  }
+
+  // Ajustar el dropdown del usuario en móvil
+  .user-dropdown {
+    padding: 0.375rem 0.5rem;
+
+    .user-info {
+      display: none; // Ocultar info del usuario en móvil
+    }
+  }
+
+  // Ajustar botones de navegación en móvil
+  .nav-icon-btn {
+    padding: 0.375rem 0.5rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  // Ajustar badge de notificaciones en móvil
+  .notification-badge {
+    top: 0.125rem;
+    right: 0.125rem;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+  }
+}
+
+// Ajustes adicionales
+.d-flex {
+  align-items: center;
+}
+
+// Espaciado entre elementos
+.nav-icon-btn + .nav-icon-btn {
+  margin-left: 0.25rem;
+}
+
+.nav-icon-btn + .dropdown {
+  margin-left: 0.5rem;
+}
+
+// Asegurar que los elementos responsive funcionen correctamente
+@media (min-width: 992px) {
+  .d-lg-none {
+    display: none !important;
+  }
+
+  .d-none.d-lg-block {
+    display: block !important;
+  }
+}

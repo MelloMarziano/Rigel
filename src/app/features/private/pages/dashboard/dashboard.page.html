@@ -1,45 +1,291 @@
 <div class="container-fluid">
-  <h5>Dashboard</h5>
-  <span>Resumen general de tu negocio</span>
+  <!-- Header -->
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-1">Dashboard</h3>
+          <span class="text-muted">Resumen general de tu negocio</span>
+        </div>
+        <div class="text-end">
+          <small class="text-muted">
+            <i class="bi bi-clock me-1"></i>
+            Última actualización: {{ fechaActualizacion | date:'dd/MM/yyyy
+            HH:mm' }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Cards de estadísticas principales -->
   <div class="row mt-4">
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 stat-card">
         <div class="card-body">
-          <h1 class="text-primary mb-0">{{ totalProductos }}</h1>
-          <span class="text-muted">Total Productos</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="text-primary fw-bold mb-1">{{ totalProductos }}</h2>
+              <p class="text-muted mb-0">Total Productos</p>
+              <small class="text-success">
+                <i class="bi bi-arrow-up"></i> {{ productosActivos }} activos
+              </small>
+            </div>
+            <div class="stat-icon bg-primary">
+              <i class="bi bi-box text-white"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 stat-card">
         <div class="card-body">
-          <h1 class="text-danger mb-0">{{ productosBajosEnStock }}</h1>
-          <span class="text-muted">Productos bajos en stock</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="text-danger fw-bold mb-1">
+                {{ productosBajosEnStock }}
+              </h2>
+              <p class="text-muted mb-0">Stock Crítico</p>
+              <small class="text-danger">
+                <i class="bi bi-exclamation-triangle"></i> Requiere atención
+              </small>
+            </div>
+            <div class="stat-icon bg-danger">
+              <i class="bi bi-exclamation-triangle text-white"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 stat-card">
         <div class="card-body">
-          <h1 class="text-success mb-0">{{ totalStockValue | currency }}</h1>
-          <span class="text-muted">Valor total del stock</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="text-success fw-bold mb-1">
+                {{ totalStockValue | currency:'EUR':'symbol':'1.0-0' }}
+              </h2>
+              <p class="text-muted mb-0">Valor del Stock</p>
+              <small class="text-info">
+                <i class="bi bi-graph-up"></i> Inventario total
+              </small>
+            </div>
+            <div class="stat-icon bg-success">
+              <i class="bi bi-currency-euro text-white"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 stat-card">
         <div class="card-body">
-          <h1 class="text-info mb-0">{{ totalCategorias }}</h1>
-          <span class="text-muted">Total Categorías</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="text-info fw-bold mb-1">{{ totalCategorias }}</h2>
+              <p class="text-muted mb-0">Categorías</p>
+              <small class="text-warning">
+                <i class="bi bi-tags"></i> {{ totalProveedores }} proveedores
+              </small>
+            </div>
+            <div class="stat-icon bg-info">
+              <i class="bi bi-tags text-white"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
+  </div>
+
+  <!-- Gráficos y análisis -->
+  <div class="row mt-4">
+    <!-- Gráfico de productos por categoría -->
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-pie-chart me-2 text-primary"></i>
+            Productos por Categoría
+          </h5>
+        </div>
         <div class="card-body">
-          <h1 class="text-warning mb-0">{{ totalProveedores }}</h1>
-          <span class="text-muted">Total Proveedores</span>
+          <div class="chart-container" style="height: 300px">
+            <canvas
+              baseChart
+              [data]="categoriaChartData"
+              [type]="'doughnut'"
+              [options]="categoriaChartOptions"
+            >
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de stock por categoría -->
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-bar-chart me-2 text-success"></i>
+            Stock por Categoría
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="height: 300px">
+            <canvas
+              baseChart
+              [data]="stockChartData"
+              [type]="'bar'"
+              [options]="stockChartOptions"
+            >
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Análisis detallado -->
+  <div class="row mt-4">
+    <!-- Top productos más valiosos -->
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-trophy me-2 text-warning"></i>
+            Top Productos Más Valiosos
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <div
+              *ngFor="let producto of topProductosValiosos; let i = index"
+              class="list-group-item border-0 px-0 py-2"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-warning text-dark me-3"
+                    >{{ i + 1 }}</span
+                  >
+                  <div>
+                    <strong>{{ producto.nombre }}</strong>
+                    <br /><small class="text-muted"
+                      >{{ producto.stock }} {{ producto.unidadMedida }}</small
+                    >
+                  </div>
+                </div>
+                <div class="text-end">
+                  <strong class="text-success"
+                    >{{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
+                    }}</strong
+                  >
+                  <br /><small class="text-muted"
+                    >{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}
+                    c/u</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos con stock crítico -->
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>
+            Stock Crítico
+          </h5>
+        </div>
+        <div class="card-body">
+          <div
+            class="list-group list-group-flush"
+            *ngIf="productosStockCritico.length > 0"
+          >
+            <div
+              *ngFor="let producto of productosStockCritico"
+              class="list-group-item border-0 px-0 py-2"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ producto.nombre }}</strong>
+                  <br /><small class="text-muted"
+                    >{{ getCategoryName(producto.categoriaId) }}</small
+                  >
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-danger"
+                    >{{ producto.stock || 0 }} {{ producto.unidadMedida }}</span
+                  >
+                  <br /><small class="text-muted"
+                    >Mín: {{ producto.stockMinimo || 0 }}</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            *ngIf="productosStockCritico.length === 0"
+            class="text-center py-4"
+          >
+            <i class="bi bi-check-circle text-success fs-1"></i>
+            <p class="text-muted mt-2">
+              ¡Todos los productos tienen stock suficiente!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen por proveedores -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-people me-2 text-info"></i>
+            Resumen por Proveedores
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-lg-8 mb-4 mb-lg-0">
+              <div class="chart-container" style="height: 250px">
+                <canvas
+                  baseChart
+                  [data]="proveedorChartData"
+                  [type]="'bar'"
+                  [options]="proveedorChartOptions"
+                >
+                </canvas>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4">
+              <div class="row g-3">
+                <div
+                  class="col-6 col-lg-12"
+                  *ngFor="let proveedor of topProveedores"
+                >
+                  <div class="text-center p-3 bg-light rounded">
+                    <h6 class="mb-1">{{ proveedor.nombre }}</h6>
+                    <p class="text-primary fw-bold mb-1">
+                      {{ proveedor.totalProductos }}
+                    </p>
+                    <small class="text-muted">productos</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

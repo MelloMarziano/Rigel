@@ -1,0 +1,125 @@
+.product-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.modal-xl {
+  max-width: 1200px;
+}
+
+.table-responsive {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.bg-opacity-10 {
+  background-color: rgba(var(--bs-success-rgb), 0.1) !important;
+}
+
+.bg-warning.bg-opacity-10 {
+  background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
+}
+
+.bg-info.bg-opacity-10 {
+  background-color: rgba(var(--bs-info-rgb), 0.1) !important;
+}
+
+.bg-danger.bg-opacity-10 {
+  background-color: rgba(var(--bs-danger-rgb), 0.1) !important;
+}
+
+.albaran-card {
+  border-left: 4px solid #007bff;
+  transition: all 0.3s ease;
+}
+
+.albaran-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.albaran-pendiente {
+  border-left-color: #6c757d;
+}
+
+.albaran-parcial {
+  border-left-color: #ffc107;
+}
+
+.albaran-recibido {
+  border-left-color: #198754;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.product-row {
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem 0;
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.estado-badge {
+  font-size: 0.8em;
+  padding: 0.25em 0.6em;
+}
+
+.total-highlight {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.form-floating {
+  position: relative;
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

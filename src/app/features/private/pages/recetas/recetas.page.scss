@@ -1,0 +1,74 @@
+.ingredient-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card {
+  border-left: 4px solid var(--bs-primary);
+}
+
+.modal-xl {
+  max-width: 1200px;
+}
+
+.table-responsive {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.bg-opacity-10 {
+  background-color: rgba(var(--bs-success-rgb), 0.1) !important;
+}
+
+.bg-warning.bg-opacity-10 {
+  background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
+}
+
+.ingredient-row {
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem 0;
+}
+
+.ingredient-row:last-child {
+  border-bottom: none;
+}
+
+.cost-analysis {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.recipe-card {
+  border-left: 4px solid #007bff;
+  transition: all 0.3s ease;
+}
+
+.recipe-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.recipe-type-cocktail {
+  border-left-color: #ffc107;
+}
+
+.recipe-type-dish {
+  border-left-color: #17a2b8;
+}

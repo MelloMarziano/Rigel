@@ -1,9 +1,9 @@
-import { UsuariosPageModule } from './pages/usuarios/usuarios.module';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { PrivatePage } from './private.page';
 import { roleGuard } from 'src/app/core/guards/role/role.guard';
-// import { RoleGuard } from 'src/app/core/guards/role/role.guard';
+import { ConfigGuard } from 'src/app/core/guards/config/config.guard';
+import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
 
 const routes: Routes = [
   {
@@ -17,8 +17,8 @@ const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        // canActivate: [roleGuard],
-        // data: { roles: ['Admin', 'User'] },
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['dashboard'] },
         loadChildren: () =>
           import('./pages/dashboard/dashboard.module').then(
             (m) => m.DashboardPageModule
@@ -26,8 +26,8 @@ const routes: Routes = [
       },
       {
         path: 'proveedores',
-        // canActivate: [roleGuard],
-        // data: { roles: ['Admin', 'User'] },
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['proveedores'] },
         loadChildren: () =>
           import('./pages/proveedores/proveedores.module').then(
             (m) => m.ProveedoresPageModule
@@ -35,8 +35,8 @@ const routes: Routes = [
       },
       {
         path: 'categoria',
-        // canActivate: [roleGuard],
-        // data: { roles: ['Admin', 'User'] },
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['categorias'] },
         loadChildren: () =>
           import('./pages/categoria/categoria.module').then(
             (m) => m.CategoriaPageModule
@@ -44,8 +44,8 @@ const routes: Routes = [
       },
       {
         path: 'productos',
-        // canActivate: [roleGuard],
-        // data: { roles: ['Admin', 'User'] },
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['productos'] },
         loadChildren: () =>
           import('./pages/productos/productos.module').then(
             (m) => m.ProductosPageModule
@@ -53,12 +53,65 @@ const routes: Routes = [
       },
       {
         path: 'usuarios',
-        // canActivate: [roleGuard],
-        // data: { roles: ['Admin', 'User'] },
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['usuarios'] },
         loadChildren: () =>
           import('./pages/usuarios/usuarios.module').then(
             (m) => m.UsuariosPageModule
           ),
+      },
+      // Rutas adicionales para completar el sidebar
+      {
+        path: 'recetas',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['recetas'] },
+        loadChildren: () =>
+          import('./pages/recetas/recetas.module').then(
+            (m) => m.RecetasPageModule
+          ),
+      },
+      // {
+      //   path: 'ventas',
+      //   canActivate: [roleGuard],
+      //   data: { permissions: ['ventas'] },
+      //   redirectTo: 'dashboard', // Temporal hasta crear el módulo
+      // },
+      // {
+      //   path: 'reportes',
+      //   canActivate: [roleGuard],
+      //   data: { permissions: ['reportes'] },
+      //   redirectTo: 'dashboard', // Temporal hasta crear el módulo
+      // },
+      {
+        path: 'albaranes',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['albaranes'] },
+        loadChildren: () =>
+          import('./pages/albaranes/albaranes.module').then(
+            (m) => m.AlbaranesPageModule
+          ),
+      },
+      {
+        path: 'inventario',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['inventario'] },
+        loadChildren: () =>
+          import('./pages/inventario/inventario.module').then(
+            (m) => m.InventarioPageModule
+          ),
+      },
+      {
+        path: 'settings',
+        canActivate: [roleGuard],
+        data: { permissions: ['ajustes'] },
+        loadChildren: () =>
+          import('./pages/settings/settings.module').then(
+            (m) => m.SettingsPageModule
+          ),
+      },
+      {
+        path: 'access-denied',
+        component: AccessDeniedComponent,
       },
     ],
   },

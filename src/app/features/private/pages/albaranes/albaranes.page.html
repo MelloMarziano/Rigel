@@ -1,0 +1,552 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-1">Gestión de Albaranes</h3>
+          <span class="text-muted"
+            >Administra los albaranes de entrega de proveedores</span
+          >
+        </div>
+        <button class="btn btn-danger" (click)="abrirModalAlbaran()">
+          <i class="bi bi-plus"></i> Nuevo Albarán
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards de estadísticas -->
+  <div class="row mt-4">
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-primary fw-bold mb-1">
+            {{ estadisticas.totalAlbaranes }}
+          </h2>
+          <p class="text-muted mb-0">Total Albaranes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-success fw-bold mb-1">
+            {{ estadisticas.recibidos }}
+          </h2>
+          <p class="text-muted mb-0">Recibidos</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-warning fw-bold mb-1">
+            {{ estadisticas.pendientes }}
+          </h2>
+          <p class="text-muted mb-0">Pendientes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-info fw-bold mb-1">
+            {{ estadisticas.valorTotal | currency:'EUR':'symbol':'1.2-2' }}
+          </h2>
+          <p class="text-muted mb-0">Valor Total</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador y Filtros -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-8">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar albaranes..."
+                  [(ngModel)]="filtros.busqueda"
+                  (input)="aplicarFiltros()"
+                />
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <select
+                class="form-select"
+                [(ngModel)]="filtros.estado"
+                (change)="aplicarFiltros()"
+              >
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Parcial">Parcial</option>
+                <option value="Recibido">Recibido</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Resultados de búsqueda -->
+          <div class="mt-3" *ngIf="filtros.busqueda || filtros.estado">
+            <small class="text-muted">
+              <i class="bi bi-funnel me-1"></i>
+              Mostrando {{ albaranesFiltrados.length }} de {{ albaranes.length
+              }} albaranes
+              <button
+                class="btn btn-sm btn-link p-0 ms-2"
+                (click)="limpiarFiltros()"
+              >
+                <i class="bi bi-x-circle"></i> Limpiar filtros
+              </button>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de albaranes -->
+  <div class="row">
+    <div
+      class="col-12 col-lg-6 mb-4"
+      *ngFor="let albaran of albaranesFiltrados"
+    >
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-file-earmark-text text-muted me-2"></i>
+              <h5 class="mb-0">{{ albaran.numero }}</h5>
+              <span
+                class="badge ms-2"
+                [class]="getEstadoBadgeClass(albaran.estado)"
+              >
+                {{ albaran.estado }}
+              </span>
+            </div>
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                (click)="verAlbaran(albaran)"
+                title="Ver albarán"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                (click)="editarAlbaran(albaran)"
+                title="Editar albarán"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-outline-danger"
+                (click)="eliminarAlbaran(albaran)"
+                title="Eliminar albarán"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <strong>{{ albaran.proveedorNombre }}</strong>
+            <br /><small class="text-muted"
+              >CIF: {{ albaran.proveedorCif }}</small
+            >
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <small class="text-muted">Fecha Emisión</small>
+              <div class="fw-bold">
+                {{ albaran.fechaEmision | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+            <div class="col-6">
+              <small class="text-muted">Fecha Entrega</small>
+              <div class="fw-bold">
+                {{ albaran.fechaEntrega | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-4">
+              <small class="text-muted">Subtotal</small>
+              <div class="fw-bold">
+                {{ albaran.subtotal | currency:'EUR':'symbol':'1.2-2' }}
+              </div>
+            </div>
+            <div class="col-4">
+              <small class="text-muted">IVA</small>
+              <div class="fw-bold">
+                {{ albaran.iva | currency:'EUR':'symbol':'1.2-2' }}
+              </div>
+            </div>
+            <div class="col-4">
+              <small class="text-muted">Total</small>
+              <div class="fw-bold text-danger">
+                {{ albaran.total | currency:'EUR':'symbol':'1.2-2' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-2"
+              >Productos ({{ albaran.productos.length }}):</small
+            >
+            <div class="product-list">
+              <div
+                *ngFor="let producto of albaran.productos.slice(0, 3)"
+                class="d-flex justify-content-between align-items-center mb-1"
+              >
+                <span class="small">{{ producto.productoNombre }}</span>
+                <span class="small text-muted"
+                  >{{ producto.cantidad }} unidades</span
+                >
+              </div>
+              <div
+                *ngIf="albaran.productos.length > 3"
+                class="text-muted small"
+              >
+                +{{ albaran.productos.length - 3 }} productos más
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="albaran.observaciones" class="mb-3">
+            <small class="text-muted d-block">Observaciones:</small>
+            <small class="text-info">{{ albaran.observaciones }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay resultados -->
+    <div
+      class="col-12"
+      *ngIf="albaranesFiltrados.length === 0 && albaranes.length > 0"
+    >
+      <div class="text-center py-5">
+        <i class="bi bi-search fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">No se encontraron albaranes</h5>
+        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+        <button class="btn btn-outline-primary" (click)="limpiarFiltros()">
+          <i class="bi bi-arrow-clockwise me-1"></i>
+          Mostrar todos los albaranes
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay albaranes -->
+    <div class="col-12" *ngIf="albaranes.length === 0">
+      <div class="text-center py-5">
+        <i class="bi bi-file-earmark-text fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">No tienes albaranes creados</h5>
+        <p class="text-muted">Crea tu primer albarán para comenzar</p>
+        <button class="btn btn-danger" (click)="abrirModalAlbaran()">
+          <i class="bi bi-plus me-1"></i>
+          Nuevo Albarán
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo/Editar Albarán -->
+<div
+  class="modal fade"
+  id="modalAlbaran"
+  tabindex="-1"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ modoEdicion ? 'Editar' : 'Nuevo' }} Albarán
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="albaranForm" (ngSubmit)="guardarAlbaran()">
+          <div class="row">
+            <!-- Información del Albarán -->
+            <div class="col-12 col-lg-6">
+              <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0">
+                  <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información del Albarán
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="mb-3">
+                        <label class="form-label">Número de Albarán *</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="numero"
+                          placeholder="ALB-2025-001"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" formControlName="estado">
+                          <option value="Pendiente">Pendiente</option>
+                          <option value="Parcial">Parcial</option>
+                          <option value="Recibido">Recibido</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Proveedor *</label>
+                    <select
+                      class="form-select"
+                      formControlName="proveedorId"
+                      (change)="onProveedorChange()"
+                    >
+                      <option value="">Seleccionar proveedor</option>
+                      <option
+                        *ngFor="let proveedor of proveedores"
+                        [value]="proveedor.id"
+                      >
+                        {{ proveedor.nombre }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="mb-3">
+                        <label class="form-label">Fecha de Emisión *</label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          formControlName="fechaEmision"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="mb-3">
+                        <label class="form-label">Fecha de Entrega *</label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          formControlName="fechaEntrega"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Recibido por</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="recibidoPor"
+                      placeholder="Nombre del receptor"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen del Albarán -->
+            <div class="col-12 col-lg-6">
+              <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0">
+                  <h6 class="mb-0">
+                    <i class="bi bi-calculator me-2"></i>
+                    Resumen del Albarán
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <div
+                        class="text-center p-3 bg-warning bg-opacity-10 rounded"
+                      >
+                        <h4 class="mb-1">
+                          {{ subtotalAlbaran | currency:'EUR':'symbol':'1.2-2'
+                          }}
+                        </h4>
+                        <small class="text-muted">Subtotal</small>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div
+                        class="text-center p-3 bg-info bg-opacity-10 rounded"
+                      >
+                        <h4 class="mb-1">
+                          {{ ivaAlbaran | currency:'EUR':'symbol':'1.2-2' }}
+                        </h4>
+                        <small class="text-muted">IVA (21%)</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="text-center p-3 bg-danger bg-opacity-10 rounded mb-3"
+                  >
+                    <h3 class="mb-1 text-danger">
+                      {{ totalAlbaran | currency:'EUR':'symbol':'1.2-2' }}
+                    </h3>
+                    <small class="text-muted">Total</small>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea
+                      class="form-control"
+                      rows="3"
+                      formControlName="observaciones"
+                      placeholder="Observaciones del albarán..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Productos del Albarán -->
+          <div class="card border-0 bg-light">
+            <div
+              class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center"
+            >
+              <h6 class="mb-0">Productos del Albarán</h6>
+              <button
+                type="button"
+                class="btn btn-sm btn-info"
+                (click)="agregarProducto()"
+                [disabled]="!albaranForm.get('proveedorId')?.value"
+              >
+                <i class="bi bi-plus"></i> Agregar Producto
+              </button>
+            </div>
+            <div class="card-body">
+              <div
+                *ngIf="!albaranForm.get('proveedorId')?.value"
+                class="text-center py-4 text-muted"
+              >
+                <i class="bi bi-info-circle fs-3"></i>
+                <p class="mt-2">
+                  Selecciona un proveedor para agregar productos
+                </p>
+              </div>
+
+              <div
+                *ngIf="albaranForm.get('proveedorId')?.value"
+                class="table-responsive"
+              >
+                <table class="table table-borderless">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Total</th>
+                      <th width="50"></th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="productos">
+                    <tr
+                      *ngFor="let producto of productosFormArray.controls; let i = index"
+                      [formGroupName]="i"
+                    >
+                      <td>
+                        <select
+                          class="form-select"
+                          formControlName="productoId"
+                          (change)="onProductoChange(i)"
+                        >
+                          <option value="">Seleccionar producto</option>
+                          <option
+                            *ngFor="let prod of productosProveedor"
+                            [value]="prod.id"
+                          >
+                            {{ prod.nombre }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control"
+                          formControlName="cantidad"
+                          min="0"
+                          step="1"
+                          (input)="calcularTotales()"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control"
+                          formControlName="precioUnitario"
+                          min="0"
+                          step="0.01"
+                          (input)="calcularTotales()"
+                        />
+                      </td>
+                      <td>
+                        <span class="fw-bold"
+                          >{{ getProductoTotal(i) |
+                          currency:'EUR':'symbol':'1.2-2' }}</span
+                        >
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="eliminarProducto(i)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="guardarAlbaran()"
+          [disabled]="!albaranForm.valid"
+        >
+          {{ modoEdicion ? 'Actualizar' : 'Crear' }} Albarán
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

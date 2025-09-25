@@ -1,27 +1,18 @@
-import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
+import { inject } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
-import { CanActivateFn } from '@angular/router';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuardService {
-  constructor(private authService: AuthService, private router: Router) { }
-
-  canActivate(): boolean {
-    // console.log(this.authService.isLoggedIn());
-
-    if (this.authService.isLoggedIn()) {
-      return true;
-    } else {
-      this.router.navigate(['/public/sign-in']);
-      return false;
-    }
-  }
-}
-
+/**
+ * Guard funcional para verificar si el usuario está autenticado.
+ */
 export const authGuard: CanActivateFn = (route, state) => {
-  const authGuardService = inject(AuthGuardService);
-  return authGuardService.canActivate();
+  const router = inject(Router);
+  const authService = inject(AuthService);
+
+  if (authService.isLoggedIn()) {
+    return true;
+  }
+
+  // Redirigir al login si no está autenticado
+  return router.parseUrl('/public/sign-in');
 };

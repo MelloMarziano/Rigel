@@ -1,0 +1,381 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-1">Gestión de Recetas</h3>
+          <span class="text-muted">Administra tus productos combinados y recetas</span>
+        </div>
+        <button class="btn btn-danger" (click)="abrirModalReceta()">
+          <i class="bi bi-plus"></i> Nueva Receta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards de estadísticas -->
+  <div class="row mt-4">
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-primary fw-bold mb-1">{{ estadisticas.totalRecetas }}</h2>
+          <p class="text-muted mb-0">Total Recetas</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-warning fw-bold mb-1">{{ estadisticas.cocteles }}</h2>
+          <p class="text-muted mb-0">Cocteles</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-info fw-bold mb-1">{{ estadisticas.platos }}</h2>
+          <p class="text-muted mb-0">Platos</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <h2 class="text-success fw-bold mb-1">{{ estadisticas.ingredientesTotales }}</h2>
+          <p class="text-muted mb-0">Ingredientes Totales</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador y Filtros -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar recetas por nombre o descripción..."
+                  [(ngModel)]="filtros.busqueda"
+                  (input)="aplicarFiltros()">
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <select class="form-select" [(ngModel)]="filtros.tipo" (change)="aplicarFiltros()">
+                <option value="">Todos los tipos</option>
+                <option value="Cocteles">Cocteles</option>
+                <option value="Platos">Platos</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <select class="form-select" [(ngModel)]="filtros.disponibilidad" (change)="aplicarFiltros()">
+                <option value="">Todas las recetas</option>
+                <option value="disponible">Solo disponibles</option>
+                <option value="no-disponible">No disponibles</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Resultados de búsqueda -->
+          <div class="mt-3" *ngIf="filtros.busqueda || filtros.tipo || filtros.disponibilidad">
+            <small class="text-muted">
+              <i class="bi bi-funnel me-1"></i>
+              Mostrando {{ recetasFiltradas.length }} de {{ recetas.length }} recetas
+              <button class="btn btn-sm btn-link p-0 ms-2" (click)="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i> Limpiar filtros
+              </button>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de recetas -->
+  <div class="row">
+    <div class="col-12 col-lg-6 mb-4" *ngFor="let receta of recetasFiltradas">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-funnel text-muted me-2"></i>
+              <h5 class="mb-0">{{ receta.nombre }}</h5>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" (click)="verReceta(receta)" title="Ver receta">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="editarReceta(receta)" title="Editar receta">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminarReceta(receta)" title="Eliminar receta">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <p class="text-muted small mb-3">{{ receta.descripcion }}</p>
+
+          <div class="mb-3">
+            <span class="badge"
+                  [class]="receta.tipo === 'Cocteles' ? 'bg-warning text-dark' : 'bg-info'">
+              {{ receta.tipo }}
+            </span>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-4">
+              <small class="text-muted">Precio Venta</small>
+              <div class="fw-bold">{{ receta.precioVenta | currency:'EUR':'symbol':'1.0-0' }}</div>
+            </div>
+            <div class="col-4">
+              <small class="text-muted">Costo Receta</small>
+              <div class="fw-bold">{{ receta.costoTotal | currency:'EUR':'symbol':'1.0-0' }}</div>
+            </div>
+            <div class="col-4">
+              <small class="text-muted">Margen</small>
+              <div class="fw-bold"
+                   [class]="(receta.margen || 0) >= 0 ? 'text-success' : 'text-danger'">
+                {{ receta.margen | number:'1.1-1' }}%
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-2">Ingredientes:</small>
+            <div class="ingredient-list">
+              <div *ngFor="let ingrediente of receta.ingredientes" class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small">{{ ingrediente.nombre }}</span>
+                <span class="small text-muted">{{ ingrediente.cantidad }} {{ ingrediente.unidad }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Disponibilidad</small>
+            <span class="badge"
+                  [class]="receta.disponible ? 'bg-success' : 'bg-secondary'">
+              {{ receta.disponible ? 'Disponible' : 'No disponible' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay resultados -->
+    <div class="col-12" *ngIf="recetasFiltradas.length === 0 && recetas.length > 0">
+      <div class="text-center py-5">
+        <i class="bi bi-search fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">No se encontraron recetas</h5>
+        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+        <button class="btn btn-outline-primary" (click)="limpiarFiltros()">
+          <i class="bi bi-arrow-clockwise me-1"></i>
+          Mostrar todas las recetas
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay recetas -->
+    <div class="col-12" *ngIf="recetas.length === 0">
+      <div class="text-center py-5">
+        <i class="bi bi-cup-straw fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">No tienes recetas creadas</h5>
+        <p class="text-muted">Crea tu primera receta para comenzar</p>
+        <button class="btn btn-danger" (click)="abrirModalReceta()">
+          <i class="bi bi-plus me-1"></i>
+          Nueva Receta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nueva/Editar Receta -->
+<div class="modal fade" id="modalReceta" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ modoEdicion ? 'Editar' : 'Nueva' }} Receta</h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="recetaForm" (ngSubmit)="guardarReceta()">
+          <div class="row">
+            <!-- Información de la Receta -->
+            <div class="col-12 col-lg-6">
+              <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0">
+                  <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información de la Receta
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre de la Receta *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="nombre"
+                      placeholder="Ej: Mojito Clásico">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Tipo de Receta *</label>
+                    <select class="form-select" formControlName="tipo">
+                      <option value="Cocteles">Cocteles</option>
+                      <option value="Platos">Platos</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Descripción *</label>
+                    <textarea
+                      class="form-control"
+                      rows="3"
+                      formControlName="descripcion"
+                      placeholder="Descripción de la receta"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Precio de Venta *</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      formControlName="precioVenta"
+                      min="0"
+                      step="0.01">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Análisis de Costos -->
+            <div class="col-12 col-lg-6">
+              <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0">
+                  <h6 class="mb-0">
+                    <i class="bi bi-calculator me-2"></i>
+                    Análisis de Costos
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+                        <h4 class="mb-1">{{ costoReceta | currency:'EUR':'symbol':'1.0-0' }}</h4>
+                        <small class="text-muted">Costo de Receta</small>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                        <h4 class="mb-1 text-success">{{ margenReceta | number:'1.1-1' }}%</h4>
+                        <small class="text-muted">Margen de Ganancia</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Explicación del cálculo -->
+                  <div class="alert alert-info py-2 px-3 mb-0">
+                    <small>
+                      <strong><i class="bi bi-info-circle me-1"></i>¿Cómo se calcula?</strong><br>
+                      • <strong>Costo:</strong> Suma del precio de todos los ingredientes según su cantidad<br>
+                      • <strong>Margen:</strong> Porcentaje de ganancia = ((Precio Venta - Costo) ÷ Precio Venta) × 100<br>
+                      • <strong>Ganancia:</strong> {{ (recetaForm.get('precioVenta')?.value || 0) - costoReceta | currency:'EUR':'symbol':'1.2-2' }} por receta
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ingredientes de la Receta -->
+          <div class="card border-0 bg-light">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Ingredientes de la Receta</h6>
+              <button type="button" class="btn btn-sm btn-info" (click)="agregarIngrediente()">
+                <i class="bi bi-plus"></i> Agregar Ingrediente
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-borderless">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Unidad</th>
+                      <th width="50"></th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="ingredientes">
+                    <tr *ngFor="let ingrediente of ingredientesFormArray.controls; let i = index" [formGroupName]="i">
+                      <td>
+                        <select class="form-select" formControlName="productoId" (change)="onProductoChange(i)">
+                          <option value="">Seleccionar producto</option>
+                          <option *ngFor="let producto of productos" [value]="producto.id">
+                            {{ producto.nombre }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control"
+                          formControlName="cantidad"
+                          min="0"
+                          step="0.01"
+                          (input)="calcularCostos()">
+                      </td>
+                      <td>
+                        <select class="form-select" formControlName="unidad">
+                          <option value="ml">ml</option>
+                          <option value="gr">gr</option>
+                          <option value="kg">kg</option>
+                          <option value="l">l</option>
+                          <option value="unidad">unidad</option>
+                        </select>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="eliminarIngrediente(i)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="guardarReceta()"
+          [disabled]="!recetaForm.valid">
+          {{ modoEdicion ? 'Actualizar' : 'Crear' }} Receta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

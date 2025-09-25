@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
@@ -16,6 +16,21 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getStorage, provideStorage } from '@angular/fire/storage';
+import {
+  LucideAngularModule,
+  LayoutDashboard,
+  Package,
+  Tags,
+  ChefHat,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+  FileText,
+  Sliders,
+  Star,
+  ShieldUser,
+  PackageSearch,
+} from 'lucide-angular';
 
 @NgModule({
   declarations: [AppComponent],
@@ -31,8 +46,23 @@ import { getStorage, provideStorage } from '@angular/fire/storage';
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
     provideStorage(() => getStorage()),
+    LucideAngularModule.pick({
+      LayoutDashboard,
+      Package,
+      Tags,
+      ChefHat,
+      ShoppingCart,
+      TrendingUp,
+      Users,
+      FileText,
+      Sliders,
+      Star,
+      ShieldUser,
+      PackageSearch,
+    }),
   ],
   providers: [],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

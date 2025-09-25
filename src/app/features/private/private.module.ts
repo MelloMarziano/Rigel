@@ -3,10 +3,10 @@ import { PrivatePage } from './private.page';
 import { CommonModule } from '@angular/common';
 import { PrivateRoutingModule } from './private-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModuleCustom } from 'src/app/material/material.module';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppbarComponent } from './components/appbar/appbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
+
 import {
   LucideAngularModule,
   LayoutDashboard,
@@ -17,9 +17,10 @@ import {
   TrendingUp,
   Users,
   FileText,
-  Sliders,
+  Settings,
   Star,
   ShieldUser,
+  PackageSearch,
 } from 'lucide-angular';
 
 @NgModule({
@@ -37,12 +38,18 @@ import {
       TrendingUp,
       Users,
       FileText,
-      Sliders,
+      Settings,
       Star,
       ShieldUser,
+      PackageSearch,
     }),
   ],
-  declarations: [PrivatePage, AppbarComponent, SidebarComponent],
+  declarations: [
+    PrivatePage,
+    AppbarComponent,
+    SidebarComponent,
+    AccessDeniedComponent,
+  ],
   exports: [CommonModule, ReactiveFormsModule, FormsModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

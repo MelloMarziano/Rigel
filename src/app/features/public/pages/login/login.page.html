@@ -1,36 +1,84 @@
-<div class="container-login">
-  <div class="card p-4">
-    <div class="row text-center">
-      <div class="col">
-        <img src="assets/logoEB.png" width="150" alt="" />
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo y branding -->
+    <div class="text-center mb-4">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i class="bi bi-star-fill"></i>
+        </div>
+        <div class="brand">
+          <h1 class="brand-title">Rigel</h1>
+          <p class="brand-subtitle">Orion System</p>
+        </div>
       </div>
     </div>
-    <h2 class="text-center mb-1">Bienvenido</h2>
-    <p class="text-muted text-center mb-2">
-      Ingresa tu usuario y contraseña para acceder a tu cuenta
-    </p>
+
+    <!-- Título de bienvenida -->
+    <div class="text-center mb-4">
+      <h2 class="welcome-title">¡Bienvenido de vuelta!</h2>
+      <p class="welcome-subtitle">
+        Ingresa tus credenciales para acceder a tu cuenta
+      </p>
+    </div>
+
+    <!-- Formulario de login -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="row mt-3">
+      <div class="row mb-4">
         <div class="col">
-          <label for="">Usuario</label>
-          <input type="text" class="form-control" formControlName="username" />
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col">
-          <label for="">Contraseña</label>
+          <label class="form-label">Correo Electrónico</label>
           <input
-            type="password"
+            type="email"
             class="form-control"
-            formControlName="password"
+            formControlName="email"
+            placeholder="tu@email.com"
+            [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
           />
         </div>
-      </div>
-      <div class="row mt-5">
-        <div class="col">
-          <button class="btn btn-custom-blue w-100">Ingresar</button>
+        <div
+          class="invalid-feedback"
+          *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        >
+          Por favor ingresa un email válido
         </div>
       </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label">Contraseña</label>
+        <div class="input-group">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-control"
+            formControlName="password"
+            placeholder="Tu contraseña"
+            [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="togglePassword()"
+          >
+            <i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+          </button>
+        </div>
+        <div
+          class="invalid-feedback"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        >
+          La contraseña es requerida
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-danger w-100 login-btn"
+        [disabled]="loginForm.invalid || isLoading"
+      >
+        <span
+          *ngIf="isLoading"
+          class="spinner-border spinner-border-sm me-2"
+        ></span>
+        {{ isLoading ? 'Ingresando...' : 'Ingresar' }}
+      </button>
     </form>
   </div>
 </div>

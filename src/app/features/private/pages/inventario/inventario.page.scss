@@ -1,0 +1,92 @@
+// Estilos para la página de inventario
+.table {
+  th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+  }
+}
+
+.form-control-sm {
+  font-size: 0.875rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+// Estados de stock
+.text-danger.fw-bold {
+  color: #dc3545 !important;
+}
+
+.text-warning.fw-bold {
+  color: #ffc107 !important;
+}
+
+.text-success.fw-bold {
+  color: #198754 !important;
+}
+
+// Cards de estadísticas
+.card {
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Animaciones de carga
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.8rem;
+  }
+
+  .form-control-sm {
+    width: 80px !important;
+  }
+}
+
+// Estados de diferencias
+.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+// Mejoras visuales para inputs de stock
+input[type="number"] {
+  text-align: center;
+
+  &:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+}
+
+// Iconos de estado
+.bi-archive {
+  opacity: 0.5;
+}
+
+// Botones
+.btn-outline-danger {
+  &:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+}

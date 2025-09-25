@@ -1,0 +1,408 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-1">Configuración del Sistema</h3>
+          <span class="text-muted">
+            {{ esPrimeraConfiguracion ? 'Completa la configuración inicial para comenzar' : 'Personaliza y configura tu sistema Rigel' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerta de primera configuración -->
+  <div class="row mt-3" *ngIf="esPrimeraConfiguracion">
+    <div class="col-12">
+      <div class="alert alert-warning d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+        <div>
+          <h6 class="mb-1">Configuración Requerida</h6>
+          <p class="mb-0">Debes completar la información de tu restaurante para acceder a todas las funcionalidades del sistema.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <!-- Sidebar de navegación -->
+    <div class="col-12 col-lg-3 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <button
+              class="list-group-item list-group-item-action d-flex align-items-center"
+              [class.active]="pestanaActiva === 'general'"
+              (click)="cambiarPestana('general')">
+              <i class="bi bi-gear me-3 text-danger"></i>
+              <span>General</span>
+            </button>
+            <button
+              class="list-group-item list-group-item-action d-flex align-items-center"
+              [class.active]="pestanaActiva === 'sistema'"
+              [class.disabled]="esPrimeraConfiguracion"
+              (click)="cambiarPestana('sistema')">
+              <i class="bi bi-info-circle me-3" [class.text-muted]="esPrimeraConfiguracion" [class.text-primary]="!esPrimeraConfiguracion"></i>
+              <span>Sistema</span>
+              <i class="bi bi-lock-fill ms-auto text-muted" *ngIf="esPrimeraConfiguracion"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="col-12 col-lg-9">
+      <!-- Pestaña General -->
+      <div *ngIf="pestanaActiva === 'general'" class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">General</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="configuracionForm" (ngSubmit)="guardarConfiguracion()">
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Nombre del Restaurante *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="nombreRestaurante"
+                  placeholder="Restaurante Orión">
+              </div>
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Razón Social *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="razonSocial"
+                  placeholder="Orión System S.L.">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">CIF *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="cif"
+                  placeholder="B12345678">
+              </div>
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Teléfono *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="telefono"
+                  placeholder="+34 91 123 4567">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Email *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  formControlName="email"
+                  placeholder="info@orionsystem.com">
+              </div>
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Sitio Web</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="sitioWeb"
+                  placeholder="www.orionsystem.com">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Dirección *</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="direccion"
+                placeholder="Calle Principal, 123">
+            </div>
+
+            <div class="row">
+              <div class="col-12 col-md-4 mb-3">
+                <label class="form-label">Código Postal *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="codigoPostal"
+                  placeholder="28001">
+              </div>
+              <div class="col-12 col-md-4 mb-3">
+                <label class="form-label">Ciudad *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="ciudad"
+                  placeholder="Madrid">
+              </div>
+              <div class="col-12 col-md-4 mb-3">
+                <label class="form-label">Provincia *</label>
+                <select class="form-select" formControlName="provincia">
+                  <option value="">Seleccionar provincia</option>
+                  <option value="Madrid">Madrid</option>
+                  <option value="Barcelona">Barcelona</option>
+                  <option value="Valencia">Valencia</option>
+                  <option value="Sevilla">Sevilla</option>
+                  <option value="Zaragoza">Zaragoza</option>
+                  <option value="Málaga">Málaga</option>
+                  <option value="Murcia">Murcia</option>
+                  <option value="Palma">Palma</option>
+                  <option value="Las Palmas">Las Palmas</option>
+                  <option value="Bilbao">Bilbao</option>
+                  <option value="Alicante">Alicante</option>
+                  <option value="Córdoba">Córdoba</option>
+                  <option value="Valladolid">Valladolid</option>
+                  <option value="Vigo">Vigo</option>
+                  <option value="Gijón">Gijón</option>
+                  <option value="Hospitalet">Hospitalet</option>
+                  <option value="Vitoria">Vitoria</option>
+                  <option value="A Coruña">A Coruña</option>
+                  <option value="Elche">Elche</option>
+                  <option value="Granada">Granada</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button
+                type="submit"
+                class="btn btn-danger"
+                [disabled]="!configuracionForm.valid || guardando">
+                <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!guardando" class="bi bi-check me-2"></i>
+                {{ guardando ? 'Guardando...' : 'Guardar Configuración' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Pestaña Sistema -->
+      <div *ngIf="pestanaActiva === 'sistema'" class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-info-circle me-2 text-primary"></i>
+            Acerca del Sistema
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-lg-8">
+              <div class="d-flex align-items-center mb-3">
+                <div class="system-logo me-3">
+                  <div class="logo-circle">
+                    <i class="bi bi-stars text-white"></i>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="mb-1 text-primary">{{ infoSistema.nombre }}</h3>
+                  <p class="text-muted mb-0 small">{{ infoSistema.descripcion }}</p>
+                  <small class="text-muted">Versión {{ infoSistema.version }}</small>
+                </div>
+              </div>
+
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-calendar-event text-info"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Fecha de Lanzamiento</h6>
+                      <p class="text-muted mb-0">{{ infoSistema.fechaLanzamiento }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-people text-success"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Equipo Fundador</h6>
+                      <p class="text-muted mb-0">
+                        {{ infoSistema.equipo.ceo.nombre }}, {{ infoSistema.equipo.cto.nombre }} & {{ infoSistema.equipo.designer.nombre }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-headset text-warning"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Soporte Técnico</h6>
+                      <p class="text-muted mb-0">
+                        🇪🇸
+                        <a href="tel:{{ infoSistema.equipo.cto.telefono }}" class="text-decoration-none">
+                          {{ infoSistema.equipo.cto.telefono }}
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-shield-check text-primary"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Estado del Sistema</h6>
+                      <p class="text-success mb-0">
+                        <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i>
+                        Operativo
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <h6 class="mb-2 small">Características del Sistema</h6>
+                <div class="row g-2">
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Inventario</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Control de Proveedores</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Recetas</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Albaranes de Entrega</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Dashboard Analítico</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Usuarios</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+              <div class="company-info-card">
+                <h6 class="mb-3">
+                  <i class="bi bi-building text-primary me-2"></i>
+                  Orion System
+                </h6>
+
+                <!-- Equipo Condensado -->
+                <div class="team-compact">
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-person-fill-gear text-primary me-2"></i>
+                        <div>
+                          <div class="member-name-compact">{{ infoSistema.equipo.ceo.nombre }}</div>
+                          <div class="member-role-compact">CEO & Fundador</div>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="flag-compact">{{ infoSistema.equipo.ceo.bandera }}</div>
+                        <a href="tel:{{ infoSistema.equipo.ceo.telefono }}" class="phone-compact">
+                          {{ infoSistema.equipo.ceo.telefono }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-code-slash text-info me-2"></i>
+                        <div>
+                          <div class="member-name-compact">{{ infoSistema.equipo.cto.nombre }}</div>
+                          <div class="member-role-compact">CTO & Co-Fundador</div>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="flag-compact">{{ infoSistema.equipo.cto.bandera }}</div>
+                        <a href="tel:{{ infoSistema.equipo.cto.telefono }}" class="phone-compact">
+                          {{ infoSistema.equipo.cto.telefono }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-palette text-purple me-2"></i>
+                        <div>
+                          <div class="member-name-compact">{{ infoSistema.equipo.designer.nombre }}</div>
+                          <div class="member-role-compact">UX/UI Designer</div>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="flag-compact">{{ infoSistema.equipo.designer.bandera }}</div>
+                        <small class="text-muted">Diseño</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="company-details-compact mt-3">
+                  <div class="detail-item">
+                    <i class="bi bi-calendar-check text-warning me-2"></i>
+                    <span>{{ infoSistema.fechaLanzamiento }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-award text-danger me-2"></i>
+                    <span>Versión {{ infoSistema.version }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 p-3 bg-light rounded">
+                <h6 class="mb-2">
+                  <i class="bi bi-star text-warning me-1"></i>
+                  Constelación Orión
+                </h6>
+                <p class="small text-muted mb-0">
+                  Rigel es la estrella más brillante de la constelación de Orión,
+                  simbolizando la excelencia y precisión que buscamos en cada
+                  funcionalidad de nuestro sistema de gestión.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
