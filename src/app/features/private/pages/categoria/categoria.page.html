@@ -185,7 +185,7 @@
     <div class="modal-content">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold" id="staticBackdropLabel">
-          Nueva Categoría
+          {{ categoriaForm.get('id')?.value ? 'Editar Categoría' : 'Nueva Categoría' }}
         </h5>
         <button
           type="button"
@@ -364,7 +364,12 @@
                     *ngIf="familias.length === 0"
                     class="text-muted text-center py-2"
                   >
-                    No hay familias configuradas
+                    <div *ngIf="!categoriaForm.get('id')?.value">
+                      No hay familias configuradas. Agrega al menos una familia.
+                    </div>
+                    <div *ngIf="categoriaForm.get('id')?.value">
+                      Esta categoría no tiene familias configuradas. Puedes agregar familias ahora.
+                    </div>
                   </div>
                   <div
                     class="d-flex flex-wrap gap-2"
@@ -489,10 +494,10 @@
         <button
           type="button"
           class="btn btn-danger px-4"
-          [disabled]="!categoriaForm.valid || unidadesSeleccionadas.length === 0 || familias.length === 0"
+          [disabled]="!categoriaForm.valid || unidadesSeleccionadas.length === 0"
           (click)="guardarCategoria()"
         >
-          Crear Categoría
+          {{ categoriaForm.get('id')?.value ? 'Actualizar Categoría' : 'Crear Categoría' }}
         </button>
       </div>
     </div>

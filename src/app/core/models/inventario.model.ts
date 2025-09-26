@@ -1,7 +1,9 @@
 export interface Inventario {
   id?: string;
   fecha: Date | string | any; // Permitir diferentes tipos para Firebase
-  categoriaId?: string;
+  area?: 'barra' | 'cocina'; // Nueva propiedad para el área
+  categoriasSeleccionadas?: string[]; // Categorías seleccionadas para el inventario
+  categoriaId?: string; // Mantener por compatibilidad
   proveedorId?: string;
   productos: InventarioProducto[];
   inversionTotal: number;
@@ -25,4 +27,5 @@ export interface InventarioProducto {
   valorTotal: number;
   unidadMedida: string;
   diferencia: number;
+  familiaId?: string; // Nueva propiedad para filtrar por familia
 }

@@ -59,7 +59,7 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.productoForm = this.fb.group({
-      id: [null],
+      id: [''], // Cambiar de null a string vacío
       nombre: [
         '',
         {
@@ -133,11 +133,17 @@ export class ProductosPage implements OnInit, OnDestroy {
       return of(control.value).pipe(
         debounceTime(500),
         switchMap((value) => {
-          if (!value) {
+          if (!value || !value.trim()) {
             return of(null);
           }
-          const name = value.toLowerCase();
-          const currentId = this.productoForm.get('id')?.value;
+
+          const name = value.trim().toLowerCase();
+          const currentId = this.productoForm?.get('id')?.value;
+
+          // Si no hay productos cargados aún, no validar
+          if (!this.productos || this.productos.length === 0) {
+            return of(null);
+          }
 
           const isDuplicate = this.productos.some(
             (p) => p.nombre.toLowerCase() === name && p.id !== currentId
@@ -291,7 +297,31 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   editarProducto(producto: Producto) {
-    this.productoForm.patchValue(producto);
+    // Asegurar que el formulario tenga el control 'id'
+    if (!this.productoForm.contains('id')) {
+      this.productoForm.addControl('id', this.fb.control(''));
+    }
+
+    // Cargar todos los datos del producto incluyendo el ID
+    this.productoForm.patchValue({
+      id: producto.id,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      costo: producto.costo,
+      IVA: producto.IVA,
+      categoriaId: producto.categoriaId,
+      familiaId: producto.familiaId,
+      proveedorId: producto.proveedorId,
+      esCombinado: producto.esCombinado,
+      stock: producto.stock,
+      stockMinimo: producto.stockMinimo,
+      cantidad: producto.cantidad,
+      unidadMedida: producto.unidadMedida,
+    });
+
+    // Actualizar familias disponibles basado en la categoría
+    this.onCategoriaChange(producto.categoriaId);
+
     this.modal.show();
   }
 
@@ -325,9 +355,11 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   resetForm() {
     this.productoForm.reset({
+      id: '', // Limpiar el ID
       nombre: '',
       descripcion: '',
       costo: 0,
+      IVA: 0,
       categoriaId: '',
       familiaId: '',
       proveedorId: null,

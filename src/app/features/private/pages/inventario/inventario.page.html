@@ -8,7 +8,7 @@
     <div class="col text-end">
       <button
         class="btn btn-danger"
-        (click)="crearNuevoInventario()"
+        (click)="abrirModalNuevoInventario()"
         [disabled]="isLoading"
       >
         <i class="bi bi-plus-lg me-2"></i> Nuevo Inventario
@@ -202,6 +202,33 @@
       </div>
     </div>
 
+    <!-- Pills para filtrar por familias -->
+    <div class="row mt-3" *ngIf="familiasDisponibles.length > 0">
+      <div class="col-12">
+        <div class="familia-pills-container">
+          <div class="familia-pills-scroll" #pillsContainer>
+            <div class="familia-pill"
+                 [class.active]="familiaSeleccionada === ''"
+                 (click)="filtrarPorFamilia('')">
+              <span class="pill-text">Todas</span>
+              <span class="pill-count">{{ inventarioActual.productos.length }}</span>
+            </div>
+            <div class="familia-pill"
+                 *ngFor="let familia of familiasDisponibles"
+                 [class.active]="familiaSeleccionada === familia.id"
+                 (click)="filtrarPorFamilia(familia.id || '')">
+              <span class="pill-text">{{ familia.nombre }}</span>
+              <span class="pill-count">{{ getProductosPorFamilia(familia.id || '').length }}</span>
+            </div>
+          </div>
+          <!-- Indicador de scroll -->
+          <div class="scroll-indicator d-md-none" *ngIf="familiasDisponibles.length > 2">
+            <i class="bi bi-chevron-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabla de productos -->
     <div class="row mt-4">
       <div class="col-12">
@@ -209,8 +236,7 @@
           <div class="card-header bg-white border-0 py-3">
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="mb-0">
-                Productos del Inventario ({{ inventarioActual.productos.length
-                }})
+                Productos del Inventario ({{ productosFiltrados.length }} de {{ inventarioActual.productos.length }})
                 <span
                   *ngIf="inventarioActual.estado === 'borrador'"
                   class="badge bg-warning ms-2"
@@ -220,6 +246,11 @@
                   *ngIf="inventarioActual.estado === 'finalizado'"
                   class="badge bg-success ms-2"
                   >Finalizado</span
+                >
+                <span
+                  *ngIf="familiaSeleccionada"
+                  class="badge bg-info ms-2"
+                  >{{ getNombreFamiliaSeleccionada() }}</span
                 >
               </h5>
               <div *ngIf="inventarioActual.estado === 'borrador'">
@@ -267,7 +298,7 @@
                 </thead>
                 <tbody>
                   <tr
-                    *ngFor="let producto of inventarioActual.productos; trackBy: trackByProducto"
+                    *ngFor="let producto of productosFiltrados; trackBy: trackByProducto"
                   >
                     <td>
                       <div>
@@ -342,6 +373,128 @@
           Cargando productos y preparando el inventario para la fecha
           seleccionada
         </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para seleccionar área y categorías -->
+<div
+  class="modal fade"
+  id="modalNuevoInventario"
+  tabindex="-1"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-clipboard-check me-2"></i>
+          Crear Nuevo Inventario
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarModalNuevoInventario()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Selección de Categoría -->
+          <div class="col-12 mb-4">
+            <h6 class="mb-3">
+              <i class="bi bi-tags me-2"></i>
+              Selecciona la categoría para el inventario:
+            </h6>
+            <div class="row">
+              <div
+                class="col-md-6 mb-3"
+                *ngFor="let categoria of categorias"
+              >
+                <div
+                  class="card h-100 cursor-pointer categoria-card"
+                  [class.selected]="categoriaSeleccionada === categoria.id"
+                  (click)="seleccionarCategoria(categoria.id || '')"
+                >
+                  <div class="card-body">
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="rounded-circle p-2 me-3"
+                        [style.background-color]="categoria.colorFondo"
+                      >
+                        <i [class]="'bi ' + categoria.icono + ' text-white'"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ categoria.nombre }}</h6>
+                        <small class="text-muted">{{ getTotalProductosCategoria(categoria.id) }} productos</small>
+                        <div class="mt-1" *ngIf="categoria.familias && categoria.familias.length > 0">
+                          <small class="text-info">
+                            {{ categoria.familias.length }} familias:
+                            {{ getFamiliasNombres(categoria.familias) }}
+                          </small>
+                        </div>
+                      </div>
+                      <div class="ms-2">
+                        <i
+                          class="bi fs-5"
+                          [class]="categoriaSeleccionada === categoria.id ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de selección -->
+          <div class="col-12" *ngIf="categoriaSeleccionada">
+            <div class="alert alert-success">
+              <h6 class="mb-2">
+                <i class="bi bi-check-circle me-2"></i>
+                Categoría seleccionada: <strong>{{ getNombreCategoriaSeleccionada() }}</strong>
+              </h6>
+              <p class="mb-2">
+                Se incluirán <strong>{{ getTotalProductosCategoria() }}</strong> productos de esta categoría en el inventario.
+              </p>
+
+              <div class="mt-3" *ngIf="getFamiliasCategoria().length > 0">
+                <h6 class="mb-2">Familias incluidas:</h6>
+                <div class="d-flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let familia of getFamiliasCategoria()"
+                    class="badge bg-primary"
+                    style="font-size: 0.85rem; padding: 6px 12px;"
+                  >
+                    {{ familia.nombre }} ({{ getProductosPorFamiliaEnCategoria(familia.id || '').length }} productos)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cerrarModalNuevoInventario()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="crearInventarioConSeleccion()"
+          [disabled]="!categoriaSeleccionada || isCreatingInventory"
+        >
+          <span
+            *ngIf="isCreatingInventory"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+          <i class="bi bi-plus me-2" *ngIf="!isCreatingInventory"></i>
+          {{ isCreatingInventory ? 'Creando...' : 'Crear Inventario' }}
+        </button>
       </div>
     </div>
   </div>

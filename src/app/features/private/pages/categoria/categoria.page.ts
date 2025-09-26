@@ -248,8 +248,14 @@ export class CategoriaPage implements OnInit, OnDestroy {
     // Cargar las unidades seleccionadas
     this.unidadesSeleccionadas = [...(categoria.unidadesDisponibles || [])];
 
-    // Cargar las familias
-    this.familias = [...(categoria.familias || [])];
+    // Cargar las familias (manejar categorías existentes sin familias)
+    this.familias = [];
+    if (categoria.familias && categoria.familias.length > 0) {
+      this.familias = [...categoria.familias];
+    } else {
+      // Si no tiene familias, inicializar array vacío para permitir agregar nuevas
+      this.familias = [];
+    }
 
     // Abrir el modal
     const modalEl = document.getElementById('modalCategoria');
@@ -285,11 +291,13 @@ export class CategoriaPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.familias.length === 0) {
+    // Validar familias solo para nuevas categorías
+    const categoriaId = this.categoriaForm.get('id')?.value;
+    if (!categoriaId && this.familias.length === 0) {
       await Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Debe agregar al menos una familia de productos',
+        text: 'Debe agregar al menos una familia de productos para nuevas categorías',
       });
       return;
     }
