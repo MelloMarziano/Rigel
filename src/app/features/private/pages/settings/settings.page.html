@@ -67,7 +67,26 @@
       <!-- Pestaña General -->
       <div *ngIf="pestanaActiva === 'general'" class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 py-3">
-          <h5 class="mb-0">General</h5>
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">General</h5>
+            <div class="d-flex align-items-center gap-2">
+              <span *ngIf="!esPrimeraConfiguracion && !modoEdicion" class="badge bg-success">
+                <i class="bi bi-check-circle me-1"></i>
+                Configurado
+              </span>
+              <span *ngIf="!esPrimeraConfiguracion && modoEdicion" class="badge bg-warning">
+                <i class="bi bi-pencil me-1"></i>
+                Editando
+              </span>
+              <button
+                *ngIf="!esPrimeraConfiguracion && !modoEdicion"
+                class="btn btn-sm btn-outline-primary"
+                (click)="activarEdicion()">
+                <i class="bi bi-pencil me-1"></i>
+                Editar
+              </button>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <form [formGroup]="configuracionForm" (ngSubmit)="guardarConfiguracion()">
@@ -182,15 +201,29 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
-              <button
-                type="submit"
-                class="btn btn-danger"
-                [disabled]="!configuracionForm.valid || guardando">
-                <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
-                <i *ngIf="!guardando" class="bi bi-check me-2"></i>
-                {{ guardando ? 'Guardando...' : 'Guardar Configuración' }}
-              </button>
+            <div class="d-flex justify-content-end mt-4" *ngIf="esPrimeraConfiguracion || modoEdicion">
+              <div class="d-flex gap-2">
+                <button
+                  *ngIf="!esPrimeraConfiguracion && modoEdicion"
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="cancelarEdicion()"
+                  [disabled]="guardando">
+                  <i class="bi bi-x me-2"></i>
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn"
+                  [class.btn-danger]="esPrimeraConfiguracion"
+                  [class.btn-success]="!esPrimeraConfiguracion && modoEdicion"
+                  [disabled]="!configuracionForm.valid || guardando">
+                  <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!guardando && esPrimeraConfiguracion" class="bi bi-check me-2"></i>
+                  <i *ngIf="!guardando && !esPrimeraConfiguracion && modoEdicion" class="bi bi-save me-2"></i>
+                  {{ guardando ? (esPrimeraConfiguracion ? 'Guardando...' : 'Guardando cambios...') : (esPrimeraConfiguracion ? 'Guardar Configuración' : 'Guardar Cambios') }}
+                </button>
+              </div>
             </div>
           </form>
         </div>

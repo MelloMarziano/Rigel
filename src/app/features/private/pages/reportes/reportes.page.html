@@ -1,0 +1,319 @@
+<div class="reportes-container">
+  <div class="header-section">
+    <h1 class="page-title">
+      <i class="fas fa-chart-bar"></i>
+      Reportes del Restaurante
+    </h1>
+    <p class="page-subtitle">Análisis de ventas y productos</p>
+  </div>
+
+  <!-- Filtros y Controles -->
+  <div class="filtros-card">
+    <form [formGroup]="filtrosForm" (ngSubmit)="generarReporte()">
+      <div class="filtros-row">
+        <div class="filtro-grupo">
+          <label for="fechaInicio">Fecha Inicio:</label>
+          <input
+            type="date"
+            id="fechaInicio"
+            formControlName="fechaInicio"
+            class="form-control">
+        </div>
+
+        <div class="filtro-grupo">
+          <label for="fechaFin">Fecha Fin:</label>
+          <input
+            type="date"
+            id="fechaFin"
+            formControlName="fechaFin"
+            class="form-control">
+        </div>
+
+        <div class="filtro-grupo">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="cargando">
+            <i class="fas fa-sync-alt" [class.fa-spin]="cargando"></i>
+            {{ cargando ? 'Generando...' : 'Generar Reporte' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Selector de Tipo de Reporte -->
+  <div class="tipo-reporte-selector">
+    <div class="selector-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="tipoReporte === 'ventas'"
+        (click)="onTipoReporteChange('ventas')">
+        <i class="fas fa-shopping-cart"></i>
+        Reporte de Ventas
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="tipoReporte === 'productos'"
+        (click)="onTipoReporteChange('productos')">
+        <i class="fas fa-box"></i>
+        Reporte de Productos
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="tipoReporte === 'albaranes'"
+        (click)="onTipoReporteChange('albaranes')">
+        <i class="fas fa-file-text"></i>
+        Reporte de Albaranes
+      </button>
+    </div>
+  </div>
+
+  <!-- Reporte de Ventas -->
+  <div *ngIf="tipoReporte === 'ventas'" class="reporte-section">
+    <!-- Resumen de Ventas -->
+    <div class="resumen-cards">
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenVentas.totalVentas }}</h3>
+          <p>Total Ventas</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-euro-sign"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenVentas.totalIngresos | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <p>Ingresos Totales</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenVentas.ventaPromedio | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <p>Venta Promedio</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenVentas.productosVendidos }}</h3>
+          <p>Productos Vendidos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Ventas -->
+    <div class="tabla-container">
+      <div class="tabla-header">
+        <h3>Detalle de Ventas</h3>
+        <button class="btn btn-secondary" (click)="exportarReporte()">
+          <i class="fas fa-download"></i>
+          Exportar CSV
+        </button>
+      </div>
+
+      <div class="tabla-responsive">
+        <table class="tabla-ventas">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Cliente</th>
+              <th>Método Pago</th>
+              <th>Productos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let venta of reporteVentas">
+              <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="precio">{{ venta.total | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td>{{ venta.cliente || 'Sin cliente' }}</td>
+              <td>
+                <span class="metodo-pago" [class]="venta.metodoPago.toLowerCase()">
+                  {{ venta.metodoPago }}
+                </span>
+              </td>
+              <td>
+                <div class="productos-lista">
+                  <span *ngFor="let producto of venta.productos; let last = last"
+                        class="producto-item">
+                    {{ producto.nombre }} ({{ producto.cantidad }}){{ !last ? ', ' : '' }}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="reporteVentas.length === 0" class="no-datos">
+          <i class="fas fa-inbox"></i>
+          <p>No hay ventas en el período seleccionado</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reporte de Productos -->
+  <div *ngIf="tipoReporte === 'productos'" class="reporte-section">
+    <div class="tabla-container">
+      <div class="tabla-header">
+        <h3>Productos Más Vendidos</h3>
+        <button class="btn btn-secondary" (click)="exportarReporte()">
+          <i class="fas fa-download"></i>
+          Exportar CSV
+        </button>
+      </div>
+
+      <div class="tabla-responsive">
+        <table class="tabla-productos">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad Vendida</th>
+              <th>Ingreso Total</th>
+              <th>Categoría</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let producto of reporteProductos; let i = index">
+              <td>
+                <div class="producto-info">
+                  <span class="ranking">#{{ i + 1 }}</span>
+                  {{ producto.nombre }}
+                </div>
+              </td>
+              <td class="cantidad">{{ producto.cantidadVendida }}</td>
+              <td class="precio">{{ producto.ingresoTotal | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="categoria-tag">{{ producto.categoria }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="reporteProductos.length === 0" class="no-datos">
+          <i class="fas fa-inbox"></i>
+          <p>No hay datos de productos en el período seleccionado</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reporte de Albaranes -->
+  <div *ngIf="tipoReporte === 'albaranes'" class="reporte-section">
+    <!-- Resumen de Albaranes -->
+    <div class="resumen-cards">
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-file-text"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenAlbaranes.totalAlbaranes }}</h3>
+          <p>Total Albaranes</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenAlbaranes.totalCompras | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <p>Total Compras</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-calculator"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenAlbaranes.compraPromedio | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <p>Compra Promedio</p>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="card-icon">
+          <i class="fas fa-cubes"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{ resumenAlbaranes.productosComprados }}</h3>
+          <p>Productos Comprados</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Albaranes -->
+    <div class="tabla-container">
+      <div class="tabla-header">
+        <h3>Detalle de Albaranes</h3>
+        <button class="btn btn-secondary" (click)="exportarReporte()">
+          <i class="fas fa-download"></i>
+          Exportar CSV
+        </button>
+      </div>
+
+      <div class="tabla-responsive">
+        <table class="tabla-albaranes">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Número Albarán</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Productos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let albaran of reporteAlbaranes">
+              <td>{{ albaran.fecha | date:'dd/MM/yyyy' }}</td>
+              <td class="proveedor">{{ albaran.proveedor }}</td>
+              <td class="numero-albaran">{{ albaran.numeroAlbaran }}</td>
+              <td class="precio">{{ albaran.total | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="estado-badge" [class]="albaran.estado.toLowerCase()">
+                  {{ albaran.estado }}
+                </span>
+              </td>
+              <td>
+                <div class="productos-lista">
+                  <span *ngFor="let producto of albaran.productos; let last = last"
+                        class="producto-item">
+                    {{ producto.nombre }} ({{ producto.cantidad }}){{ !last ? ', ' : '' }}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="reporteAlbaranes.length === 0" class="no-datos">
+          <i class="fas fa-inbox"></i>
+          <p>No hay albaranes en el período seleccionado</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="cargando" class="loading-overlay">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Generando reporte...</p>
+    </div>
+  </div>
+</div>

@@ -70,18 +70,24 @@ const routes: Routes = [
             (m) => m.RecetasPageModule
           ),
       },
-      // {
-      //   path: 'ventas',
-      //   canActivate: [roleGuard],
-      //   data: { permissions: ['ventas'] },
-      //   redirectTo: 'dashboard', // Temporal hasta crear el módulo
-      // },
-      // {
-      //   path: 'reportes',
-      //   canActivate: [roleGuard],
-      //   data: { permissions: ['reportes'] },
-      //   redirectTo: 'dashboard', // Temporal hasta crear el módulo
-      // },
+      {
+        path: 'ventas',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['ventas'] },
+        loadChildren: () =>
+          import('./pages/ventas/ventas.module').then(
+            (m) => m.VentasPageModule
+          ),
+      },
+      {
+        path: 'reportes',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['reportes'] },
+        loadChildren: () =>
+          import('./pages/reportes/reportes.module').then(
+            (m) => m.ReportesPageModule
+          ),
+      },
       {
         path: 'albaranes',
         canActivate: [ConfigGuard, roleGuard],

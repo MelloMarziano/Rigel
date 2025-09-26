@@ -36,6 +36,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   configuracionExistente: ConfiguracionEmpresa | null = null;
   customizationExistente: PersonalizacionSistema | null = null;
   esPrimeraConfiguracion = false;
+  modoEdicion = false;
 
   infoSistema: InformacionSistema = {
     nombre: 'Rigel',
@@ -120,6 +121,7 @@ export class SettingsPage implements OnInit, OnDestroy {
           if (this.configuracionExistente) {
             this.configuracionForm.patchValue(this.configuracionExistente);
             this.esPrimeraConfiguracion = false;
+            this.configuracionForm.disable(); // Deshabilitar campos cuando ya existe configuración
           }
         } else {
           this.esPrimeraConfiguracion = true;
@@ -141,6 +143,20 @@ export class SettingsPage implements OnInit, OnDestroy {
       return;
     }
     this.pestanaActiva = pestana;
+  }
+
+  activarEdicion(): void {
+    this.modoEdicion = true;
+    this.configuracionForm.enable();
+  }
+
+  cancelarEdicion(): void {
+    this.modoEdicion = false;
+    this.configuracionForm.disable();
+    // Restaurar valores originales
+    if (this.configuracionExistente) {
+      this.configuracionForm.patchValue(this.configuracionExistente);
+    }
   }
 
   private mostrarMensajePrimeraConfiguracion(): void {
@@ -201,6 +217,9 @@ export class SettingsPage implements OnInit, OnDestroy {
           configRef,
           this.cleanObjectForFirebase(configuracionData)
         );
+
+        this.modoEdicion = false;
+        this.configuracionForm.disable();
 
         Swal.fire({
           title: '¡Configuración Actualizada!',
