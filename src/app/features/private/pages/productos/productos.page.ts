@@ -22,7 +22,10 @@ import Swal from 'sweetalert2';
 import { Subscription, combineLatest, Observable, of } from 'rxjs';
 import { startWith, debounceTime, switchMap, map } from 'rxjs/operators';
 import { Producto } from '../../../../core/models/producto.model';
-import { Categoria } from '../../../../core/models/categoria.model';
+import {
+  Categoria,
+  FamiliaCategoria,
+} from '../../../../core/models/categoria.model';
 import { Proveedor } from '../../../../core/models/proveedor.model';
 
 declare var bootstrap: any;
@@ -38,6 +41,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   categorias: Categoria[] = [];
   proveedores: Proveedor[] = [];
   unidadesDisponibles: string[] = [];
+  familiasDisponibles: FamiliaCategoria[] = [];
 
   totalProveedores = 0;
   totalStockValue = 0;
@@ -56,15 +60,19 @@ export class ProductosPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.productoForm = this.fb.group({
       id: [null],
-      nombre: ['', {
-        validators: [Validators.required],
-        asyncValidators: [this.productNameValidator()],
-        updateOn: 'blur'
-      }],
+      nombre: [
+        '',
+        {
+          validators: [Validators.required],
+          asyncValidators: [this.productNameValidator()],
+          updateOn: 'blur',
+        },
+      ],
       descripcion: ['', Validators.required],
       costo: [0, [Validators.required, Validators.min(0)]],
       IVA: [0, [Validators.required, Validators.min(0)]],
       categoriaId: ['', Validators.required],
+      familiaId: ['', Validators.required],
       proveedorId: [null],
       esCombinado: [false],
       stock: [0, Validators.min(0)],
@@ -82,6 +90,7 @@ export class ProductosPage implements OnInit, OnDestroy {
       this.modal = new bootstrap.Modal(modalEl);
     }
 
+    // Listener para cambios en la categoría
     this.subscriptions.add(
       this.productoForm
         .get('categoriaId')
@@ -123,7 +132,7 @@ export class ProductosPage implements OnInit, OnDestroy {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
       return of(control.value).pipe(
         debounceTime(500),
-        switchMap(value => {
+        switchMap((value) => {
           if (!value) {
             return of(null);
           }
@@ -131,7 +140,7 @@ export class ProductosPage implements OnInit, OnDestroy {
           const currentId = this.productoForm.get('id')?.value;
 
           const isDuplicate = this.productos.some(
-            p => p.nombre.toLowerCase() === name && p.id !== currentId
+            (p) => p.nombre.toLowerCase() === name && p.id !== currentId
           );
 
           if (isDuplicate) {
@@ -212,6 +221,8 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   onCategoriaChange(categoriaId: string): void {
     const categoria = this.categorias.find((c) => c.id === categoriaId);
+
+    // Actualizar unidades disponibles
     this.unidadesDisponibles = categoria?.unidadesDisponibles || [];
     if (this.unidadesDisponibles.length > 0) {
       this.productoForm
@@ -220,6 +231,12 @@ export class ProductosPage implements OnInit, OnDestroy {
     } else {
       this.productoForm.get('unidadMedida')?.setValue('');
     }
+
+    // Actualizar familias disponibles
+    this.familiasDisponibles = categoria?.familias || [];
+
+    // Resetear la familia seleccionada
+    this.productoForm.get('familiaId')?.setValue('');
   }
 
   onEsCombinadoChange(esCombinado: boolean): void {
@@ -311,8 +328,8 @@ export class ProductosPage implements OnInit, OnDestroy {
       nombre: '',
       descripcion: '',
       costo: 0,
-      precioVenta: 0,
       categoriaId: '',
+      familiaId: '',
       proveedorId: null,
       esCombinado: false,
       stock: 0,
@@ -320,11 +337,21 @@ export class ProductosPage implements OnInit, OnDestroy {
       cantidad: 0,
       unidadMedida: '',
     });
+    this.familiasDisponibles = [];
+    this.unidadesDisponibles = [];
   }
 
   getCategoryName(categoryId: string): string {
     const categoria = this.categorias.find((c) => c.id === categoryId);
     return categoria ? categoria.nombre : '';
+  }
+
+  getFamiliaName(categoriaId: string, familiaId: string): string {
+    const categoria = this.categorias.find((c) => c.id === categoriaId);
+    if (!categoria || !categoria.familias) return '';
+
+    const familia = categoria.familias.find((f) => f.id === familiaId);
+    return familia ? familia.nombre : '';
   }
 
   getCategoryBadgeClass(categoryId: string): string {

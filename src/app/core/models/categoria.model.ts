@@ -1,3 +1,10 @@
+export interface FamiliaCategoria {
+  id?: string;
+  nombre: string;
+  descripcion?: string;
+  productos: number;
+}
+
 export interface Categoria {
   id?: string;
   nombre: string;
@@ -6,6 +13,7 @@ export interface Categoria {
   colorFondo: string;
   productos: number;
   unidadesDisponibles: string[];
+  familias: FamiliaCategoria[];
 }
 
 export interface Stats {

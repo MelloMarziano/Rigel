@@ -21,6 +21,7 @@ import {
   Star,
   ShieldUser,
   PackageSearch,
+  ReceiptEuro,
 } from 'lucide-angular';
 
 @NgModule({
@@ -42,6 +43,7 @@ import {
       Star,
       ShieldUser,
       PackageSearch,
+      ReceiptEuro,
     }),
   ],
   declarations: [

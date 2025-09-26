@@ -85,6 +85,13 @@ export class SidebarComponent implements OnInit {
       permission: 'albaranes',
     },
     {
+      name: 'Facturas',
+      icon: 'receipt-euro',
+      iconColor: '#ffffff',
+      route: '/facturas',
+      permission: 'facturas',
+    },
+    {
       name: 'Usuarios',
       icon: 'ShieldUser',
       iconColor: '#38bdf8',

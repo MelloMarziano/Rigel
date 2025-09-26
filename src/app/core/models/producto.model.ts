@@ -5,6 +5,7 @@ export interface Producto {
   costo: number;
   IVA: number;
   categoriaId: string;
+  familiaId?: string; // ID de la familia dentro de la categoría
   proveedorId?: string; // Optional
   stock?: number;
   stockMinimo?: number;

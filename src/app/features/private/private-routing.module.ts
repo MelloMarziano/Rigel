@@ -89,6 +89,15 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'facturas',
+        canActivate: [ConfigGuard, roleGuard],
+        data: { permissions: ['facturas'] },
+        loadChildren: () =>
+          import('./pages/facturas/facturas.module').then(
+            (m) => m.FacturasPageModule
+          ),
+      },
+      {
         path: 'albaranes',
         canActivate: [ConfigGuard, roleGuard],
         data: { permissions: ['albaranes'] },
@@ -97,6 +106,7 @@ const routes: Routes = [
             (m) => m.AlbaranesPageModule
           ),
       },
+
       {
         path: 'inventario',
         canActivate: [ConfigGuard, roleGuard],

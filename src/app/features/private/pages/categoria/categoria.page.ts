@@ -17,7 +17,12 @@ declare var $: any;
 
 declare var bootstrap: any;
 
-import { Categoria, Stats } from '../../../../core/models/categoria.model';
+import {
+  Categoria,
+  Stats,
+  FamiliaCategoria,
+} from '../../../../core/models/categoria.model';
+import { Producto } from '../../../../core/models/producto.model';
 
 @Component({
   selector: 'app-categoria-page',
@@ -33,13 +38,18 @@ export class CategoriaPage implements OnInit, OnDestroy {
   };
 
   categorias: Categoria[] = [];
+  productos: Producto[] = [];
   private categoriasSubscription?: Subscription;
+  private productosSubscription?: Subscription;
 
   // Form
   categoriaForm: FormGroup;
   mostrarPaleta = false;
   nuevaUnidad = '';
   unidadesSeleccionadas: string[] = [];
+  familias: FamiliaCategoria[] = [];
+  nuevaFamilia = '';
+  editandoFamiliaIndex = -1;
 
   // Paleta de colores
   coloresPaleta = [
@@ -75,11 +85,15 @@ export class CategoriaPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarCategorias();
+    this.cargarProductos();
   }
 
   ngOnDestroy(): void {
     if (this.categoriasSubscription) {
       this.categoriasSubscription.unsubscribe();
+    }
+    if (this.productosSubscription) {
+      this.productosSubscription.unsubscribe();
     }
   }
 
@@ -89,21 +103,54 @@ export class CategoriaPage implements OnInit, OnDestroy {
       idField: 'id',
     }).subscribe((data: any) => {
       this.categorias = data;
+      this.actualizarContadoresProductos();
       this.actualizarStats();
+    });
+  }
+
+  private cargarProductos(): void {
+    const productosRef = collection(this.firestore, 'productos');
+    this.productosSubscription = collectionData(productosRef, {
+      idField: 'id',
+    }).subscribe((data: any) => {
+      this.productos = data;
+      this.actualizarContadoresProductos();
+      this.actualizarStats();
+    });
+  }
+
+  private actualizarContadoresProductos(): void {
+    // Actualizar contadores de productos por categoría y familia
+    this.categorias.forEach((categoria) => {
+      if (categoria.id) {
+        // Contar productos por categoría
+        const productosCategoria = this.productos.filter(
+          (p) => p.categoriaId === categoria.id
+        );
+        categoria.productos = productosCategoria.length;
+
+        // Actualizar contadores de familias
+        if (categoria.familias) {
+          categoria.familias.forEach((familia) => {
+            const productosFamilia = productosCategoria.filter(
+              (p) => p.familiaId === familia.id
+            );
+            familia.productos = productosFamilia.length;
+          });
+        }
+      }
     });
   }
 
   private actualizarStats(): void {
     this.stats.totalCategorias = this.categorias.length;
-    this.stats.totalProductos = this.categorias.reduce(
-      (total, cat) => total + cat.productos,
-      0
-    );
+    this.stats.totalProductos = this.productos.length;
     this.stats.unidadesMedida = [
       ...new Set(this.categorias.flatMap((cat) => cat.unidadesDisponibles)),
     ].length;
-    // Nota: productosCombo requeriría una lógica específica basada en tus necesidades
-    this.stats.productosCombo = 0; // Actualizar según tu lógica de negocio
+    this.stats.productosCombo = this.productos.filter(
+      (p) => p.esCombinado
+    ).length;
   }
 
   // Métodos para la paleta de colores
@@ -201,6 +248,9 @@ export class CategoriaPage implements OnInit, OnDestroy {
     // Cargar las unidades seleccionadas
     this.unidadesSeleccionadas = [...(categoria.unidadesDisponibles || [])];
 
+    // Cargar las familias
+    this.familias = [...(categoria.familias || [])];
+
     // Abrir el modal
     const modalEl = document.getElementById('modalCategoria');
     if (modalEl) {
@@ -235,6 +285,15 @@ export class CategoriaPage implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.familias.length === 0) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Debe agregar al menos una familia de productos',
+      });
+      return;
+    }
+
     try {
       const categoriaData = {
         nombre: this.categoriaForm.get('nombre')?.value,
@@ -242,6 +301,7 @@ export class CategoriaPage implements OnInit, OnDestroy {
         icono: this.categoriaForm.get('icono')?.value,
         colorFondo: this.categoriaForm.get('colorFondo')?.value,
         unidadesDisponibles: [...this.unidadesSeleccionadas],
+        familias: [...this.familias],
       };
 
       const categoriaId = this.categoriaForm.get('id')?.value;
@@ -293,6 +353,127 @@ export class CategoriaPage implements OnInit, OnDestroy {
     }
   }
 
+  // Métodos para manejar familias
+  agregarFamilia() {
+    if (this.nuevaFamilia.trim()) {
+      const nuevaFamilia: FamiliaCategoria = {
+        id: this.generarIdFamilia(),
+        nombre: this.nuevaFamilia.trim(),
+        descripcion: '',
+        productos: 0,
+      };
+      this.familias.push(nuevaFamilia);
+      this.nuevaFamilia = '';
+    }
+  }
+
+  private generarIdFamilia(): string {
+    return 'fam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  editarFamilia(index: number) {
+    this.editandoFamiliaIndex = index;
+    this.nuevaFamilia = this.familias[index].nombre;
+  }
+
+  guardarEdicionFamilia() {
+    if (this.editandoFamiliaIndex >= 0 && this.nuevaFamilia.trim()) {
+      this.familias[this.editandoFamiliaIndex].nombre =
+        this.nuevaFamilia.trim();
+      this.editandoFamiliaIndex = -1;
+      this.nuevaFamilia = '';
+    }
+  }
+
+  cancelarEdicionFamilia() {
+    this.editandoFamiliaIndex = -1;
+    this.nuevaFamilia = '';
+  }
+
+  eliminarFamilia(index: number) {
+    this.familias.splice(index, 1);
+  }
+
+  agregarFamiliasPredefinidas(tipo: 'barra' | 'cocina') {
+    const familiasBarra = [
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Whisky',
+        descripcion: 'Whisky y derivados',
+        productos: 0,
+      },
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Vinos',
+        descripcion: 'Vinos tintos, blancos y rosados',
+        productos: 0,
+      },
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Refrescos',
+        descripcion: 'Bebidas sin alcohol',
+        productos: 0,
+      },
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Cervezas',
+        descripcion: 'Cervezas nacionales e importadas',
+        productos: 0,
+      },
+    ];
+
+    const familiasCocina = [
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Entrantes',
+        descripcion: 'Aperitivos y entrantes',
+        productos: 0,
+      },
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Platos Fuertes',
+        descripcion: 'Platos principales',
+        productos: 0,
+      },
+      {
+        id: this.generarIdFamilia(),
+        nombre: 'Postres',
+        descripcion: 'Postres y dulces',
+        productos: 0,
+      },
+    ];
+
+    const familiasAAgregar = tipo === 'barra' ? familiasBarra : familiasCocina;
+
+    familiasAAgregar.forEach((familia) => {
+      if (!this.familias.some((f) => f.nombre === familia.nombre)) {
+        this.familias.push(familia);
+      }
+    });
+  }
+
+  // Métodos para obtener productos
+  getProductosPorCategoria(categoriaId: string): Producto[] {
+    return this.productos.filter((p) => p.categoriaId === categoriaId);
+  }
+
+  getProductosPorFamilia(categoriaId: string, familiaId: string): Producto[] {
+    return this.productos.filter(
+      (p) => p.categoriaId === categoriaId && p.familiaId === familiaId
+    );
+  }
+
+  getProductosSinFamilia(categoriaId: string): Producto[] {
+    return this.productos.filter(
+      (p) =>
+        p.categoriaId === categoriaId && (!p.familiaId || p.familiaId === '')
+    );
+  }
+
+  getNombreProducto(producto: Producto): string {
+    return producto.nombre;
+  }
+
   // Método para resetear el formulario y estado
   resetForm() {
     this.categoriaForm.reset({
@@ -303,5 +484,8 @@ export class CategoriaPage implements OnInit, OnDestroy {
     });
     this.unidadesSeleccionadas = [];
     this.nuevaUnidad = '';
+    this.familias = [];
+    this.nuevaFamilia = '';
+    this.editandoFamiliaIndex = -1;
   }
 }

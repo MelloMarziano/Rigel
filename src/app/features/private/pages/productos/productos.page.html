@@ -53,11 +53,18 @@
             <div class="flex-grow-1">
               <h6 class="mb-1 fw-bold text-dark">{{producto.nombre}}</h6>
               <p class="text-muted small mb-2">{{producto.descripcion}}</p>
-              <span class="badge rounded-pill"
-                    [ngClass]="getCategoryBadgeClass(producto.categoriaId)"
-                    style="font-size: 0.75rem;">
-                {{ getCategoryName(producto.categoriaId) }}
-              </span>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="badge rounded-pill"
+                      [ngClass]="getCategoryBadgeClass(producto.categoriaId)"
+                      style="font-size: 0.75rem;">
+                  {{ getCategoryName(producto.categoriaId) }}
+                </span>
+                <span class="badge rounded-pill bg-secondary"
+                      *ngIf="producto.familiaId"
+                      style="font-size: 0.7rem;">
+                  {{ getFamiliaName(producto.categoriaId, producto.familiaId) }}
+                </span>
+              </div>
             </div>
             <div class="d-flex gap-1">
               <button class="btn btn-outline-primary btn-sm"
@@ -138,6 +145,18 @@
               <option value="" disabled>Selecciona una categoría</option>
               <option *ngFor="let categoria of categorias" [value]="categoria.id">{{categoria.nombre}}</option>
             </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Familia <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="familiaId" [disabled]="familiasDisponibles.length === 0">
+              <option value="" disabled>
+                {{ familiasDisponibles.length === 0 ? 'Primero selecciona una categoría' : 'Selecciona una familia' }}
+              </option>
+              <option *ngFor="let familia of familiasDisponibles" [value]="familia.id">{{familia.nombre}}</option>
+            </select>
+            <small class="text-muted" *ngIf="familiasDisponibles.length === 0">
+              Las familias se cargarán al seleccionar una categoría
+            </small>
           </div>
           <div class="mb-3">
             <label class="form-label">Proveedor <small class="text-muted">(Opcional)</small></label>
