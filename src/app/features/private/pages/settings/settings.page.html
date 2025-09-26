@@ -41,6 +41,15 @@
             </button>
             <button
               class="list-group-item list-group-item-action d-flex align-items-center"
+              [class.active]="pestanaActiva === 'personalizacion'"
+              [class.disabled]="esPrimeraConfiguracion"
+              (click)="cambiarPestana('personalizacion')">
+              <i class="bi bi-palette me-3" [class.text-muted]="esPrimeraConfiguracion" [class.text-warning]="!esPrimeraConfiguracion"></i>
+              <span>Personalización</span>
+              <i class="bi bi-lock-fill ms-auto text-muted" *ngIf="esPrimeraConfiguracion"></i>
+            </button>
+            <button
+              class="list-group-item list-group-item-action d-flex align-items-center"
               [class.active]="pestanaActiva === 'sistema'"
               [class.disabled]="esPrimeraConfiguracion"
               (click)="cambiarPestana('sistema')">
@@ -187,6 +196,329 @@
         </div>
       </div>
 
+      <!-- Pestaña Personalización -->
+      <div *ngIf="pestanaActiva === 'personalizacion'" class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-palette me-2 text-warning"></i>
+            Personalización
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Panel de Configuración -->
+            <div class="col-12 col-lg-6">
+              <form [formGroup]="customizationForm" (ngSubmit)="guardarPersonalizacion()">
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-brush me-2"></i>
+                    Colores del Sistema
+                  </h6>
+
+                  <!-- Color Principal -->
+                  <div class="mb-3">
+                    <label class="form-label">Color Principal</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorPrincipal"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorPrincipal"
+                          (input)="actualizarPreview()"
+                          placeholder="#dc3545">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color usado en botones principales y elementos destacados</small>
+                  </div>
+
+                  <!-- Color Sidebar -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Sidebar (Superior)</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#122d44">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color superior del degradado del menú lateral</small>
+                  </div>
+
+                  <!-- Color Sidebar Secundario -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Sidebar (Inferior)</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorSidebarSecundario"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorSidebarSecundario"
+                          (input)="actualizarPreview()"
+                          placeholder="#6e120b">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color inferior del degradado del menú lateral</small>
+                  </div>
+
+                  <!-- Color Texto Sidebar -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Texto del Sidebar</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorTextoSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorTextoSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#ffffff">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color del texto en el menú lateral</small>
+                  </div>
+
+                  <!-- Color Hover Sidebar -->
+                  <div class="mb-4">
+                    <label class="form-label">Color Hover del Sidebar</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorHoverSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorHoverSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#34495e">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color al pasar el mouse sobre elementos del menú</small>
+                  </div>
+                </div>
+
+                <!-- Colores Predefinidos -->
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-palette2 me-2"></i>
+                    Temas Predefinidos
+                  </h6>
+                  <div class="row g-2">
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('default')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #dc3545;"></div>
+                          <span class="small">Por Defecto</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('pink')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #e91e63;"></div>
+                          <span class="small">Rosado</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('blue')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #007bff;"></div>
+                          <span class="small">Azul</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('green')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #28a745;"></div>
+                          <span class="small">Verde</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('purple')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #6f42c1;"></div>
+                          <span class="small">Morado</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('orange')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #fd7e14;"></div>
+                          <span class="small">Naranja</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="d-flex justify-content-between">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="resetearColores()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Resetear
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn"
+                    [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                    [style.border-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                    style="color: white;"
+                    [disabled]="guardandoCustomization">
+                    <span *ngIf="guardandoCustomization" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!guardandoCustomization" class="bi bi-check me-2"></i>
+                    {{ guardandoCustomization ? 'Guardando...' : 'Aplicar Cambios' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Panel de Preview -->
+            <div class="col-12 col-lg-6">
+              <div class="sticky-top" style="top: 20px;">
+                <h6 class="mb-3">
+                  <i class="bi bi-eye me-2"></i>
+                  Vista Previa
+                </h6>
+
+                <!-- Preview del Sidebar -->
+                <div class="preview-container">
+                  <div class="preview-sidebar"
+                       [style.background]="'linear-gradient(to bottom, ' + (customizationForm.get('colorSidebar')?.value || '#122d44') + ', ' + (customizationForm.get('colorSidebarSecundario')?.value || '#6e120b') + ')'">
+                    <div class="preview-logo p-3">
+                      <div class="d-flex align-items-center">
+                        <div class="preview-logo-icon me-2"
+                             [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                          <i class="bi bi-star-fill"></i>
+                        </div>
+                        <span class="preview-logo-text"
+                              [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                          Rigel
+                        </span>
+                      </div>
+                    </div>
+                    <div class="preview-menu">
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'"
+                           [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-box me-2"></i>
+                        Productos
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-people me-2"></i>
+                        Proveedores
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Albaranes
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Preview del Contenido -->
+                  <div class="preview-content">
+                    <div class="preview-header p-3 bg-white border-bottom">
+                      <h6 class="mb-0">Dashboard</h6>
+                    </div>
+                    <div class="preview-body p-3">
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="preview-card">
+                            <div class="preview-card-body">
+                              <h6>Total Productos</h6>
+                              <h4 class="text-primary">156</h4>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="preview-card">
+                            <div class="preview-card-body">
+                              <h6>Proveedores</h6>
+                              <h4 class="text-success">23</h4>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <button class="btn btn-sm me-2"
+                                [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                                [style.border-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                                style="color: white;">
+                          Botón Principal
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                          Botón Secundario
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Pestaña Sistema -->
       <div *ngIf="pestanaActiva === 'sistema'" class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 py-3">
@@ -315,23 +647,23 @@
             <div class="col-12 col-lg-4">
               <div class="company-info-card">
                 <h6 class="mb-3">
-                  <i class="bi bi-building text-primary me-2"></i>
+                  <i class="bi bi-building me-2" style="color: var(--color-principal, #dc3545);"></i>
                   Orion System
                 </h6>
 
                 <!-- Equipo Condensado -->
                 <div class="team-compact">
                   <div class="team-member-compact">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-person-fill-gear text-primary me-2"></i>
-                        <div>
-                          <div class="member-name-compact">{{ infoSistema.equipo.ceo.nombre }}</div>
-                          <div class="member-role-compact">CEO & Fundador</div>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-star-fill me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.ceo.nombre }}</div>
+                            <div class="member-role-compact">CEO & Fundador</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.ceo.bandera }}</div>
                         </div>
-                      </div>
-                      <div class="text-end">
-                        <div class="flag-compact">{{ infoSistema.equipo.ceo.bandera }}</div>
                         <a href="tel:{{ infoSistema.equipo.ceo.telefono }}" class="phone-compact">
                           {{ infoSistema.equipo.ceo.telefono }}
                         </a>
@@ -340,16 +672,16 @@
                   </div>
 
                   <div class="team-member-compact">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-code-slash text-info me-2"></i>
-                        <div>
-                          <div class="member-name-compact">{{ infoSistema.equipo.cto.nombre }}</div>
-                          <div class="member-role-compact">CTO & Co-Fundador</div>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-graph-up-arrow me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.cto.nombre }}</div>
+                            <div class="member-role-compact">CTO & Ventas</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.cto.bandera }}</div>
                         </div>
-                      </div>
-                      <div class="text-end">
-                        <div class="flag-compact">{{ infoSistema.equipo.cto.bandera }}</div>
                         <a href="tel:{{ infoSistema.equipo.cto.telefono }}" class="phone-compact">
                           {{ infoSistema.equipo.cto.telefono }}
                         </a>
@@ -358,17 +690,17 @@
                   </div>
 
                   <div class="team-member-compact">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-palette text-purple me-2"></i>
-                        <div>
-                          <div class="member-name-compact">{{ infoSistema.equipo.designer.nombre }}</div>
-                          <div class="member-role-compact">UX/UI Designer</div>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-palette me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.designer.nombre }}</div>
+                            <div class="member-role-compact">UX/UI Designer</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.designer.bandera }}</div>
                         </div>
-                      </div>
-                      <div class="text-end">
-                        <div class="flag-compact">{{ infoSistema.equipo.designer.bandera }}</div>
-                        <small class="text-muted">Diseño</small>
+                        <div class="phone-compact-no-link">Diseño</div>
                       </div>
                     </div>
                   </div>

@@ -79,7 +79,7 @@
             <div class="col-6">
               <div class="text-muted small">Costo</div>
               <div class="fw-bold text-danger" style="font-size: 1.1rem;">
-                {{ producto.costo | currency }}
+                {{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}
               </div>
             </div>
             <div class="col-6">
@@ -109,6 +109,9 @@
           <div class="mb-3">
             <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
             <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Coca-Cola">
+            <div *ngIf="productoForm.get('nombre')?.hasError('productNameExists')" class="text-danger mt-1">
+              Este nombre de producto ya existe.
+            </div>
           </div>
           <div class="mb-3">
             <label class="form-label">Descripción <span class="text-danger">*</span></label>

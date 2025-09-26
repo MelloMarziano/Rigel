@@ -23,6 +23,7 @@ export interface ProductoAlbaran {
   cantidad: number;
   precioUnitario: number;
   total: number;
+  IVA?: number;
   cantidadRecibida?: number;
 }
 

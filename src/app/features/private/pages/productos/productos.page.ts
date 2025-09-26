@@ -4,6 +4,9 @@ import {
   FormGroup,
   Validators,
   FormControl,
+  AsyncValidatorFn,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import {
   Firestore,
@@ -16,8 +19,8 @@ import {
   serverTimestamp,
 } from '@angular/fire/firestore';
 import Swal from 'sweetalert2';
-import { Subscription, combineLatest } from 'rxjs';
-import { startWith, debounceTime } from 'rxjs/operators';
+import { Subscription, combineLatest, Observable, of } from 'rxjs';
+import { startWith, debounceTime, switchMap, map } from 'rxjs/operators';
 import { Producto } from '../../../../core/models/producto.model';
 import { Categoria } from '../../../../core/models/categoria.model';
 import { Proveedor } from '../../../../core/models/proveedor.model';
@@ -42,16 +45,22 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
 
-  productoForm: FormGroup;
+  productoForm!: FormGroup;
   productSearch = new FormControl('');
   categoryFilter = new FormControl('all');
   supplierFilter = new FormControl('all');
   modal: any;
 
-  constructor(private fb: FormBuilder, private firestore: Firestore) {
+  constructor(private fb: FormBuilder, private firestore: Firestore) {}
+
+  ngOnInit(): void {
     this.productoForm = this.fb.group({
       id: [null],
-      nombre: ['', Validators.required],
+      nombre: ['', {
+        validators: [Validators.required],
+        asyncValidators: [this.productNameValidator()],
+        updateOn: 'blur'
+      }],
       descripcion: ['', Validators.required],
       costo: [0, [Validators.required, Validators.min(0)]],
       IVA: [0, [Validators.required, Validators.min(0)]],
@@ -63,9 +72,7 @@ export class ProductosPage implements OnInit, OnDestroy {
       cantidad: [0, [Validators.required, Validators.min(0)]],
       unidadMedida: ['', Validators.required],
     });
-  }
 
-  ngOnInit(): void {
     this.cargarProductos();
     this.cargarCategorias();
     this.cargarProveedores();
@@ -110,6 +117,31 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  productNameValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      return of(control.value).pipe(
+        debounceTime(500),
+        switchMap(value => {
+          if (!value) {
+            return of(null);
+          }
+          const name = value.toLowerCase();
+          const currentId = this.productoForm.get('id')?.value;
+
+          const isDuplicate = this.productos.some(
+            p => p.nombre.toLowerCase() === name && p.id !== currentId
+          );
+
+          if (isDuplicate) {
+            return of({ productNameExists: true });
+          } else {
+            return of(null);
+          }
+        })
+      );
+    };
   }
 
   private cargarProductos(): void {

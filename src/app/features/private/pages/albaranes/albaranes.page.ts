@@ -8,6 +8,8 @@ import {
   updateDoc,
   doc,
   deleteDoc,
+  query,
+  limit,
 } from '@angular/fire/firestore';
 import { Subscription, combineLatest } from 'rxjs';
 import {
@@ -17,6 +19,7 @@ import {
 } from '../../../../core/models/albaran.model';
 import { Producto } from '../../../../core/models/producto.model';
 import { Proveedor } from '../../../../core/models/proveedor.model';
+import { ConfiguracionEmpresa } from '../../../../core/models/configuracion.model';
 import Swal from 'sweetalert2';
 
 declare var $: any;
@@ -32,6 +35,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
   productos: Producto[] = [];
   productosProveedor: Producto[] = [];
   proveedores: Proveedor[] = [];
+  configuracionEmpresa: ConfiguracionEmpresa | null = null;
 
   estadisticas: EstadisticasAlbaranes = {
     totalAlbaranes: 0,
@@ -51,6 +55,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
   subtotalAlbaran = 0;
   ivaAlbaran = 0;
   totalAlbaran = 0;
+  ivaBreakdown: { porcentaje: number; importe: number }[] = [];
 
   private subscriptions = new Subscription();
 
@@ -60,6 +65,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarDatos();
+    this.cargarConfiguracionEmpresa();
   }
 
   ngOnDestroy(): void {
@@ -127,6 +133,18 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     );
   }
 
+  private cargarConfiguracionEmpresa(): void {
+    const configuracionRef = collection(this.firestore, 'configuracion');
+    const q = query(configuracionRef, limit(1));
+    this.subscriptions.add(
+      collectionData(q, { idField: 'id' }).subscribe((data: any[]) => {
+        if (data.length > 0) {
+          this.configuracionEmpresa = data[0];
+        }
+      })
+    );
+  }
+
   private actualizarNombresProveedores(): void {
     this.albaranes.forEach((albaran) => {
       const proveedor = this.proveedores.find(
@@ -146,6 +164,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
           const prod = this.productos.find((p) => p.id === producto.productoId);
           if (prod) {
             producto.productoNombre = prod.nombre;
+            producto.IVA = prod.IVA; // Asegurarse de que el IVA del producto esté disponible
           }
         });
       }
@@ -206,6 +225,28 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     }
   }
 
+  getIvaBreakdown(albaran: Albaran): { porcentaje: number; importe: number }[] {
+    const ivaMap = new Map<number, number>();
+
+    if (albaran.productos) {
+      albaran.productos.forEach((producto) => {
+        const productoOriginal = this.productos.find(
+          (p) => p.id === producto.productoId
+        );
+        const ivaPorcentaje = productoOriginal?.IVA || producto.IVA || 0;
+        const subtotalProducto = producto.cantidad * producto.precioUnitario;
+        const ivaProducto = subtotalProducto * (ivaPorcentaje / 100);
+
+        const currentIva = ivaMap.get(ivaPorcentaje) || 0;
+        ivaMap.set(ivaPorcentaje, currentIva + ivaProducto);
+      });
+    }
+
+    return Array.from(ivaMap.entries())
+      .map(([porcentaje, importe]) => ({ porcentaje, importe }))
+      .sort((a, b) => a.porcentaje - b.porcentaje);
+  }
+
   abrirModalAlbaran(): void {
     this.modoEdicion = false;
     this.albaranEditando = null;
@@ -215,6 +256,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     this.subtotalAlbaran = 0;
     this.ivaAlbaran = 0;
     this.totalAlbaran = 0;
+    this.ivaBreakdown = [];
 
     // Generar número de albarán automático
     const numeroAlbaran = this.generarNumeroAlbaran();
@@ -360,19 +402,31 @@ export class AlbaranesPage implements OnInit, OnDestroy {
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">${
           prod.productoNombre
         }</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${
-          prod.cantidad
-        }</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${prod.cantidad.toFixed(
+          2
+        )}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${prod.precioUnitario.toFixed(
           2
         )}€</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${prod.total.toFixed(
-          2
-        )}€</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${(
+          prod.cantidad * prod.precioUnitario
+        ).toFixed(2)}€</td>
       </tr>
     `
         )
         .join('') || '';
+
+    const companyName =
+      this.configuracionEmpresa?.nombreRestaurante || 'Tu Empresa S.L.';
+    const companyAddress =
+      this.configuracionEmpresa?.direccion || 'Dirección de tu empresa';
+    const companyCityCp = `${this.configuracionEmpresa?.ciudad || 'Ciudad'}, ${
+      this.configuracionEmpresa?.codigoPostal || 'CP'
+    } - ${this.configuracionEmpresa?.provincia || 'Provincia'}`;
+    const companyCif = this.configuracionEmpresa?.cif || 'B12345678';
+    const companyTel = this.configuracionEmpresa?.telefono || '123 456 789';
+    const companyEmail =
+      this.configuracionEmpresa?.email || 'info@tuempresa.com';
 
     const printContent = `
       <!DOCTYPE html>
@@ -589,13 +643,13 @@ export class AlbaranesPage implements OnInit, OnDestroy {
 
         <div class="header">
           <div class="company-info">
-            <div class="company-name">TU EMPRESA S.L.</div>
+            <div class="company-name">${companyName}</div>
             <div class="company-details">
-              Dirección de tu empresa<br>
-              Ciudad, CP - Provincia<br>
-              CIF: B12345678<br>
-              Tel: 123 456 789<br>
-              Email: info@tuempresa.com
+              ${companyAddress}<br>
+              ${companyCityCp}<br>
+              CIF: ${companyCif}<br>
+              Tel: ${companyTel}<br>
+              Email: ${companyEmail}
             </div>
           </div>
           <div class="document-info">
@@ -642,11 +696,11 @@ export class AlbaranesPage implements OnInit, OnDestroy {
           <div class="party">
             <div class="party-title">DESTINATARIO</div>
             <div class="party-details">
-              <strong>TU EMPRESA S.L.</strong><br>
-              Dirección de tu empresa<br>
-              Ciudad, CP - Provincia<br>
-              CIF: B12345678<br>
-              Tel: 123 456 789
+              <strong>${companyName}</strong><br>
+              ${companyAddress}<br>
+              ${companyCityCp}<br>
+              CIF: ${companyCif}<br>
+              Tel: ${companyTel}
             </div>
           </div>
         </div>
@@ -695,12 +749,18 @@ export class AlbaranesPage implements OnInit, OnDestroy {
               <td class="label">Subtotal:</td>
               <td class="value">${albaran.subtotal.toFixed(2)}€</td>
             </tr>
+            ${this.getIvaBreakdown(albaran)
+              .map(
+                (iva) => `
             <tr>
-              <td class="label">IVA (21%):</td>
-              <td class="value">${albaran.iva.toFixed(2)}€</td>
+              <td class="label">IVA ${iva.porcentaje}%:</td>
+              <td class="value">${iva.importe.toFixed(2)}€</td>
             </tr>
+            `
+              )
+              .join('')}
             <tr class="total-row">
-              <td class="label">TOTAL:</td>
+              <td class="value">TOTAL:</td>
               <td class="value">${albaran.total.toFixed(2)}€</td>
             </tr>
           </table>
@@ -842,22 +902,73 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     }
   }
 
-  getProductoTotal(index: number): number {
+  getProductoSubtotal(index: number): number {
     const producto = this.productosFormArray.at(index);
     const cantidad = producto.get('cantidad')?.value || 0;
     const precio = producto.get('precioUnitario')?.value || 0;
     return cantidad * precio;
   }
 
+  getProductoIvaImporte(index: number): number {
+    const producto = this.productosFormArray.at(index);
+    const productoId = producto.get('productoId')?.value;
+    const cantidad = producto.get('cantidad')?.value || 0;
+    const precio = producto.get('precioUnitario')?.value || 0;
+
+    const productoOriginal = this.productos.find((p) => p.id === productoId);
+    const ivaPorcentaje = productoOriginal?.IVA || 0;
+
+    const subtotal = cantidad * precio;
+    return subtotal * (ivaPorcentaje / 100);
+  }
+
+  getProductoTotal(index: number): number {
+    const subtotal = this.getProductoSubtotal(index);
+    const ivaImporte = this.getProductoIvaImporte(index);
+    return subtotal + ivaImporte;
+  }
+
+  getProductoIva(index: number): number {
+    const productoId = this.productosFormArray
+      .at(index)
+      .get('productoId')?.value;
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto?.IVA || 0;
+  }
+
   calcularTotales(): void {
     this.subtotalAlbaran = 0;
+    let ivaTotal = 0;
+    const ivaMap = new Map<number, number>();
 
     for (let i = 0; i < this.productosFormArray.length; i++) {
-      this.subtotalAlbaran += this.getProductoTotal(i);
+      const productoFormGroup = this.productosFormArray.at(i);
+      const productoId = productoFormGroup.get('productoId')?.value;
+      const cantidad = productoFormGroup.get('cantidad')?.value || 0;
+      const precioUnitario =
+        productoFormGroup.get('precioUnitario')?.value || 0;
+
+      const productoOriginal = this.productos.find((p) => p.id === productoId);
+      const ivaPorcentaje = productoOriginal?.IVA || 0;
+
+      const totalProductoSinIva = cantidad * precioUnitario;
+      const ivaProducto = totalProductoSinIva * (ivaPorcentaje / 100);
+
+      this.subtotalAlbaran += totalProductoSinIva;
+      ivaTotal += ivaProducto;
+
+      // Agrupar IVA por porcentaje
+      const currentIva = ivaMap.get(ivaPorcentaje) || 0;
+      ivaMap.set(ivaPorcentaje, currentIva + ivaProducto);
     }
 
-    this.ivaAlbaran = this.subtotalAlbaran * 0.21; // IVA 21%
+    this.ivaAlbaran = ivaTotal;
     this.totalAlbaran = this.subtotalAlbaran + this.ivaAlbaran;
+
+    // Actualizar desglose de IVA
+    this.ivaBreakdown = Array.from(ivaMap.entries())
+      .map(([porcentaje, importe]) => ({ porcentaje, importe }))
+      .sort((a, b) => a.porcentaje - b.porcentaje);
   }
 
   async guardarAlbaran(): Promise<void> {
@@ -876,12 +987,22 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     }
 
     const formValue = this.albaranForm.value;
-    const productos: ProductoAlbaran[] = formValue.productos.map((p: any) => ({
-      productoId: p.productoId,
-      cantidad: p.cantidad,
-      precioUnitario: p.precioUnitario,
-      total: p.cantidad * p.precioUnitario,
-    }));
+    const productos: ProductoAlbaran[] = formValue.productos.map((p: any) => {
+      const productoOriginal = this.productos.find(
+        (prod) => prod.id === p.productoId
+      );
+      const ivaPorcentaje = productoOriginal?.IVA || 0;
+      const totalSinIva = p.cantidad * p.precioUnitario;
+      const ivaAplicado = totalSinIva * (ivaPorcentaje / 100);
+
+      return {
+        productoId: p.productoId,
+        cantidad: p.cantidad,
+        precioUnitario: p.precioUnitario,
+        total: totalSinIva + ivaAplicado, // Guardar el total con IVA incluido
+        IVA: ivaPorcentaje, // Guardar el porcentaje de IVA aplicado
+      };
+    });
 
     const albaranData: Albaran = {
       numero: formValue.numero,
@@ -928,6 +1049,7 @@ export class AlbaranesPage implements OnInit, OnDestroy {
     this.modoEdicion = false;
     this.albaranEditando = null;
     this.productosProveedor = [];
+    this.ivaBreakdown = [];
   }
 
   private cleanObjectForFirebase(obj: any): any {

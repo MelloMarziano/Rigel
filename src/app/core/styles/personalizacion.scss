@@ -1,0 +1,197 @@
+// Variables CSS personalizables
+:root {
+  --color-principal: #dc3545;
+  --color-sidebar: #2c3e50;
+  --color-texto-sidebar: #ffffff;
+  --color-hover-sidebar: #34495e;
+  --color-principal-hover: #c82333;
+  --color-principal-light: #f5c6cb;
+  --color-sidebar-dark: #273746;
+}
+
+// Aplicar colores personalizados al sidebar
+.sidebar-container {
+  background: var(--color-sidebar-gradient) !important;
+  color: var(--color-texto-sidebar) !important;
+
+  .sidebar-header {
+    .logo-icon {
+      color: var(--color-texto-sidebar) !important;
+    }
+
+    .brand-title {
+      color: var(--color-texto-sidebar) !important;
+    }
+
+    .brand-subtitle {
+      color: var(--color-texto-sidebar) !important;
+      opacity: 0.7;
+    }
+  }
+
+  .nav-link {
+    color: var(--color-texto-sidebar) !important;
+
+    &:hover {
+      background-color: var(--color-hover-sidebar) !important;
+      color: var(--color-texto-sidebar) !important;
+    }
+
+    &.active-link {
+      background-color: var(--color-principal) !important;
+      color: var(--color-texto-sidebar) !important;
+    }
+
+    .icon-sidebar {
+      color: var(--color-texto-sidebar) !important;
+    }
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    .user-name {
+      color: var(--color-texto-sidebar) !important;
+    }
+
+    .user-role {
+      color: var(--color-texto-sidebar) !important;
+    }
+  }
+
+  .sidebar-section-title {
+    color: var(--color-texto-sidebar) !important;
+    opacity: 0.6;
+  }
+
+  .text-title {
+    color: var(--color-texto-sidebar) !important;
+  }
+
+  .text-subtitle {
+    color: var(--color-texto-sidebar) !important;
+    opacity: 0.7;
+  }
+}
+
+// Aplicar color principal a botones
+.btn-primary,
+.btn-danger {
+  background-color: var(--color-principal) !important;
+  border-color: var(--color-principal) !important;
+
+  &:hover {
+    background-color: var(--color-principal-hover) !important;
+    border-color: var(--color-principal-hover) !important;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--color-principal), 0.25) !important;
+  }
+}
+
+// Aplicar colores a elementos específicos
+.text-primary {
+  color: var(--color-principal) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-principal) !important;
+}
+
+.border-primary {
+  border-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a badges y alerts
+.badge-primary {
+  background-color: var(--color-principal) !important;
+}
+
+.alert-primary {
+  background-color: var(--color-principal-light) !important;
+  border-color: var(--color-principal) !important;
+  color: var(--color-principal) !important;
+}
+
+// Aplicar colores a links
+a {
+  color: var(--color-principal) !important;
+
+  &:hover {
+    color: var(--color-principal-hover) !important;
+  }
+}
+
+// Aplicar colores a elementos de navegación
+.navbar-brand {
+  color: var(--color-principal) !important;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--color-principal) !important;
+  border-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a formularios
+.form-check-input:checked {
+  background-color: var(--color-principal) !important;
+  border-color: var(--color-principal) !important;
+}
+
+.form-control:focus {
+  border-color: var(--color-principal) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--color-principal), 0.25) !important;
+}
+
+// Aplicar colores a tablas
+.table-primary {
+  background-color: var(--color-principal-light) !important;
+}
+
+// Aplicar colores a progress bars
+.progress-bar {
+  background-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a spinners
+.spinner-border {
+  color: var(--color-principal) !important;
+}
+
+// Aplicar colores a dropdowns
+.dropdown-item.active {
+  background-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a paginación
+.page-link {
+  color: var(--color-principal) !important;
+}
+
+.page-item.active .page-link {
+  background-color: var(--color-principal) !important;
+  border-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a modales
+.modal-header {
+  border-bottom-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a cards
+.card-header {
+  background-color: var(--color-principal-light) !important;
+  border-bottom-color: var(--color-principal) !important;
+}
+
+// Aplicar colores a list groups
+.list-group-item.active {
+  background-color: var(--color-principal) !important;
+  border-color: var(--color-principal) !important;
+}
+
+// Transiciones suaves para cambios de color
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}

@@ -101,7 +101,7 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'settings',
+        path: 'ajustes',
         canActivate: [roleGuard],
         data: { permissions: ['ajustes'] },
         loadChildren: () =>

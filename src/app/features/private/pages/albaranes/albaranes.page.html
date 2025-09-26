@@ -183,19 +183,19 @@
           </div>
 
           <div class="row mb-3">
-            <div class="col-4">
+            <div class="col-3">
               <small class="text-muted">Subtotal</small>
               <div class="fw-bold">
                 {{ albaran.subtotal | currency:'EUR':'symbol':'1.2-2' }}
               </div>
             </div>
-            <div class="col-4">
-              <small class="text-muted">IVA</small>
+            <div class="col-6">
+              <small class="text-muted d-block mb-1">IVA Total:</small>
               <div class="fw-bold">
                 {{ albaran.iva | currency:'EUR':'symbol':'1.2-2' }}
               </div>
             </div>
-            <div class="col-4">
+            <div class="col-3">
               <small class="text-muted">Total</small>
               <div class="fw-bold text-danger">
                 {{ albaran.total | currency:'EUR':'symbol':'1.2-2' }}
@@ -385,9 +385,9 @@
                 </div>
                 <div class="card-body">
                   <div class="row mb-3">
-                    <div class="col-6">
+                    <div class="col-12">
                       <div
-                        class="text-center p-3 bg-warning bg-opacity-10 rounded"
+                        class="text-center p-3 bg-warning bg-opacity-10 rounded mb-3"
                       >
                         <h4 class="mb-1">
                           {{ subtotalAlbaran | currency:'EUR':'symbol':'1.2-2'
@@ -396,14 +396,28 @@
                         <small class="text-muted">Subtotal</small>
                       </div>
                     </div>
-                    <div class="col-6">
-                      <div
-                        class="text-center p-3 bg-info bg-opacity-10 rounded"
-                      >
-                        <h4 class="mb-1">
-                          {{ ivaAlbaran | currency:'EUR':'symbol':'1.2-2' }}
-                        </h4>
-                        <small class="text-muted">IVA (21%)</small>
+                  </div>
+
+                  <!-- Desglose de IVA -->
+                  <div class="mb-3" *ngIf="ivaBreakdown.length > 0">
+                    <div class="p-3 bg-info bg-opacity-10 rounded">
+                      <h6 class="text-center mb-2">Desglose de IVA</h6>
+                      <div class="row" *ngFor="let iva of ivaBreakdown">
+                        <div class="col-6 text-end">
+                          <small class="text-muted">IVA {{ iva.porcentaje }}%:</small>
+                        </div>
+                        <div class="col-6">
+                          <small class="fw-bold">{{ iva.importe | currency:'EUR':'symbol':'1.2-2' }}</small>
+                        </div>
+                      </div>
+                      <hr class="my-2">
+                      <div class="row">
+                        <div class="col-6 text-end">
+                          <strong>Total IVA:</strong>
+                        </div>
+                        <div class="col-6">
+                          <strong>{{ ivaAlbaran | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -467,6 +481,8 @@
                       <th>Producto</th>
                       <th>Cantidad</th>
                       <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                      <th>IVA</th>
                       <th>Total</th>
                       <th width="50"></th>
                     </tr>
@@ -513,6 +529,18 @@
                       </td>
                       <td>
                         <span class="fw-bold"
+                          >{{ getProductoSubtotal(i) |
+                          currency:'EUR':'symbol':'1.2-2' }}</span
+                        >
+                      </td>
+                      <td>
+                        <span class="fw-bold text-info"
+                          >{{ getProductoIvaImporte(i) |
+                          currency:'EUR':'symbol':'1.2-2' }}</span
+                        >
+                      </td>
+                      <td>
+                        <span class="fw-bold text-success"
                           >{{ getProductoTotal(i) |
                           currency:'EUR':'symbol':'1.2-2' }}</span
                         >

@@ -39,3 +39,14 @@ export interface InformacionSistema {
     };
   };
 }
+
+export interface PersonalizacionSistema {
+  id?: string;
+  colorPrincipal: string;
+  colorSidebar: string;
+  colorSidebarSecundario: string;
+  colorTextoSidebar: string;
+  colorHoverSidebar: string;
+  fechaCreacion?: Date;
+  fechaActualizacion?: Date;
+}
