@@ -112,7 +112,7 @@
               <i class="bi bi-x-lg me-1"></i> Cancelar
             </button>
             <button
-              class="btn btn-warning btn-sm"
+              class="btn btn-danger btn-sm"
               (click)="guardarInventario()"
               [disabled]="isSaving"
             >
@@ -208,8 +208,8 @@
         <label class="form-label small text-muted">Filtrar por Familia</label>
         <select class="form-select" [(ngModel)]="familiaSeleccionada" (ngModelChange)="filtrarPorFamilia($event)">
           <option value="">Todas las familias ({{ inventarioActual.productos.length }})</option>
-          <option 
-            *ngFor="let familia of familiasDisponibles" 
+          <option
+            *ngFor="let familia of familiasDisponibles"
             [value]="familia.id">
             {{ familia.nombre }} ({{ getProductosPorFamilia(familia.id || '').length }})
           </option>

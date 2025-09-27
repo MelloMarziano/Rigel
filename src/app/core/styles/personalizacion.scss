@@ -79,14 +79,23 @@
 .btn-danger {
   background-color: var(--color-principal) !important;
   border-color: var(--color-principal) !important;
+  color: var(--color-texto-sidebar) !important;
 
   &:hover {
     background-color: var(--color-principal-hover) !important;
     border-color: var(--color-principal-hover) !important;
+    color: var(--color-texto-sidebar) !important;
   }
 
   &:focus {
     box-shadow: 0 0 0 0.2rem rgba(var(--color-principal), 0.25) !important;
+    color: var(--color-texto-sidebar) !important;
+  }
+  
+  &:active {
+    background-color: var(--color-principal-hover) !important;
+    border-color: var(--color-principal-hover) !important;
+    color: var(--color-texto-sidebar) !important;
   }
 }
 
@@ -183,6 +192,29 @@ a {
 .card-header {
   background-color: var(--color-principal) !important;
   border-bottom-color: var(--color-principal) !important;
+  color: var(--color-texto-sidebar) !important;
+  
+  // Asegurar que todos los elementos de texto dentro del header tengan el color correcto
+  h1, h2, h3, h4, h5, h6, p, span, .badge, .btn {
+    color: var(--color-texto-sidebar) !important;
+  }
+  
+  // Botones dentro del card-header
+  .btn {
+    border-color: var(--color-texto-sidebar) !important;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      border-color: var(--color-texto-sidebar) !important;
+    }
+  }
+  
+  // Badges dentro del card-header
+  .badge {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: var(--color-texto-sidebar) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
 }
 
 // Aplicar colores a list groups
