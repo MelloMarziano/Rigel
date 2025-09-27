@@ -202,18 +202,71 @@
       </div>
     </div>
 
-    <!-- Dropdown para filtrar por familias -->
+    <!-- Cards para filtrar por familias -->
     <div class="row mt-3" *ngIf="familiasDisponibles.length > 0">
-      <div class="col-12 col-md-4">
-        <label class="form-label small text-muted">Filtrar por Familia</label>
-        <select class="form-select" [(ngModel)]="familiaSeleccionada" (ngModelChange)="filtrarPorFamilia($event)">
-          <option value="">Todas las familias ({{ inventarioActual.productos.length }})</option>
-          <option
-            *ngFor="let familia of familiasDisponibles"
-            [value]="familia.id">
-            {{ familia.nombre }} ({{ getProductosPorFamilia(familia.id || '').length }})
-          </option>
-        </select>
+      <div class="col-12">
+        <h6 class="text-muted mb-3">
+          <i class="bi bi-funnel me-2"></i>Filtrar por Familia
+        </h6>
+        <div class="row g-3">
+          <!-- Card para "Todas las familias" -->
+          <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div
+              class="card familia-filter-card cursor-pointer h-100"
+              [class.selected]="familiaSeleccionada === ''"
+              (click)="filtrarPorFamilia('')">
+              <div class="card-body text-center p-3">
+                <div class="d-flex flex-column align-items-center">
+                  <div class="rounded-circle bg-primary bg-opacity-10 p-3 mb-2">
+                    <i class="bi bi-grid-3x3-gap text-primary fs-4"></i>
+                  </div>
+                  <h6 class="card-title mb-1 fw-bold">Todas las familias</h6>
+                  <div class="d-flex flex-column gap-1">
+                    <span class="badge bg-primary rounded-pill">
+                      {{ inventarioActual.productos.length }} productos
+                    </span>
+                    <small class="text-muted">
+                      Sin contar: {{ getTotalProductosSinContar() }}
+                    </small>
+                    <small class="text-success fw-bold">
+                      COSTO TOTAL: {{ formatearMoneda(getCostoTotalInventario()) }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards para cada familia (solo las que tienen productos) -->
+          <div
+            class="col-12 col-sm-6 col-md-4 col-lg-3"
+            *ngFor="let familia of getFamiliasConProductos(); trackBy: trackByFamilia">
+            <div
+              class="card familia-filter-card cursor-pointer h-100"
+              [class.selected]="familiaSeleccionada === familia.id"
+              (click)="filtrarPorFamilia(familia.id || '')">
+              <div class="card-body text-center p-3">
+                <div class="d-flex flex-column align-items-center">
+                  <div class="rounded-circle bg-info bg-opacity-10 p-3 mb-2">
+                    <i class="bi bi-collection text-info fs-4"></i>
+                  </div>
+                  <h6 class="card-title mb-1 fw-bold">{{ familia.nombre }}</h6>
+                  <div class="d-flex flex-column gap-1">
+                    <span class="badge bg-info rounded-pill">
+                      {{ getProductosPorFamilia(familia.id || '').length }} productos
+                    </span>
+                    <small class="text-muted">
+                      Sin contar: {{ getProductosSinContarPorFamilia(familia.id || '') }}
+                    </small>
+                    <small class="text-success">
+                      COSTO FAMILIA: {{ formatearMoneda(getCostoTotalPorFamilia(familia.id || '')) }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

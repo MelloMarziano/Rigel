@@ -97,6 +97,185 @@
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
+// Estilos para las cards de filtro de familias
+.family-filter-cards {
+  margin-bottom: 1.5rem;
+
+  .filter-title {
+    color: var(--ion-color-dark);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+  }
+
+  .family-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    &:hover {
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    &.active {
+      border-color: var(--ion-color-primary);
+      background: linear-gradient(135deg, var(--ion-color-primary-tint) 0%, white 100%);
+      box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.2);
+      
+      .family-icon {
+        color: var(--ion-color-primary);
+      }
+      
+      .family-name {
+        color: var(--ion-color-primary);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    
+    .family-icon {
+      font-size: 1.5rem;
+      color: var(--ion-color-medium);
+      transition: color 0.3s ease;
+    }
+    
+    .family-name {
+      font-weight: 500;
+      color: var(--ion-color-dark);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+  }
+
+  .card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      
+      .stat-label {
+        color: var(--ion-color-medium-shade);
+        font-weight: 500;
+      }
+      
+      .stat-value {
+        font-weight: 600;
+        
+        &.uncounted {
+          color: var(--ion-color-warning);
+          background: var(--ion-color-warning-tint);
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+        }
+        
+        &.cost {
+          color: var(--ion-color-success);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments para las cards de familia
+@media (max-width: 768px) {
+  .familia-filter-card {
+    .card-body {
+      padding: 1rem !important;
+    }
+
+    .rounded-circle {
+      padding: 0.75rem !important;
+    }
+
+    i {
+      font-size: 1.2rem !important;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+    }
+
+    // Ajustar el texto de costo en móviles
+    small.text-success {
+      font-size: 0.7rem !important;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .familia-filter-card {
+    .card-body {
+      padding: 0.75rem !important;
+    }
+
+    .rounded-circle {
+      padding: 0.5rem !important;
+    }
+
+    i {
+      font-size: 1rem !important;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.6rem;
+    }
+
+    // Texto de costo más pequeño en pantallas muy pequeñas
+    small.text-success {
+      font-size: 0.65rem !important;
+      line-height: 1.1;
+      word-break: break-word;
+    }
+
+    // Reducir espaciado entre elementos
+    .d-flex.flex-column.gap-1 {
+      gap: 0.25rem !important;
+    }
+  }
+}
+
 // Mejoras visuales para inputs de stock
 input[type="number"] {
   text-align: center;
@@ -124,7 +303,7 @@ input[type="number"] {
   cursor: pointer;
 }
 
-.area-card, .categoria-card {
+.area-card, .categoria-card, .familia-filter-card {
   transition: all 0.3s ease;
   border: 2px solid transparent;
 
@@ -136,9 +315,19 @@ input[type="number"] {
   &.selected {
     border-color: var(--bs-primary);
     background-color: rgba(13, 110, 253, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.2);
 
     .card-body {
       background-color: transparent;
+    }
+
+    .rounded-circle {
+      background-color: rgba(13, 110, 253, 0.15) !important;
+    }
+
+    i {
+      color: var(--bs-primary) !important;
     }
   }
 }

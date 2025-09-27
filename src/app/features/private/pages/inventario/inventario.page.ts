@@ -917,4 +917,66 @@ export class InventarioPage implements OnInit, OnDestroy {
     );
     return familia?.nombre || '';
   }
+
+  trackByFamilia(_: number, familia: FamiliaCategoria): string {
+    return familia.id || '';
+  }
+
+  // Métodos para estadísticas de familias
+  getProductosSinContarPorFamilia(familiaId: string): number {
+    if (!this.inventarioActual) return 0;
+
+    const productosFamilia = this.getProductosPorFamilia(familiaId);
+    return productosFamilia.filter(producto => 
+      producto.stockContado === null || producto.stockContado === undefined
+    ).length;
+  }
+
+  getCostoTotalPorFamilia(familiaId: string): number {
+    if (!this.inventarioActual) return 0;
+
+    const productosFamilia = this.getProductosPorFamilia(familiaId);
+    return productosFamilia.reduce((total, producto) => {
+      const stockContado = producto.stockContado ?? 0;
+      return total + (stockContado * producto.costoUnitario);
+    }, 0);
+  }
+
+  // Formatear moneda de forma más legible
+  formatearMoneda(valor: number): string {
+    return valor.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+
+  // Métodos para "Todas las familias"
+  getTotalProductosSinContar(): number {
+    if (!this.inventarioActual) return 0;
+
+    return this.inventarioActual.productos.filter(producto => 
+      producto.stockContado === null || producto.stockContado === undefined
+    ).length;
+  }
+
+  getCostoTotalInventario(): number {
+    if (!this.inventarioActual) return 0;
+
+    return this.inventarioActual.productos.reduce((total, producto) => {
+      const stockContado = producto.stockContado ?? 0;
+      return total + (stockContado * producto.costoUnitario);
+    }, 0);
+  }
+
+  // Filtrar familias que tienen productos
+  getFamiliasConProductos(): FamiliaCategoria[] {
+    if (!this.familiasDisponibles) return [];
+    
+    return this.familiasDisponibles.filter(familia => {
+      const cantidadProductos = this.getProductosPorFamilia(familia.id || '').length;
+      return cantidadProductos > 0;
+    });
+  }
 }
