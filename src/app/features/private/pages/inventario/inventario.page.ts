@@ -331,7 +331,7 @@ export class InventarioPage implements OnInit, OnDestroy {
             categoria: categoria?.nombre || 'Sin categoría',
             proveedor: proveedor?.nombre || 'Sin proveedor',
             stockActual: producto.stock || 0,
-            stockContado: producto.stock || 0,
+            stockContado: null, // Inicializar como null para usar placeholder
             costoUnitario: producto.costo,
             valorTotal: (producto.stock || 0) * producto.costo,
             unidadMedida: producto.unidadMedida,
@@ -347,7 +347,7 @@ export class InventarioPage implements OnInit, OnDestroy {
       );
       const totalProductos = productosInventario.length;
       const totalUnidades = productosInventario.reduce(
-        (sum, p) => sum + p.stockContado,
+        (sum, p) => sum + (p.stockContado ?? 0),
         0
       );
       const costoPromedio =
@@ -391,9 +391,17 @@ export class InventarioPage implements OnInit, OnDestroy {
         estado: 'borrador',
       };
 
+      // Obtener nombre de la categoría si está filtrada
+      const categoriaSeleccionada = categoriaId
+        ? this.categorias.find((c) => c.id === categoriaId)
+        : null;
+      const nombreCategoria = categoriaSeleccionada
+        ? categoriaSeleccionada.nombre
+        : 'General';
+
       Swal.fire(
         '¡Creado!',
-        'Inventario creado como borrador. Puedes editarlo y luego finalizarlo.',
+        `Inventario creado con ${totalProductos} productos. Puedes editarlo y luego finalizarlo.`,
         'success'
       );
     } catch (error) {
@@ -410,7 +418,7 @@ export class InventarioPage implements OnInit, OnDestroy {
       this.inventarioActual.productos.reduce((sum, p) => sum + p.valorTotal, 0);
     this.inventarioActual.totalUnidades =
       this.inventarioActual.productos.reduce(
-        (sum, p) => sum + p.stockContado,
+        (sum, p) => sum + (p.stockContado ?? 0),
         0
       );
     this.inventarioActual.costoPromedio =
@@ -547,8 +555,10 @@ export class InventarioPage implements OnInit, OnDestroy {
   calcularValorTotal(producto: InventarioProducto): void {
     if (this.inventarioActual?.estado === 'finalizado') return;
 
-    producto.diferencia = producto.stockContado - producto.stockActual;
-    producto.valorTotal = producto.stockContado * producto.costoUnitario;
+    // Si stockContado es null o undefined, usar 0 para los cálculos
+    const stockContado = producto.stockContado ?? 0;
+    producto.diferencia = stockContado - producto.stockActual;
+    producto.valorTotal = stockContado * producto.costoUnitario;
     this.recalcularTotales();
 
     // Auto-guardar cambios en Firebase si es un borrador
@@ -755,7 +765,7 @@ export class InventarioPage implements OnInit, OnDestroy {
             categoria: categoria?.nombre || 'Sin categoría',
             proveedor: proveedor?.nombre || 'Sin proveedor',
             stockActual: producto.stock || 0,
-            stockContado: producto.stock || 0,
+            stockContado: null, // Inicializar como null para usar placeholder
             costoUnitario: producto.costo || 0,
             valorTotal: (producto.stock || 0) * (producto.costo || 0),
             unidadMedida: producto.unidadMedida || '',
@@ -778,7 +788,7 @@ export class InventarioPage implements OnInit, OnDestroy {
       );
       const totalProductos = productosInventario.length;
       const totalUnidades = productosInventario.reduce(
-        (sum, p) => sum + p.stockContado,
+        (sum, p) => sum + (p.stockContado ?? 0),
         0
       );
       const costoPromedio =

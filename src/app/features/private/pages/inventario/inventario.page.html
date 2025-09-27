@@ -202,30 +202,18 @@
       </div>
     </div>
 
-    <!-- Pills para filtrar por familias -->
+    <!-- Dropdown para filtrar por familias -->
     <div class="row mt-3" *ngIf="familiasDisponibles.length > 0">
-      <div class="col-12">
-        <div class="familia-pills-container">
-          <div class="familia-pills-scroll" #pillsContainer>
-            <div class="familia-pill"
-                 [class.active]="familiaSeleccionada === ''"
-                 (click)="filtrarPorFamilia('')">
-              <span class="pill-text">Todas</span>
-              <span class="pill-count">{{ inventarioActual.productos.length }}</span>
-            </div>
-            <div class="familia-pill"
-                 *ngFor="let familia of familiasDisponibles"
-                 [class.active]="familiaSeleccionada === familia.id"
-                 (click)="filtrarPorFamilia(familia.id || '')">
-              <span class="pill-text">{{ familia.nombre }}</span>
-              <span class="pill-count">{{ getProductosPorFamilia(familia.id || '').length }}</span>
-            </div>
-          </div>
-          <!-- Indicador de scroll -->
-          <div class="scroll-indicator d-md-none" *ngIf="familiasDisponibles.length > 2">
-            <i class="bi bi-chevron-right"></i>
-          </div>
-        </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label small text-muted">Filtrar por Familia</label>
+        <select class="form-select" [(ngModel)]="familiaSeleccionada" (ngModelChange)="filtrarPorFamilia($event)">
+          <option value="">Todas las familias ({{ inventarioActual.productos.length }})</option>
+          <option 
+            *ngFor="let familia of familiasDisponibles" 
+            [value]="familia.id">
+            {{ familia.nombre }} ({{ getProductosPorFamilia(familia.id || '').length }})
+          </option>
+        </select>
       </div>
     </div>
 
@@ -333,6 +321,7 @@
                         [disabled]="inventarioActual.estado === 'finalizado'"
                         step="0.1"
                         min="0"
+                        placeholder="Ingrese cantidad contada"
                         style="width: 100px"
                       />
                       <small
@@ -345,7 +334,7 @@
                     </td>
                     <td>
                       <strong
-                        [class]="producto.diferencia !== 0 ? 'text-warning' : 'text-success'"
+                        [class]="producto.diferencia !== 0 ? 'text-danger' : 'text-success'"
                       >
                         {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
                         }}

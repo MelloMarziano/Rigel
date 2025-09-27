@@ -22,7 +22,7 @@ export interface InventarioProducto {
   categoria: string;
   proveedor: string;
   stockActual: number;
-  stockContado: number;
+  stockContado: number | null;
   costoUnitario: number;
   valorTotal: number;
   unidadMedida: string;
