@@ -47,6 +47,7 @@ export interface PersonalizacionSistema {
   colorSidebarSecundario: string;
   colorTextoSidebar: string;
   colorHoverSidebar: string;
+  modoOscuro?: boolean;
   fechaCreacion?: Date;
   fechaActualizacion?: Date;
 }

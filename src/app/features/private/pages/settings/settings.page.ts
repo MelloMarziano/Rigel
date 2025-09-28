@@ -37,6 +37,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   customizationExistente: PersonalizacionSistema | null = null;
   esPrimeraConfiguracion = false;
   modoEdicion = false;
+  modoOscuroActivo = false;
 
   infoSistema: InformacionSistema = {
     nombre: 'Rigel',
@@ -79,6 +80,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarConfiguracion();
     this.cargarCustomization();
+    this.modoOscuroActivo = this.customizationService.obtenerPersonalizacionActual().modoOscuro || false;
   }
 
   ngOnDestroy(): void {
@@ -270,12 +272,16 @@ export class SettingsPage implements OnInit, OnDestroy {
             this.customizationService.actualizarPersonalizacion(
               this.customizationExistente
             );
+            // Actualizar el estado del switch después de cargar desde Firebase
+            this.modoOscuroActivo = this.customizationExistente.modoOscuro || false;
           }
         } else {
           // Aplicar colores por defecto
           const coloresDefecto =
             this.customizationService.obtenerPersonalizacionActual();
           this.customizationForm.patchValue(coloresDefecto);
+          // Actualizar el estado del switch con los valores por defecto
+          this.modoOscuroActivo = coloresDefecto.modoOscuro || false;
         }
       })
     );
@@ -287,56 +293,28 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   aplicarTema(tema: string): void {
-    const temas = {
-      default: {
-        colorPrincipal: '#dc3545',
-        colorSidebar: '#122d44',
-        colorSidebarSecundario: '#6e120b',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#34495e',
-      },
-      pink: {
-        colorPrincipal: '#e91e63',
-        colorSidebar: '#880e4f',
-        colorSidebarSecundario: '#ad1457',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#c2185b',
-      },
-      blue: {
-        colorPrincipal: '#007bff',
-        colorSidebar: '#1e3a8a',
-        colorSidebarSecundario: '#1e40af',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#3b82f6',
-      },
-      green: {
-        colorPrincipal: '#28a745',
-        colorSidebar: '#155724',
-        colorSidebarSecundario: '#1e7e34',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#28a745',
-      },
-      purple: {
-        colorPrincipal: '#6f42c1',
-        colorSidebar: '#4c2a85',
-        colorSidebarSecundario: '#5a32a3',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#7c3aed',
-      },
-      orange: {
-        colorPrincipal: '#fd7e14',
-        colorSidebar: '#d63384',
-        colorSidebarSecundario: '#e83e8c',
-        colorTextoSidebar: '#ffffff',
-        colorHoverSidebar: '#f59e0b',
-      },
-    };
-
-    const temaSeleccionado = temas[tema as keyof typeof temas];
-    if (temaSeleccionado) {
-      this.customizationForm.patchValue(temaSeleccionado);
+    // Usar el servicio para aplicar el tema predefinido
+    const temasValidos = ['default', 'pink', 'barbie', 'blue', 'green', 'purple', 'orange', 'teal', 'indigo'];
+    if (temasValidos.includes(tema)) {
+      this.customizationService.aplicarTema(tema as 'default' | 'pink' | 'barbie' | 'blue' | 'green' | 'purple' | 'orange' | 'teal' | 'indigo');
+      
+      // Actualizar el formulario con los nuevos valores
+      const personalizacionActual = this.customizationService.obtenerPersonalizacionActual();
+      this.customizationForm.patchValue({
+        colorPrincipal: personalizacionActual.colorPrincipal,
+        colorSidebar: personalizacionActual.colorSidebar,
+        colorSidebarSecundario: personalizacionActual.colorSidebarSecundario,
+        colorTextoSidebar: personalizacionActual.colorTextoSidebar,
+        colorHoverSidebar: personalizacionActual.colorHoverSidebar,
+      });
+      
       this.actualizarPreview();
     }
+  }
+
+  alternarModoOscuro(): void {
+    this.customizationService.alternarModoOscuro();
+    this.modoOscuroActivo = this.customizationService.obtenerPersonalizacionActual().modoOscuro || false;
   }
 
   resetearColores(): void {
@@ -354,6 +332,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const customizationData = {
       ...formValue,
+      modoOscuro: this.modoOscuroActivo,
       fechaActualizacion: new Date(),
     };
 

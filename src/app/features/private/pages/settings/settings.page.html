@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid settings-page">
   <!-- Header -->
   <div class="row">
     <div class="col-12">
@@ -242,6 +242,32 @@
             <!-- Panel de Configuración -->
             <div class="col-12 col-lg-6">
               <form [formGroup]="customizationForm" (ngSubmit)="guardarPersonalizacion()">
+                <!-- Modo Oscuro -->
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-moon me-2"></i>
+                    Apariencia
+                  </h6>
+                  <div class="d-flex align-items-center justify-content-between p-3 border rounded">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-moon-fill me-3 fs-5"></i>
+                      <div>
+                        <div class="fw-medium">Modo Oscuro</div>
+                        <small class="text-muted">Cambia la apariencia a un tema oscuro</small>
+                      </div>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        id="modoOscuroSwitch"
+                        [checked]="modoOscuroActivo"
+                        (change)="alternarModoOscuro()">
+                      <label class="form-check-label" for="modoOscuroSwitch"></label>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="mb-4">
                   <h6 class="mb-3">
                     <i class="bi bi-brush me-2"></i>
@@ -425,10 +451,32 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('orange')">
+                        (click)="aplicarTema('barbie')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #fd7e14;"></div>
-                          <span class="small">Naranja</span>
+                          <div class="color-preview me-2" style="background: #ff1493;"></div>
+                          <span class="small">Barbie</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('teal')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #20c997;"></div>
+                          <span class="small">Turquesa</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('indigo')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview me-2" style="background: #6610f2;"></div>
+                          <span class="small">Índigo</span>
                         </div>
                       </button>
                     </div>

@@ -43,7 +43,7 @@
   padding: 20px;
   margin-top: 64px; // Altura del navbar
   min-height: calc(100vh - 64px);
-  background-color: #f8f4e4;
+  background-color: var(--bg-body, #f8f4e4);
   overflow-y: auto;
 }
 
