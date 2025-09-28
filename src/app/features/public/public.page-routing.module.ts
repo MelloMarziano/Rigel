@@ -12,12 +12,20 @@ const routes: Routes = [
   {
     path: '',
     component: PublicPage,
-    canActivate: [noAuthGuard],
     children: [
       {
         path: 'sign-in',
+        canActivate: [noAuthGuard],
         loadChildren: () =>
           import('./pages/login/login.module').then((m) => m.LoginPageModule),
+      },
+      {
+        path: 'system-shutdown',
+        // Sin noAuthGuard para permitir acceso a usuarios autenticados cuando el sistema está bloqueado
+        loadChildren: () =>
+          import('./pages/system-shutdown/system-shutdown.module').then(
+            (m) => m.SystemShutdownPageModule
+          ),
       },
       // {
       //   path: 'sign-up',

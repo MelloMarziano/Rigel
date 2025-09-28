@@ -1,0 +1,70 @@
+<div class="shutdown-container">
+  <div class="shutdown-card">
+    <!-- Logo y Header -->
+    <div class="header-section">
+      <img src="assets/logo-rigel2.png" alt="Rigel Logo" class="logo">
+      <!-- <h1 class="system-title">RIGEL</h1> -->
+      <p class="system-subtitle">Sistema de Gestión Integral para Restaurantes</p>
+    </div>
+
+    <!-- Estado del Sistema -->
+    <div class="status-section">
+      <div class="status-icon">
+        <lucide-icon name="Power" [size]="48" [strokeWidth]="1.5" class="power-icon"></lucide-icon>
+      </div>
+      <h2 class="status-title">Sistema Temporalmente Desactivado</h2>
+      <p class="status-message">
+        El sistema ha sido desactivado temporalmente por el administrador.
+        Para reactivar el acceso, debe contactar con el soporte técnico.
+      </p>
+      <div class="alert-box">
+        <lucide-icon name="Info" [size]="20" [strokeWidth]="1.5" class="alert-icon"></lucide-icon>
+        <strong>Importante:</strong> Solo el CTO puede reactivar el sistema.
+      </div>
+    </div>
+
+    <!-- Información de Contacto -->
+    <div class="contact-section">
+      <h3 class="contact-title">Soporte Técnico</h3>
+      <div class="contact-card">
+        <div class="contact-info">
+          <div class="contact-name">
+            <lucide-icon name="User" [size]="20" [strokeWidth]="1.5" class="person-icon"></lucide-icon>
+            <span>{{ supportContact.name }}</span>
+          </div>
+          <div class="contact-role">{{ supportContact.title }}</div>
+          <div class="contact-location">
+            <span class="flag">{{ supportContact.flag }}</span>
+            <span>{{ supportContact.country }}</span>
+          </div>
+        </div>
+        <button
+          class="contact-button"
+          (click)="callSupport()"
+          type="button">
+          <lucide-icon name="Phone" [size]="20" [strokeWidth]="1.5" class="call-icon"></lucide-icon>
+          <span>{{ supportContact.phone }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="actions-section">
+      <button
+        class="logout-button"
+        (click)="logout()"
+        type="button">
+        <lucide-icon name="LogOut" [size]="20" [strokeWidth]="1.5" class="logout-icon"></lucide-icon>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <!-- <div class="footer-section">
+      <p class="footer-text">
+        © 2024 Orion System. Todos los derechos reservados.
+      </p>
+      <p class="version-text">Versión 1.0.0</p>
+    </div> -->
+  </div>
+</div>

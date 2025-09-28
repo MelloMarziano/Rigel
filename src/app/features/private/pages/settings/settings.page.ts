@@ -18,6 +18,7 @@ import {
   PersonalizacionSistema,
 } from '../../../../core/models/configuracion.model';
 import { PersonalizacionService } from '../../../../core/services/personalizacion.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 import Swal from 'sweetalert2';
 
 declare var $: any;
@@ -38,6 +39,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   esPrimeraConfiguracion = false;
   modoEdicion = false;
   modoOscuroActivo = false;
+  appShutdownEnabled = false;
+  isRootUser = false;
 
   infoSistema: InformacionSistema = {
     nombre: 'Rigel',
@@ -71,7 +74,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private firestore: Firestore,
     private router: Router,
-    private customizationService: PersonalizacionService
+    private customizationService: PersonalizacionService,
+    private authService: AuthService
   ) {
     this.inicializarForm();
     this.inicializarCustomizationForm();
@@ -80,7 +84,11 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarConfiguracion();
     this.cargarCustomization();
-    this.modoOscuroActivo = this.customizationService.obtenerPersonalizacionActual().modoOscuro || false;
+    this.modoOscuroActivo =
+      this.customizationService.obtenerPersonalizacionActual().modoOscuro ||
+      false;
+    this.checkRootPermissions();
+    this.loadAppShutdownState();
   }
 
   ngOnDestroy(): void {
@@ -273,7 +281,8 @@ export class SettingsPage implements OnInit, OnDestroy {
               this.customizationExistente
             );
             // Actualizar el estado del switch después de cargar desde Firebase
-            this.modoOscuroActivo = this.customizationExistente.modoOscuro || false;
+            this.modoOscuroActivo =
+              this.customizationExistente.modoOscuro || false;
           }
         } else {
           // Aplicar colores por defecto
@@ -294,12 +303,34 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   aplicarTema(tema: string): void {
     // Usar el servicio para aplicar el tema predefinido
-    const temasValidos = ['default', 'pink', 'barbie', 'blue', 'green', 'purple', 'orange', 'teal', 'indigo'];
+    const temasValidos = [
+      'default',
+      'pink',
+      'barbie',
+      'blue',
+      'green',
+      'purple',
+      'orange',
+      'teal',
+      'indigo',
+    ];
     if (temasValidos.includes(tema)) {
-      this.customizationService.aplicarTema(tema as 'default' | 'pink' | 'barbie' | 'blue' | 'green' | 'purple' | 'orange' | 'teal' | 'indigo');
-      
+      this.customizationService.aplicarTema(
+        tema as
+          | 'default'
+          | 'pink'
+          | 'barbie'
+          | 'blue'
+          | 'green'
+          | 'purple'
+          | 'orange'
+          | 'teal'
+          | 'indigo'
+      );
+
       // Actualizar el formulario con los nuevos valores
-      const personalizacionActual = this.customizationService.obtenerPersonalizacionActual();
+      const personalizacionActual =
+        this.customizationService.obtenerPersonalizacionActual();
       this.customizationForm.patchValue({
         colorPrincipal: personalizacionActual.colorPrincipal,
         colorSidebar: personalizacionActual.colorSidebar,
@@ -307,14 +338,16 @@ export class SettingsPage implements OnInit, OnDestroy {
         colorTextoSidebar: personalizacionActual.colorTextoSidebar,
         colorHoverSidebar: personalizacionActual.colorHoverSidebar,
       });
-      
+
       this.actualizarPreview();
     }
   }
 
   alternarModoOscuro(): void {
     this.customizationService.alternarModoOscuro();
-    this.modoOscuroActivo = this.customizationService.obtenerPersonalizacionActual().modoOscuro || false;
+    this.modoOscuroActivo =
+      this.customizationService.obtenerPersonalizacionActual().modoOscuro ||
+      false;
   }
 
   resetearColores(): void {
@@ -394,5 +427,150 @@ export class SettingsPage implements OnInit, OnDestroy {
       }
     }
     return cleaned;
+  }
+
+  private checkRootPermissions(): void {
+    this.isRootUser = this.authService.hasPermission('app_shutdown');
+    console.log('Verificando permisos ROOT:', this.isRootUser);
+    console.log('Usuario actual:', this.authService.getCurrentUser());
+  }
+
+  private async loadAppShutdownState(): Promise<void> {
+    try {
+      const shutdownRef = collection(this.firestore, 'system_shutdown');
+      const q = query(shutdownRef, limit(1));
+
+      this.subscriptions.add(
+        collectionData(q, { idField: 'id' }).subscribe((data: any[]) => {
+          if (data.length > 0) {
+            this.appShutdownEnabled = data[0].enabled || false;
+            console.log('Estado de apagado cargado:', this.appShutdownEnabled);
+          } else {
+            this.appShutdownEnabled = false;
+            console.log('No se encontró estado de apagado, estableciendo como false');
+          }
+        })
+      );
+    } catch (error) {
+      console.error('Error al cargar estado de apagado:', error);
+    }
+  }
+
+  async toggleAppShutdown(): Promise<void> {
+    console.log('=== INICIO toggleAppShutdown ===');
+    console.log('Estado actual appShutdownEnabled:', this.appShutdownEnabled);
+    console.log('Usuario ROOT:', this.isRootUser);
+    
+    if (!this.isRootUser) {
+      Swal.fire({
+        title: 'Acceso Denegado',
+        text: 'Solo los usuarios ROOT pueden controlar el apagado del sistema.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
+    const action = this.appShutdownEnabled ? 'activar' : 'desactivar';
+    console.log('Acción determinada:', action);
+    
+    const result = await Swal.fire({
+      title: `¿${action === 'activar' ? 'Activar' : 'Desactivar'} Sistema?`,
+      html: `
+        <div class="text-start">
+          <p class="mb-3">${
+            action === 'activar'
+              ? 'Está a punto de <strong>activar</strong> el sistema. Los usuarios podrán acceder normalmente.'
+              : 'Está a punto de <strong>desactivar</strong> el sistema. Esto impedirá que otros usuarios accedan hasta que se reactive.'
+          }</p>
+          ${
+            action === 'desactivar'
+              ? `
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <strong>Importante:</strong> Los usuarios deberán contactar con el soporte técnico para reactivar el acceso.
+            </div>
+            <div class="alert alert-info">
+              <i class="bi bi-person-badge me-2"></i>
+              <strong>Contacto de Soporte:</strong><br>
+              Alberto Ortega - CTO<br>
+              Teléfono: +34 673 90 59 91
+            </div>
+          `
+              : ''
+          }
+        </div>
+      `,
+      icon: action === 'activar' ? 'question' : 'warning',
+      showCancelButton: true,
+      confirmButtonText:
+        action === 'activar' ? 'Sí, Activar' : 'Sí, Desactivar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: action === 'activar' ? '#28a745' : '#dc3545',
+      reverseButtons: true,
+    });
+
+    console.log('Resultado del modal SweetAlert2:', result);
+    console.log('¿Modal confirmado?', result.isConfirmed);
+
+    if (result.isConfirmed) {
+      console.log('=== CONFIRMACIÓN RECIBIDA ===');
+      try {
+        const newState = !this.appShutdownEnabled;
+        console.log('Nuevo estado calculado:', newState);
+        
+        const shutdownData = {
+          enabled: newState,
+          changedBy: this.authService.getCurrentUser()?.email || 'unknown',
+          changedAt: new Date(),
+          reason: newState
+            ? 'Sistema desactivado por administrador ROOT'
+            : 'Sistema reactivado por administrador ROOT',
+        };
+
+        console.log('Datos a guardar en Firebase:', shutdownData);
+
+        // Crear nuevo documento directamente (simplificado)
+        const shutdownRef = collection(this.firestore, 'system_shutdown');
+        console.log('Creando nuevo documento...');
+        const docRef = await addDoc(shutdownRef, this.cleanObjectForFirebase(shutdownData));
+        console.log('Nuevo documento creado exitosamente con ID:', docRef.id);
+
+        // Actualizar el estado local inmediatamente después de guardar en Firebase
+        this.appShutdownEnabled = newState;
+        console.log('Estado actualizado localmente:', this.appShutdownEnabled);
+
+        Swal.fire({
+          title: '¡Estado Actualizado!',
+          text: `El sistema ha sido ${
+            newState ? 'desactivado' : 'activado'
+          } correctamente.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        if (newState) {
+          // Si se desactiva el sistema, cerrar sesión después de un momento
+          setTimeout(() => {
+            this.authService.logout();
+            this.router.navigate(['/auth/login']);
+          }, 2500);
+        }
+      } catch (error) {
+        console.error('=== ERROR AL GUARDAR EN FIREBASE ===');
+        console.error('Error completo:', error);
+        console.error('Tipo de error:', typeof error);
+        console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack available');
+        
+        Swal.fire({
+          title: 'Error',
+          text: `Error al ${this.appShutdownEnabled ? 'activar' : 'desactivar'} el sistema: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+          icon: 'error',
+        });
+      }
+    } else {
+      console.log('=== MODAL CANCELADO ===');
+    }
   }
 }

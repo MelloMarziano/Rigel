@@ -93,8 +93,11 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (!user) return false;
 
-    // Administrador tiene todos los permisos
-    if (user.rol === 'Administrador') return true;
+    // ROOT tiene todos los permisos
+    if (user.rol === 'ROOT') return true;
+    
+    // Administrador tiene todos los permisos excepto app_shutdown
+    if (user.rol === 'Administrador' && permission !== 'app_shutdown') return true;
 
     return user.permisos.includes(permission);
   }

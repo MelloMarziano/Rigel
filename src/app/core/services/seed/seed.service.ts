@@ -19,6 +19,7 @@ export class SeedService {
 
     // Verificar si ya existen los usuarios de prueba específicos
     const emails = [
+      'root@orionsystem.com',
       'admin@orionsystem.com',
       'gerente@orionsystem.com',
       'empleado@orionsystem.com',
@@ -40,6 +41,30 @@ export class SeedService {
     }
 
     const defaultUsers = [
+      {
+        nombre: 'Alberto Ortega ROOT',
+        email: 'root@orionsystem.com',
+        telefono: '+34 673 90 59 91',
+        rol: 'ROOT',
+        permisos: [
+          'dashboard',
+          'productos',
+          'categorias',
+          'recetas',
+          'ventas',
+          'reportes',
+          'proveedores',
+          'albaranes',
+          'usuarios',
+          'inventario',
+          'ajustes',
+          'app_shutdown',
+        ],
+        password: '123456', // ⚠️ En producción usar hash
+        activo: true,
+        fechaCreacion: new Date(),
+        ultimoAcceso: new Date(),
+      },
       {
         nombre: 'Carlos Administrador',
         email: 'admin@orionsystem.com',

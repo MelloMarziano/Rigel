@@ -12,7 +12,6 @@ const routes: Routes = [
   },
   {
     path: 'public',
-    canActivate: [noAuthGuard],
     loadChildren: () =>
       import('./features/public/public.module').then((m) => m.PublicModule),
   },

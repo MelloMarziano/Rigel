@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { PrivatePage } from './private.page';
 import { roleGuard } from 'src/app/core/guards/role/role.guard';
 import { ConfigGuard } from 'src/app/core/guards/config/config.guard';
+import { appShutdownGuard } from 'src/app/core/guards/app-shutdown/app-shutdown.guard';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
 
 const routes: Routes = [
@@ -17,7 +18,7 @@ const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['dashboard'] },
         loadChildren: () =>
           import('./pages/dashboard/dashboard.module').then(
@@ -26,7 +27,7 @@ const routes: Routes = [
       },
       {
         path: 'proveedores',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['proveedores'] },
         loadChildren: () =>
           import('./pages/proveedores/proveedores.module').then(
@@ -35,7 +36,7 @@ const routes: Routes = [
       },
       {
         path: 'categoria',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['categorias'] },
         loadChildren: () =>
           import('./pages/categoria/categoria.module').then(
@@ -44,7 +45,7 @@ const routes: Routes = [
       },
       {
         path: 'productos',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['productos'] },
         loadChildren: () =>
           import('./pages/productos/productos.module').then(
@@ -53,7 +54,7 @@ const routes: Routes = [
       },
       {
         path: 'usuarios',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['usuarios'] },
         loadChildren: () =>
           import('./pages/usuarios/usuarios.module').then(
@@ -63,7 +64,7 @@ const routes: Routes = [
       // Rutas adicionales para completar el sidebar
       {
         path: 'recetas',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['recetas'] },
         loadChildren: () =>
           import('./pages/recetas/recetas.module').then(
@@ -72,7 +73,7 @@ const routes: Routes = [
       },
       {
         path: 'ventas',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['ventas'] },
         loadChildren: () =>
           import('./pages/ventas/ventas.module').then(
@@ -81,7 +82,7 @@ const routes: Routes = [
       },
       {
         path: 'reportes',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['reportes'] },
         loadChildren: () =>
           import('./pages/reportes/reportes.module').then(
@@ -90,7 +91,7 @@ const routes: Routes = [
       },
       {
         path: 'facturas',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['facturas'] },
         loadChildren: () =>
           import('./pages/facturas/facturas.module').then(
@@ -99,7 +100,7 @@ const routes: Routes = [
       },
       {
         path: 'albaranes',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['albaranes'] },
         loadChildren: () =>
           import('./pages/albaranes/albaranes.module').then(
@@ -109,7 +110,7 @@ const routes: Routes = [
 
       {
         path: 'inventario',
-        canActivate: [ConfigGuard, roleGuard],
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['inventario'] },
         loadChildren: () =>
           import('./pages/inventario/inventario.module').then(
@@ -118,7 +119,7 @@ const routes: Routes = [
       },
       {
         path: 'ajustes',
-        canActivate: [roleGuard],
+        canActivate: [appShutdownGuard, roleGuard],
         data: { permissions: ['ajustes'] },
         loadChildren: () =>
           import('./pages/settings/settings.module').then(

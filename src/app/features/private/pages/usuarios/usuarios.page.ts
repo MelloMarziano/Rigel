@@ -18,6 +18,7 @@ import {
 import { Subscription, combineLatest } from 'rxjs';
 import { startWith, debounceTime } from 'rxjs/operators';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 declare var bootstrap: any;
 
@@ -67,13 +68,24 @@ export class UsuariosPage implements OnInit, OnDestroy {
     'usuarios',
     'inventario',
     'ajustes',
+    'app_shutdown', // Permiso para apagar/encender la aplicación
   ];
 
   showPassword = false;
   private subscriptions = new Subscription();
   modal: any;
 
-  constructor(private firestore: Firestore, private fb: FormBuilder) {
+  // Getter para verificar si el usuario actual es ROOT
+  get isCurrentUserRoot(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser?.rol === 'ROOT';
+  }
+
+  constructor(
+    private firestore: Firestore,
+    private fb: FormBuilder,
+    private authService: AuthService
+  ) {
     this.usuarioForm = this.fb.group({
       id: [null],
       nombre: ['', Validators.required],
@@ -150,6 +162,11 @@ export class UsuariosPage implements OnInit, OnDestroy {
   private filterUsers(searchTerm: string, role: string): void {
     let filtered = [...this.usuarios];
 
+    // Filtrar usuarios ROOT para que no aparezcan en la lista (solo ROOT puede verlos)
+    if (!this.isCurrentUserRoot) {
+      filtered = filtered.filter((u) => u.rol !== 'ROOT');
+    }
+
     if (searchTerm) {
       filtered = filtered.filter(
         (u) =>
@@ -167,6 +184,8 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   getRoleBadgeClass(rol: string): string {
     switch (rol) {
+      case 'ROOT':
+        return 'bg-dark';
       case 'Administrador':
         return 'bg-danger';
       case 'Gerente':
@@ -244,9 +263,35 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
     const formValue = this.usuarioForm.getRawValue();
 
+    // Validar que solo usuarios ROOT puedan crear otros usuarios ROOT
+    if (formValue.rol === 'ROOT' && !this.isCurrentUserRoot) {
+      Swal.fire(
+        'Error',
+        'Solo los usuarios ROOT pueden crear otros usuarios ROOT.',
+        'error'
+      );
+      return;
+    }
+
     // Validar contraseñas coincidan para nuevos usuarios
     if (!formValue.id && formValue.password !== formValue.confirmPassword) {
       Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+      return;
+    }
+
+    // Validar que el email no esté duplicado
+    const emailExistente = this.usuarios.find(
+      (u) =>
+        u.email.toLowerCase() === formValue.email.toLowerCase() &&
+        u.id !== formValue.id
+    );
+
+    if (emailExistente) {
+      Swal.fire(
+        'Error',
+        'Ya existe un usuario con este correo electrónico.',
+        'error'
+      );
       return;
     }
 
@@ -256,6 +301,17 @@ export class UsuariosPage implements OnInit, OnDestroy {
       if (formValue.id) {
         // Actualizar usuario existente
         const { id, password, confirmPassword, ...updateData } = formValue;
+
+        // Validar que solo usuarios ROOT puedan cambiar el rol a ROOT
+        if (updateData.rol === 'ROOT' && !this.isCurrentUserRoot) {
+          Swal.fire(
+            'Error',
+            'Solo los usuarios ROOT pueden asignar el rol ROOT.',
+            'error'
+          );
+          return;
+        }
+
         const usuarioRef = doc(this.firestore, 'usuarios', id);
         await updateDoc(usuarioRef, updateData);
         Swal.fire(
@@ -317,9 +373,16 @@ export class UsuariosPage implements OnInit, OnDestroy {
     let permisosDefecto: string[] = [];
 
     switch (rol) {
-      case 'Administrador':
-        // Administrador tiene todos los permisos
+      case 'ROOT':
+        // ROOT tiene todos los permisos incluyendo el control de la aplicación
         permisosDefecto = [...this.permisosDisponibles];
+        break;
+
+      case 'Administrador':
+        // Administrador tiene todos los permisos excepto app_shutdown
+        permisosDefecto = [
+          ...this.permisosDisponibles.filter((p) => p !== 'app_shutdown'),
+        ];
         break;
 
       case 'Gerente':

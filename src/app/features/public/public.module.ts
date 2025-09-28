@@ -4,7 +4,15 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModuleCustom } from 'src/app/material/material.module';
 import { PublicRoutingModule } from './public.page-routing.module';
 import { PublicPage } from './public.page';
-import { LucideAngularModule, Star } from 'lucide-angular';
+import { 
+  LucideAngularModule, 
+  Star, 
+  Power, 
+  Info, 
+  User, 
+  Phone, 
+  LogOut 
+} from 'lucide-angular';
 
 @NgModule({
   imports: [
@@ -15,9 +23,20 @@ import { LucideAngularModule, Star } from 'lucide-angular';
     MaterialModuleCustom,
     LucideAngularModule.pick({
       Star,
+      Power,
+      Info,
+      User,
+      Phone,
+      LogOut,
     }),
   ],
   declarations: [PublicPage],
-  exports: [],
+  exports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MaterialModuleCustom,
+    LucideAngularModule
+  ],
 })
 export class PublicModule {}
