@@ -54,6 +54,8 @@ export class ProductosPage implements OnInit, OnDestroy {
   categoryFilter = new FormControl('all');
   supplierFilter = new FormControl('all');
   modal: any;
+  detalleModal: any;
+  productoSeleccionado: Producto | null = null;
 
   constructor(private fb: FormBuilder, private firestore: Firestore) {}
 
@@ -88,6 +90,11 @@ export class ProductosPage implements OnInit, OnDestroy {
     const modalEl = document.getElementById('productModal');
     if (modalEl) {
       this.modal = new bootstrap.Modal(modalEl);
+    }
+
+    const detalleModalEl = document.getElementById('detalleModal');
+    if (detalleModalEl) {
+      this.detalleModal = new bootstrap.Modal(detalleModalEl);
     }
 
     // Listener para cambios en la categoría
@@ -302,7 +309,14 @@ export class ProductosPage implements OnInit, OnDestroy {
       this.productoForm.addControl('id', this.fb.control(''));
     }
 
-    // Cargar todos los datos del producto incluyendo el ID
+    // Primero cargar las familias disponibles basado en la categoría
+    const categoria = this.categorias.find(
+      (c) => c.id === producto.categoriaId
+    );
+    this.unidadesDisponibles = categoria?.unidadesDisponibles || [];
+    this.familiasDisponibles = categoria?.familias || [];
+
+    // Luego cargar todos los datos del producto incluyendo el ID
     this.productoForm.patchValue({
       id: producto.id,
       nombre: producto.nombre,
@@ -318,9 +332,6 @@ export class ProductosPage implements OnInit, OnDestroy {
       cantidad: producto.cantidad,
       unidadMedida: producto.unidadMedida,
     });
-
-    // Actualizar familias disponibles basado en la categoría
-    this.onCategoriaChange(producto.categoriaId);
 
     this.modal.show();
   }
@@ -378,7 +389,8 @@ export class ProductosPage implements OnInit, OnDestroy {
     return categoria ? categoria.nombre : '';
   }
 
-  getFamiliaName(categoriaId: string, familiaId: string): string {
+  getFamiliaName(categoriaId: string, familiaId: string | undefined): string {
+    if (!familiaId) return '';
     const categoria = this.categorias.find((c) => c.id === categoriaId);
     if (!categoria || !categoria.familias) return '';
 
@@ -436,5 +448,31 @@ export class ProductosPage implements OnInit, OnDestroy {
 
     const margen = ((precioVenta - costo) / costo) * 100;
     return margen.toFixed(1);
+  }
+
+  verDetalleProducto(producto: Producto) {
+    this.productoSeleccionado = producto;
+    this.detalleModal.show();
+  }
+
+  editarDesdeDetalle() {
+    if (this.productoSeleccionado) {
+      this.detalleModal.hide();
+      this.editarProducto(this.productoSeleccionado);
+    }
+  }
+
+  async eliminarDesdeDetalle() {
+    if (this.productoSeleccionado) {
+      this.detalleModal.hide();
+      await this.eliminarProducto(this.productoSeleccionado.id);
+      this.productoSeleccionado = null;
+    }
+  }
+
+  getProveedorName(proveedorId: string | null | undefined): string {
+    if (!proveedorId) return 'Sin proveedor';
+    const proveedor = this.proveedores.find((p) => p.id === proveedorId);
+    return proveedor ? proveedor.nombre : 'Sin proveedor';
   }
 }

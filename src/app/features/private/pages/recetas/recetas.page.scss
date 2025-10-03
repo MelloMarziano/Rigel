@@ -72,3 +72,21 @@
 .recipe-type-dish {
   border-left-color: #17a2b8;
 }
+
+.hover-bg-light:hover {
+  background-color: #f8f9fa;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.productos-dropdown-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}

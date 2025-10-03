@@ -241,12 +241,12 @@
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label">Descripción *</label>
+                    <label class="form-label">Descripción</label>
                     <textarea
                       class="form-control"
                       rows="3"
                       formControlName="descripcion"
-                      placeholder="Descripción de la receta"></textarea>
+                      placeholder="Descripción de la receta (opcional)"></textarea>
                   </div>
 
                   <div class="mb-3">
@@ -256,7 +256,8 @@
                       class="form-control"
                       formControlName="precioVenta"
                       min="0"
-                      step="0.01">
+                      step="0.01"
+                      placeholder="0.00">
                   </div>
                 </div>
               </div>
@@ -310,37 +311,43 @@
               </button>
             </div>
             <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-borderless">
-                  <thead>
+              <div class="table-responsive" style="max-height: 400px;">
+                <table class="table table-borderless table-sm">
+                  <thead class="sticky-top bg-light">
                     <tr>
-                      <th>Producto</th>
-                      <th>Cantidad</th>
-                      <th>Unidad</th>
-                      <th width="50"></th>
+                      <th style="width: 40%;">Producto</th>
+                      <th style="width: 20%;">Cantidad</th>
+                      <th style="width: 20%;">Unidad</th>
+                      <th style="width: 20%;"></th>
                     </tr>
                   </thead>
                   <tbody formArrayName="ingredientes">
                     <tr *ngFor="let ingrediente of ingredientesFormArray.controls; let i = index" [formGroupName]="i">
                       <td>
-                        <select class="form-select" formControlName="productoId" (change)="onProductoChange(i)">
-                          <option value="">Seleccionar producto</option>
-                          <option *ngFor="let producto of productos" [value]="producto.id">
-                            {{ producto.nombre }}
-                          </option>
-                        </select>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [attr.list]="'productos-datalist-' + i"
+                          placeholder="Escribe para buscar..."
+                          [value]="getProductoNombre(ingrediente.get('productoId')?.value)"
+                          (input)="onProductoInput($event, i)"
+                          (change)="onProductoSeleccionado($event, i)">
+                        <datalist [id]="'productos-datalist-' + i">
+                          <option *ngFor="let producto of productos" [value]="producto.nombre" [attr.data-id]="producto.id">
+                        </datalist>
                       </td>
                       <td>
                         <input
                           type="number"
-                          class="form-control"
+                          class="form-control form-control-sm"
                           formControlName="cantidad"
                           min="0"
                           step="0.01"
+                          placeholder="0"
                           (input)="calcularCostos()">
                       </td>
                       <td>
-                        <select class="form-select" formControlName="unidad">
+                        <select class="form-select form-select-sm" formControlName="unidad">
                           <option value="ml">ml</option>
                           <option value="gr">gr</option>
                           <option value="kg">kg</option>
@@ -348,13 +355,19 @@
                           <option value="unidad">unidad</option>
                         </select>
                       </td>
-                      <td>
+                      <td class="text-center">
                         <button
                           type="button"
                           class="btn btn-sm btn-outline-danger"
                           (click)="eliminarIngrediente(i)">
                           <i class="bi bi-trash"></i>
                         </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="ingredientesFormArray.length === 0">
+                      <td colspan="4" class="text-center text-muted py-3">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                        No hay ingredientes. Haz clic en "Agregar Ingrediente" para comenzar.
                       </td>
                     </tr>
                   </tbody>

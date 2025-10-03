@@ -46,6 +46,8 @@ export class ProveedoresPage implements OnInit, OnDestroy {
   proveedorSearch = new FormControl('');
   categoryFilter = new FormControl('all');
   modal: any;
+  detalleModal: any;
+  proveedorSeleccionado: Proveedor | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -84,6 +86,11 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     const modalEl = document.getElementById('staticBackdrop');
     if (modalEl) {
       this.modal = new bootstrap.Modal(modalEl);
+    }
+
+    const detalleModalEl = document.getElementById('detalleModal');
+    if (detalleModalEl) {
+      this.detalleModal = new bootstrap.Modal(detalleModalEl);
     }
 
     this.subscriptions.add(
@@ -310,5 +317,40 @@ export class ProveedoresPage implements OnInit, OnDestroy {
   getProductName(productId: string): string {
     const producto = this.productos.find((p) => p.id === productId);
     return producto ? producto.nombre : '';
+  }
+
+  verDetalleProveedor(proveedor: Proveedor) {
+    // Buscar productos que pertenecen a este proveedor
+    // Puede ser que estén en proveedor.productos O que el producto tenga proveedorId
+    const productosDelProveedor = this.productos
+      .filter(
+        (p) =>
+          (proveedor.productos && proveedor.productos.includes(p.id)) ||
+          p.proveedorId === proveedor.id
+      )
+      .map((p) => p.id);
+
+    // Crear una copia del proveedor con los productos actualizados
+    this.proveedorSeleccionado = {
+      ...proveedor,
+      productos: productosDelProveedor,
+    };
+
+    this.detalleModal.show();
+  }
+
+  editarDesdeDetalle() {
+    if (this.proveedorSeleccionado) {
+      this.detalleModal.hide();
+      this.editarProveedor(this.proveedorSeleccionado);
+    }
+  }
+
+  async eliminarDesdeDetalle() {
+    if (this.proveedorSeleccionado) {
+      this.detalleModal.hide();
+      await this.eliminarProveedor(this.proveedorSeleccionado.id);
+      this.proveedorSeleccionado = null;
+    }
   }
 }

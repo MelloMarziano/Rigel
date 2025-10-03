@@ -214,7 +214,8 @@
             <div
               class="card familia-filter-card cursor-pointer h-100"
               [class.selected]="familiaSeleccionada === ''"
-              (click)="filtrarPorFamilia('')">
+              (click)="filtrarPorFamilia('')"
+            >
               <div class="card-body text-center p-3">
                 <div class="d-flex flex-column align-items-center">
                   <div class="rounded-circle bg-primary bg-opacity-10 p-3 mb-2">
@@ -229,7 +230,8 @@
                       Sin contar: {{ getTotalProductosSinContar() }}
                     </small>
                     <small class="text-success fw-bold">
-                      COSTO TOTAL: {{ formatearMoneda(getCostoTotalInventario()) }}
+                      COSTO TOTAL: {{ formatearMoneda(getCostoTotalInventario())
+                      }}
                     </small>
                   </div>
                 </div>
@@ -240,11 +242,13 @@
           <!-- Cards para cada familia (solo las que tienen productos) -->
           <div
             class="col-12 col-sm-6 col-md-4 col-lg-3"
-            *ngFor="let familia of getFamiliasConProductos(); trackBy: trackByFamilia">
+            *ngFor="let familia of getFamiliasConProductos(); trackBy: trackByFamilia"
+          >
             <div
               class="card familia-filter-card cursor-pointer h-100"
               [class.selected]="familiaSeleccionada === familia.id"
-              (click)="filtrarPorFamilia(familia.id || '')">
+              (click)="filtrarPorFamilia(familia.id || '')"
+            >
               <div class="card-body text-center p-3">
                 <div class="d-flex flex-column align-items-center">
                   <div class="rounded-circle bg-info bg-opacity-10 p-3 mb-2">
@@ -253,13 +257,17 @@
                   <h6 class="card-title mb-1 fw-bold">{{ familia.nombre }}</h6>
                   <div class="d-flex flex-column gap-1">
                     <span class="badge bg-info rounded-pill">
-                      {{ getProductosPorFamilia(familia.id || '').length }} productos
+                      {{ getProductosPorFamilia(familia.id || '').length }}
+                      productos
                     </span>
                     <small class="text-muted">
-                      Sin contar: {{ getProductosSinContarPorFamilia(familia.id || '') }}
+                      Sin contar: {{ getProductosSinContarPorFamilia(familia.id
+                      || '') }}
                     </small>
                     <small class="text-success">
-                      COSTO FAMILIA: {{ formatearMoneda(getCostoTotalPorFamilia(familia.id || '')) }}
+                      COSTO FAMILIA: {{
+                      formatearMoneda(getCostoTotalPorFamilia(familia.id || ''))
+                      }}
                     </small>
                   </div>
                 </div>
@@ -277,7 +285,8 @@
           <div class="card-header bg-white border-0 py-3">
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="mb-0">
-                Productos del Inventario ({{ productosFiltrados.length }} de {{ inventarioActual.productos.length }})
+                Productos del Inventario ({{ productosFiltrados.length }} de {{
+                inventarioActual.productos.length }})
                 <span
                   *ngIf="inventarioActual.estado === 'borrador'"
                   class="badge bg-warning ms-2"
@@ -288,19 +297,16 @@
                   class="badge bg-success ms-2"
                   >Finalizado</span
                 >
-                <span
-                  *ngIf="familiaSeleccionada"
-                  class="badge bg-info ms-2"
+                <span *ngIf="familiaSeleccionada" class="badge bg-info ms-2"
                   >{{ getNombreFamiliaSeleccionada() }}</span
                 >
               </h5>
-
             </div>
           </div>
           <div class="card-body p-0">
             <!-- Vista Desktop: Tabla -->
             <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover mb-0">
+              <table class="table table-hover mb-0">
                 <thead class="table-light">
                   <tr>
                     <th>PRODUCTO</th>
@@ -372,25 +378,34 @@
 
             <!-- Vista Móvil: Cards -->
             <div class="mobile-cards-container d-block d-md-none p-3">
-              <div 
-                class="product-card mb-3" 
+              <div
+                class="product-card mb-3"
                 *ngFor="let producto of productosFiltrados; trackBy: trackByProducto"
               >
                 <div class="card border-0 shadow-sm">
                   <div class="card-body p-3">
                     <!-- Header del producto -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div
+                      class="d-flex justify-content-between align-items-start mb-2"
+                    >
                       <div class="flex-grow-1">
-                        <h6 class="card-title mb-1 fw-bold">{{ producto.nombre }}</h6>
-                        <small class="text-muted">{{ producto.unidadMedida }}</small>
+                        <h6 class="card-title mb-1 fw-bold">
+                          {{ producto.nombre }}
+                        </h6>
+                        <small class="text-muted"
+                          >{{ producto.unidadMedida }}</small
+                        >
                       </div>
-                      <span class="badge bg-primary rounded-pill">{{ producto.categoria }}</span>
+                      <span class="badge bg-primary rounded-pill"
+                        >{{ producto.categoria }}</span
+                      >
                     </div>
-                    
+
                     <!-- Proveedor -->
                     <div class="mb-3">
                       <small class="text-info">
-                        <i class="bi bi-building me-1"></i>{{ producto.proveedor }}
+                        <i class="bi bi-building me-1"></i>{{ producto.proveedor
+                        }}
                       </small>
                     </div>
 
@@ -399,16 +414,22 @@
                       <div class="col-6">
                         <div class="bg-light rounded p-2 text-center">
                           <small class="text-muted d-block">Stock Actual</small>
-                          <span [class]="getStockClass(producto.stockActual)" class="fw-bold">
+                          <span
+                            [class]="getStockClass(producto.stockActual)"
+                            class="fw-bold"
+                          >
                             {{ producto.stockActual | number:'1.1-1' }}
                           </span>
                         </div>
                       </div>
                       <div class="col-6">
                         <div class="bg-light rounded p-2 text-center">
-                          <small class="text-muted d-block">Costo Unitario</small>
+                          <small class="text-muted d-block"
+                            >Costo Unitario</small
+                          >
                           <span class="fw-bold">
-                            {{ producto.costoUnitario | currency:'EUR':'symbol':'1.2-2' }}
+                            {{ producto.costoUnitario |
+                            currency:'EUR':'symbol':'1.2-2' }}
                           </span>
                         </div>
                       </div>
@@ -416,7 +437,9 @@
 
                     <!-- Input de stock contado -->
                     <div class="mb-3">
-                      <label class="form-label small text-muted mb-1">Stock Contado</label>
+                      <label class="form-label small text-muted mb-1"
+                        >Stock Contado</label
+                      >
                       <input
                         type="number"
                         class="form-control"
@@ -439,13 +462,16 @@
                     </div>
 
                     <!-- Valor total -->
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                    >
                       <span class="text-muted">Valor Total:</span>
                       <strong
                         [class]="producto.diferencia !== 0 ? 'text-danger' : 'text-success'"
                         class="fs-5"
                       >
-                        {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0' }}
+                        {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
+                        }}
                       </strong>
                     </div>
                   </div>
@@ -504,10 +530,7 @@
               Selecciona la categoría para el inventario:
             </h6>
             <div class="row">
-              <div
-                class="col-md-6 mb-3"
-                *ngFor="let categoria of categorias"
-              >
+              <div class="col-md-6 mb-3" *ngFor="let categoria of categorias">
                 <div
                   class="card h-100 cursor-pointer categoria-card"
                   [class.selected]="categoriaSeleccionada === categoria.id"
@@ -519,15 +542,23 @@
                         class="rounded-circle p-2 me-3"
                         [style.background-color]="categoria.colorFondo"
                       >
-                        <i [class]="'bi ' + categoria.icono + ' text-white'"></i>
+                        <i
+                          [class]="'bi ' + categoria.icono + ' text-white'"
+                        ></i>
                       </div>
                       <div class="flex-grow-1">
                         <h6 class="mb-1">{{ categoria.nombre }}</h6>
-                        <small class="text-muted">{{ getTotalProductosCategoria(categoria.id) }} productos</small>
-                        <div class="mt-1" *ngIf="categoria.familias && categoria.familias.length > 0">
+                        <small class="text-muted"
+                          >{{ getTotalProductosCategoria(categoria.id) }}
+                          productos</small
+                        >
+                        <div
+                          class="mt-1"
+                          *ngIf="categoria.familias && categoria.familias.length > 0"
+                        >
                           <small class="text-info">
-                            {{ categoria.familias.length }} familias:
-                            {{ getFamiliasNombres(categoria.familias) }}
+                            {{ categoria.familias.length }} familias: {{
+                            getFamiliasNombres(categoria.familias) }}
                           </small>
                         </div>
                       </div>
@@ -549,10 +580,13 @@
             <div class="alert alert-success">
               <h6 class="mb-2">
                 <i class="bi bi-check-circle me-2"></i>
-                Categoría seleccionada: <strong>{{ getNombreCategoriaSeleccionada() }}</strong>
+                Categoría seleccionada:
+                <strong>{{ getNombreCategoriaSeleccionada() }}</strong>
               </h6>
               <p class="mb-2">
-                Se incluirán <strong>{{ getTotalProductosCategoria() }}</strong> productos de esta categoría en el inventario.
+                Se incluirán
+                <strong>{{ getTotalProductosCategoria() }}</strong> productos de
+                esta categoría en el inventario.
               </p>
 
               <div class="mt-3" *ngIf="getFamiliasCategoria().length > 0">
@@ -561,9 +595,11 @@
                   <span
                     *ngFor="let familia of getFamiliasCategoria()"
                     class="badge bg-primary"
-                    style="font-size: 0.85rem; padding: 6px 12px;"
+                    style="font-size: 0.85rem; padding: 6px 12px"
                   >
-                    {{ familia.nombre }} ({{ getProductosPorFamiliaEnCategoria(familia.id || '').length }} productos)
+                    {{ familia.nombre }} ({{
+                    getProductosPorFamiliaEnCategoria(familia.id || '').length
+                    }} productos)
                   </span>
                 </div>
               </div>

@@ -46,10 +46,10 @@
       <p class="text-muted">No se encontraron productos con los filtros seleccionados.</p>
     </div>
     <div class="col-12 col-sm-3 mb-4" *ngFor="let producto of filteredProducts">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100" style="cursor: pointer;" (click)="verDetalleProducto(producto)">
         <div class="card-body p-3">
-          <!-- Header con título y acciones -->
-          <div class="d-flex justify-content-between align-items-start mb-3">
+          <!-- Header con título -->
+          <div class="mb-3">
             <div class="flex-grow-1">
               <h6 class="mb-1 fw-bold text-dark">{{producto.nombre}}</h6>
               <p class="text-muted small mb-2">{{producto.descripcion}}</p>
@@ -66,23 +66,10 @@
                 </span>
               </div>
             </div>
-            <div class="d-flex gap-1">
-              <button class="btn btn-outline-primary btn-sm"
-                      (click)="editarProducto(producto)"
-                      style="width: 32px; height: 32px; padding: 0;">
-                <i class="bi bi-pencil-fill" style="font-size: 0.75rem;"></i>
-              </button>
-              <button class="btn btn-outline-danger btn-sm"
-                      (click)="eliminarProducto(producto.id)"
-                      style="width: 32px; height: 32px; padding: 0;">
-                <i class="bi bi-trash3-fill" style="font-size: 0.75rem;"></i>
-              </button>
-            </div>
           </div>
 
           <!-- Precios -->
           <div class="row mb-3">
-
             <div class="col-6">
               <div class="text-muted small">Costo</div>
               <div class="fw-bold text-danger" style="font-size: 1.1rem;">
@@ -91,8 +78,7 @@
             </div>
             <div class="col-6">
               <div class="text-muted small">Stock Actual</div>
-              <div class="fw-bold"
-                  >
+              <div class="fw-bold">
                 {{ producto.stock  }}
               </div>
             </div>
@@ -104,6 +90,86 @@
   </div>
 </div>
 
+<!-- Modal de Vista Detallada -->
+<div class="modal fade" id="detalleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle del Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" *ngIf="productoSeleccionado">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Nombre del Producto</label>
+          <input type="text" class="form-control" [value]="productoSeleccionado.nombre" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Descripción</label>
+          <textarea class="form-control" [value]="productoSeleccionado.descripcion" disabled rows="2"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Costo</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.costo | currency:'EUR':'symbol':'1.2-2'" disabled>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">IVA (%)</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.IVA + '%'" disabled>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Categoría</label>
+          <input type="text" class="form-control" [value]="getCategoryName(productoSeleccionado.categoriaId)" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Familia</label>
+          <input type="text" class="form-control" [value]="getFamiliaName(productoSeleccionado.categoriaId, productoSeleccionado.familiaId)" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Proveedor</label>
+          <input type="text" class="form-control" [value]="getProveedorName(productoSeleccionado.proveedorId)" disabled>
+        </div>
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" [checked]="productoSeleccionado.esCombinado" disabled>
+            <label class="form-check-label fw-bold">
+              Es Receta/Combinado (sin control de stock)
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3" *ngIf="!productoSeleccionado.esCombinado">
+            <label class="form-label fw-bold">Stock Actual</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.stock" disabled>
+          </div>
+          <div class="col-md-4 mb-3" *ngIf="!productoSeleccionado.esCombinado">
+            <label class="form-label fw-bold">Stock Mínimo</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.stockMinimo" disabled>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Cantidad</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.cantidad" disabled>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Unidad de Medida</label>
+            <input type="text" class="form-control" [value]="productoSeleccionado.unidadMedida" disabled>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()">
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="eliminarDesdeDetalle()">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edición -->
 <div class="modal fade" id="productModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">

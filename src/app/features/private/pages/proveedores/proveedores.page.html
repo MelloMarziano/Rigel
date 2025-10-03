@@ -48,7 +48,7 @@
       <p class="text-muted">No se encontraron proveedores con los filtros seleccionados.</p>
     </div>
     <div class="col-12 col-md-4 mb-4" *ngFor="let proveedor of filteredProveedores">
-    <div class="card shadow-sm border-0 h-100">
+    <div class="card shadow-sm border-0 h-100" style="cursor: pointer;" (click)="verDetalleProveedor(proveedor)">
       <div class="card-body p-4">
         <div class="d-flex justify-content-between align-items-start mb-4">
           <div class="d-flex align-items-center">
@@ -59,14 +59,6 @@
               <h6 class="mb-0 fw-bold">{{proveedor.nombre}}</h6>
               <small class="text-muted">CIF: {{proveedor.cif}}</small>
             </div>
-          </div>
-          <div>
-            <button class="btn btn-outline-primary btn-sm me-2 rounded-1" (click)="editarProveedor(proveedor)">
-              <i class="bi bi-pencil-fill"></i>
-            </button>
-            <button class="btn btn-outline-danger btn-sm rounded-1" (click)="eliminarProveedor(proveedor.id)">
-              <i class="bi bi-trash3-fill"></i>
-            </button>
           </div>
         </div>
 
@@ -120,16 +112,133 @@
         <div *ngIf="proveedor.metodoPago"
              class="px-3 py-2 rounded-1"
              [ngClass]="{
-               'bg-info bg-opacity-10 text-primary': proveedor.metodoPago === 'SEPA',
-               'bg-warning bg-opacity-10 text-danger': proveedor.metodoPago === 'TRANSFERENCIA'
+               'bg-info bg-opacity-10': proveedor.metodoPago === 'SEPA',
+               'bg-warning bg-opacity-10': proveedor.metodoPago === 'TRANSFERENCIA'
              }">
-          <small>Método de Pago: {{proveedor.metodoPago}}</small>
+          <small class="text-white fw-bold">Método de Pago: {{proveedor.metodoPago}}</small>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal de Vista Detallada -->
+<div class="modal fade" id="detalleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle del Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" *ngIf="proveedorSeleccionado">
+        <div class="row">
+          <div class="col-12 col-sm-6">
+            <h6><i class="bi bi-building"></i>&nbsp;Información de la Empresa</h6>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Nombre Comercial</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.nombre" disabled>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">CIF</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.cif" disabled>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Razón Social</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.razonSocial" disabled>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Persona de Contacto</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.contacto.nombre" disabled>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Teléfono</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.contacto.telefono" disabled>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.contacto.email" disabled>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [checked]="proveedorSeleccionado.activo" disabled>
+                <label class="form-check-label fw-bold">Proveedor activo</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6">
+            <h6><i class="bi bi-geo-alt-fill"></i>&nbsp;Dirección y Datos Fiscales</h6>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Dirección</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.direccion.calle" disabled>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Código Postal</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.direccion.codigoPostal" disabled>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Ciudad</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.direccion.ciudad" disabled>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Provincia</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.direccion.provincia" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">IBAN</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.iban || 'No especificado'" disabled>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Días de Pago</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.plazoPago" disabled>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label fw-bold">Descuento (%)</label>
+                <input type="text" class="form-control" [value]="proveedorSeleccionado.descuento" disabled>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Tipo de Pago</label>
+              <input type="text" class="form-control" [value]="proveedorSeleccionado.metodoPago" disabled>
+            </div>
+          </div>
+        </div>
+        <hr class="my-3">
+        <div class="row">
+          <div class="col-12">
+            <h6><i class="bi bi-box-seam-fill"></i>&nbsp;Productos Suministrados</h6>
+            <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+              <div class="list-group-item" *ngFor="let productoId of proveedorSeleccionado.productos">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                {{ getProductName(productoId) }}
+              </div>
+              <div class="list-group-item text-muted text-center" *ngIf="!proveedorSeleccionado.productos || proveedorSeleccionado.productos.length === 0">
+                No hay productos asignados
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()">
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="eliminarDesdeDetalle()">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edición -->
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

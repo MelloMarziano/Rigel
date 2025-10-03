@@ -66,8 +66,8 @@ export class RecetasPage implements OnInit, OnDestroy {
     this.recetaForm = this.fb.group({
       nombre: ['', [Validators.required]],
       tipo: ['Cocteles', [Validators.required]],
-      descripcion: ['', [Validators.required]],
-      precioVenta: [0, [Validators.required, Validators.min(0)]],
+      descripcion: [''], // Descripción opcional
+      precioVenta: [null, [Validators.required, Validators.min(0)]],
       ingredientes: this.fb.array([]),
     });
   }
@@ -263,7 +263,7 @@ export class RecetasPage implements OnInit, OnDestroy {
   agregarIngrediente(): void {
     const ingredienteGroup = this.fb.group({
       productoId: ['', Validators.required],
-      cantidad: [0, [Validators.required, Validators.min(0)]],
+      cantidad: [null, [Validators.required, Validators.min(0)]],
       unidad: ['ml', Validators.required],
     });
 
@@ -435,5 +435,29 @@ export class RecetasPage implements OnInit, OnDestroy {
       }
     }
     return cleaned;
+  }
+
+  getProductoNombre(productoId: string): string {
+    if (!productoId) return '';
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto ? producto.nombre : '';
+  }
+
+  onProductoInput(event: any, index: number): void {
+    // Este método se ejecuta mientras el usuario escribe
+    // El datalist se encarga de filtrar automáticamente
+  }
+
+  onProductoSeleccionado(event: any, index: number): void {
+    const nombreProducto = event.target.value;
+    const producto = this.productos.find((p) => p.nombre === nombreProducto);
+
+    if (producto) {
+      const ingredienteGroup = this.ingredientesFormArray.at(index);
+      ingredienteGroup.patchValue({
+        productoId: producto.id,
+      });
+      this.calcularCostos();
+    }
   }
 }
