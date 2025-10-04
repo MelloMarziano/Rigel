@@ -91,73 +91,155 @@
 </div>
 
 <!-- Modal de Vista Detallada -->
-<div class="modal fade" id="detalleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="detalleProductoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalle del Producto</h5>
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center w-100">
+          <div class="rounded-circle me-3 d-flex justify-content-center align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 56px; height: 56px">
+            <i class="bi bi-box-seam-fill text-white fs-3"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">{{productoSeleccionado?.nombre}}</h4>
+            <p class="text-muted mb-0 small">{{productoSeleccionado?.descripcion}}</p>
+          </div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" *ngIf="productoSeleccionado">
-        <div class="mb-3">
-          <label class="form-label fw-bold">Nombre del Producto</label>
-          <input type="text" class="form-control" [value]="productoSeleccionado.nombre" disabled>
+      <div class="modal-body pt-3" *ngIf="productoSeleccionado">
+        <!-- Badges de categoría y tipo -->
+        <div class="mb-4 d-flex gap-2 align-items-center">
+          <span class="badge rounded-pill px-3 py-2" [ngClass]="getCategoryBadgeClass(productoSeleccionado.categoriaId)">
+            <i class="bi bi-tag-fill me-1"></i>
+            {{ getCategoryName(productoSeleccionado.categoriaId) }}
+          </span>
+          <span class="badge rounded-pill bg-secondary px-3 py-2" *ngIf="productoSeleccionado.familiaId">
+            <i class="bi bi-diagram-3-fill me-1"></i>
+            {{ getFamiliaName(productoSeleccionado.categoriaId, productoSeleccionado.familiaId) }}
+          </span>
+          <span class="badge rounded-pill px-3 py-2" [ngClass]="productoSeleccionado.esCombinado ? 'bg-warning text-dark' : 'bg-info'">
+            <i class="bi" [ngClass]="productoSeleccionado.esCombinado ? 'bi-cup-straw' : 'bi-box'"></i>
+            {{ productoSeleccionado.esCombinado ? 'Receta/Combinado' : 'Producto Simple' }}
+          </span>
         </div>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Descripción</label>
-          <textarea class="form-control" [value]="productoSeleccionado.descripcion" disabled rows="2"></textarea>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Costo</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.costo | currency:'EUR':'symbol':'1.2-2'" disabled>
+
+        <!-- Información de precios -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="card border-0 bg-danger bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-cash-coin text-danger fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-danger">{{ productoSeleccionado.costo | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <small class="text-muted">Costo</small>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">IVA (%)</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.IVA + '%'" disabled>
+          <div class="col-md-4">
+            <div class="card border-0 bg-primary h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-percent text-white fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-white">{{productoSeleccionado.IVA}}%</h3>
+                <small class="text-white opacity-75">IVA</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-calculator text-success fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-success">{{ getPrecioVenta(productoSeleccionado) | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <small class="text-muted">Precio + IVA</small>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Categoría</label>
-          <input type="text" class="form-control" [value]="getCategoryName(productoSeleccionado.categoriaId)" disabled>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Familia</label>
-          <input type="text" class="form-control" [value]="getFamiliaName(productoSeleccionado.categoriaId, productoSeleccionado.familiaId)" disabled>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Proveedor</label>
-          <input type="text" class="form-control" [value]="getProveedorName(productoSeleccionado.proveedorId)" disabled>
-        </div>
-        <div class="mb-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" [checked]="productoSeleccionado.esCombinado" disabled>
-            <label class="form-check-label fw-bold">
-              Es Receta/Combinado (sin control de stock)
-            </label>
+
+        <!-- Stock y medidas -->
+        <div class="card border-0 bg-light mb-3" *ngIf="!productoSeleccionado.esCombinado">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-boxes me-2 text-primary"></i>Control de Stock</h6>
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-between p-3 bg-white rounded">
+                  <div>
+                    <small class="text-muted d-block">Stock Actual</small>
+                    <h4 class="mb-0" [ngClass]="getStockClass(productoSeleccionado)">{{productoSeleccionado.stock}}</h4>
+                  </div>
+                  <i class="bi bi-box-seam fs-2" [ngClass]="getStockClass(productoSeleccionado)"></i>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-between p-3 bg-white rounded">
+                  <div>
+                    <small class="text-muted d-block">Stock Mínimo</small>
+                    <h4 class="mb-0 text-warning">{{productoSeleccionado.stockMinimo}}</h4>
+                  </div>
+                  <i class="bi bi-exclamation-triangle fs-2 text-warning"></i>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-4 mb-3" *ngIf="!productoSeleccionado.esCombinado">
-            <label class="form-label fw-bold">Stock Actual</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.stock" disabled>
+
+        <!-- Información adicional -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Información del Producto</h6>
+                <div class="mb-3">
+                  <small class="text-muted d-block">Cantidad por unidad</small>
+                  <strong class="fs-5">{{productoSeleccionado.cantidad}} {{productoSeleccionado.unidadMedida}}</strong>
+                </div>
+                <div class="mb-3">
+                  <small class="text-muted d-block">Proveedor</small>
+                  <div class="d-flex align-items-center mt-1">
+                    <i class="bi bi-building me-2 text-primary"></i>
+                    <strong>{{ getProveedorName(productoSeleccionado.proveedorId) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-md-4 mb-3" *ngIf="!productoSeleccionado.esCombinado">
-            <label class="form-label fw-bold">Stock Mínimo</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.stockMinimo" disabled>
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-3"><i class="bi bi-graph-up me-2 text-primary"></i>Análisis</h6>
+                <div class="mb-3">
+                  <small class="text-muted d-block">Margen de ganancia</small>
+                  <div class="progress mt-2" style="height: 25px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         [style.width.%]="getMargenPorcentaje(productoSeleccionado)"
+                         [attr.aria-valuenow]="getMargenPorcentaje(productoSeleccionado)"
+                         aria-valuemin="0" aria-valuemax="100">
+                      <strong>{{ getMargenPorcentaje(productoSeleccionado) }}%</strong>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="!productoSeleccionado.esCombinado">
+                  <small class="text-muted d-block">Valor en stock</small>
+                  <strong class="fs-5 text-success">
+                    {{ ((productoSeleccionado.stock || 0) * productoSeleccionado.costo) | currency:'EUR':'symbol':'1.2-2' }}
+                  </strong>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Cantidad</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.cantidad" disabled>
-          </div>
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Unidad de Medida</label>
-            <input type="text" class="form-control" [value]="productoSeleccionado.unidadMedida" disabled>
+        </div>
+
+        <!-- Alerta de stock bajo -->
+        <div class="alert alert-warning d-flex align-items-center mt-3"
+             *ngIf="!productoSeleccionado.esCombinado && (productoSeleccionado.stock || 0) <= (productoSeleccionado.stockMinimo || 0)">
+          <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+          <div>
+            <strong>¡Atención!</strong> El stock actual está por debajo o igual al stock mínimo. Considera realizar un pedido.
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-2"></i>Cerrar
+        </button>
         <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()">
           <i class="bi bi-pencil-fill me-2"></i>Editar
         </button>

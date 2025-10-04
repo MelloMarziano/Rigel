@@ -104,8 +104,9 @@ export class PersonalizacionService {
   };
 
   constructor(private firestore: Firestore) {
+    // Aplicar colores por defecto al inicio
     this.aplicarColoresAlSistema(this.coloresDefecto);
-    this.cargarPersonalizacionDesdeFirebase();
+    // No cargar desde Firebase aquí, se cargará cuando el usuario inicie sesión
   }
 
   actualizarPersonalizacion(personalizacion: PersonalizacionSistema): void {
@@ -117,11 +118,16 @@ export class PersonalizacionService {
     return this.personalizacionSubject.value;
   }
 
-  aplicarTema(nombreTema: keyof typeof this.temasPredefindos): PersonalizacionSistema {
+  aplicarTema(
+    nombreTema: keyof typeof this.temasPredefindos
+  ): PersonalizacionSistema {
     const tema = this.temasPredefindos[nombreTema];
     if (tema) {
       const personalizacionActual = this.obtenerPersonalizacionActual();
-      const nuevaPersonalizacion = { ...tema, modoOscuro: personalizacionActual.modoOscuro };
+      const nuevaPersonalizacion = {
+        ...tema,
+        modoOscuro: personalizacionActual.modoOscuro,
+      };
       this.actualizarPersonalizacion(nuevaPersonalizacion);
       return nuevaPersonalizacion;
     }
@@ -132,7 +138,7 @@ export class PersonalizacionService {
     const personalizacionActual = this.obtenerPersonalizacionActual();
     const nuevaPersonalizacion = {
       ...personalizacionActual,
-      modoOscuro: !personalizacionActual.modoOscuro
+      modoOscuro: !personalizacionActual.modoOscuro,
     };
     this.actualizarPersonalizacion(nuevaPersonalizacion);
   }
@@ -181,7 +187,6 @@ export class PersonalizacionService {
   }
 
   private aplicarModoOscuro(modoOscuro: boolean): void {
-    
     if (modoOscuro) {
       // Variables para modo oscuro
       document.documentElement.style.setProperty('--bg-body', '#121212');
@@ -193,7 +198,7 @@ export class PersonalizacionService {
       document.documentElement.style.setProperty('--border-color', '#404040');
       document.documentElement.style.setProperty('--input-bg', '#2d2d2d');
       document.documentElement.style.setProperty('--input-border', '#404040');
-      
+
       // Agregar clase dark-mode al body
       document.body.classList.add('dark-mode');
     } else {
@@ -207,7 +212,7 @@ export class PersonalizacionService {
       document.documentElement.style.setProperty('--border-color', '#dee2e6');
       document.documentElement.style.setProperty('--input-bg', '#ffffff');
       document.documentElement.style.setProperty('--input-border', '#ced4da');
-      
+
       // Remover clase dark-mode del body
       document.body.classList.remove('dark-mode');
     }
@@ -255,15 +260,35 @@ export class PersonalizacionService {
     this.actualizarPersonalizacion(this.coloresDefecto);
   }
 
-  private cargarPersonalizacionDesdeFirebase(): void {
-    const personalizacionRef = collection(this.firestore, 'personalizacion');
-    const q = query(personalizacionRef, limit(1));
+  // Método público para cargar personalización de un usuario específico
+  async cargarPersonalizacionUsuario(userId: string): Promise<void> {
+    try {
+      const { doc, getDoc } = await import('@angular/fire/firestore');
+      const userRef = doc(this.firestore, 'users', userId);
+      const userDoc = await getDoc(userRef);
 
-    collectionData(q, { idField: 'id' }).subscribe((data: any[]) => {
-      if (data.length > 0) {
-        const personalizacion = data[0] as PersonalizacionSistema;
-        this.actualizarPersonalizacion(personalizacion);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const personalizacion = userData['personalizacion'];
+
+        if (personalizacion) {
+          this.actualizarPersonalizacion(personalizacion);
+        } else {
+          // Si no tiene personalización, usar colores por defecto
+          this.actualizarPersonalizacion(this.coloresDefecto);
+        }
       }
-    });
+    } catch (error) {
+      console.log(
+        'Error al cargar personalización del usuario, usando valores por defecto:',
+        error
+      );
+      this.actualizarPersonalizacion(this.coloresDefecto);
+    }
+  }
+
+  // Método para resetear a colores por defecto
+  resetearADefecto(): void {
+    this.actualizarPersonalizacion(this.coloresDefecto);
   }
 }

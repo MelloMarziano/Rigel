@@ -246,33 +246,48 @@
                 <div class="mb-4">
                   <h6 class="mb-3">
                     <i class="bi bi-moon me-2"></i>
-                    Apariencia
+                    Apariencia Personal
                   </h6>
                   <div class="d-flex align-items-center justify-content-between p-3 border rounded">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-grow-1">
                       <i class="bi bi-moon-fill me-3 fs-5"></i>
                       <div>
                         <div class="fw-medium">Modo Oscuro</div>
-                        <small class="text-muted">Cambia la apariencia a un tema oscuro</small>
+                        <small class="text-muted">
+                          <i class="bi bi-person-fill me-1"></i>
+                          Esta preferencia es personal y solo afecta a tu cuenta
+                        </small>
                       </div>
                     </div>
                     <div class="form-check form-switch">
-                      <input 
-                        class="form-check-input" 
-                        type="checkbox" 
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
                         id="modoOscuroSwitch"
                         [checked]="modoOscuroActivo"
                         (change)="alternarModoOscuro()">
                       <label class="form-check-label" for="modoOscuroSwitch"></label>
                     </div>
                   </div>
+                  <div class="alert alert-info mt-2 py-2 px-3">
+                    <small>
+                      <i class="bi bi-info-circle me-1"></i>
+                      El modo oscuro se guarda automáticamente y se aplicará cada vez que inicies sesión
+                    </small>
+                  </div>
                 </div>
 
                 <div class="mb-4">
                   <h6 class="mb-3">
                     <i class="bi bi-brush me-2"></i>
-                    Colores del Sistema
+                    Colores Personales
                   </h6>
+                  <div class="alert alert-info py-2 px-3 mb-3">
+                    <small>
+                      <i class="bi bi-person-fill me-1"></i>
+                      <strong>Personalización Individual:</strong> Estos colores solo afectan a tu cuenta y se aplicarán en todos tus dispositivos
+                    </small>
+                  </div>
 
                   <!-- Color Principal -->
                   <div class="mb-3">
@@ -500,8 +515,8 @@
                     style="color: white;"
                     [disabled]="guardandoCustomization">
                     <span *ngIf="guardandoCustomization" class="spinner-border spinner-border-sm me-2"></span>
-                    <i *ngIf="!guardandoCustomization" class="bi bi-check me-2"></i>
-                    {{ guardandoCustomization ? 'Guardando...' : 'Aplicar Cambios' }}
+                    <i *ngIf="!guardandoCustomization" class="bi bi-save me-2"></i>
+                    {{ guardandoCustomization ? 'Guardando...' : 'Guardar Mi Personalización' }}
                   </button>
                 </div>
               </form>
@@ -696,8 +711,8 @@
                       <div class="col-12 col-md-8">
                         <h6 class="mb-1">Control de Acceso al Sistema</h6>
                         <p class="text-muted mb-0 small">
-                          {{ appShutdownEnabled 
-                            ? 'El sistema está actualmente desactivado. Los usuarios no pueden acceder.' 
+                          {{ appShutdownEnabled
+                            ? 'El sistema está actualmente desactivado. Los usuarios no pueden acceder.'
                             : 'El sistema está operativo. Los usuarios pueden acceder normalmente.' }}
                         </p>
                         <small class="text-muted">
@@ -706,8 +721,8 @@
                         </small>
                       </div>
                       <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           class="btn btn-sm"
                           [class]="appShutdownEnabled ? 'btn-success' : 'btn-danger'"
                           (click)="toggleAppShutdown()">

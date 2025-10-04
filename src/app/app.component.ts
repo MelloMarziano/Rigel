@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PersonalizacionService } from './core/services/personalizacion.service';
+import { AuthService } from './core/services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -9,9 +10,18 @@ import { PersonalizacionService } from './core/services/personalizacion.service'
 export class AppComponent implements OnInit {
   title = 'Rigel';
 
-  constructor(private personalizacionService: PersonalizacionService) {}
+  constructor(
+    private personalizacionService: PersonalizacionService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    // El servicio se inicializa automáticamente y aplica los colores por defecto
+    // Cargar personalización del usuario si está autenticado
+    const user = this.authService.getCurrentUser();
+    if (user?.id) {
+      this.personalizacionService.cargarPersonalizacionUsuario(user.id);
+    } else {
+      this.personalizacionService.resetearADefecto();
+    }
   }
 }

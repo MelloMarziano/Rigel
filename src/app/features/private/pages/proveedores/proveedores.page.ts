@@ -88,7 +88,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
       this.modal = new bootstrap.Modal(modalEl);
     }
 
-    const detalleModalEl = document.getElementById('detalleModal');
+    const detalleModalEl = document.getElementById('detalleProveedorModal');
     if (detalleModalEl) {
       this.detalleModal = new bootstrap.Modal(detalleModalEl);
     }

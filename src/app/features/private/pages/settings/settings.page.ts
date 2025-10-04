@@ -84,11 +84,50 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarConfiguracion();
     this.cargarCustomization();
-    this.modoOscuroActivo =
-      this.customizationService.obtenerPersonalizacionActual().modoOscuro ||
-      false;
+    this.cargarPreferenciasModoOscuro();
     this.checkRootPermissions();
     this.loadAppShutdownState();
+  }
+
+  private async cargarPreferenciasModoOscuro(): Promise<void> {
+    // Primero intentar cargar desde localStorage
+    const modoOscuroLocal = localStorage.getItem('modoOscuro');
+    if (modoOscuroLocal !== null) {
+      this.modoOscuroActivo = JSON.parse(modoOscuroLocal);
+    } else {
+      // Si no hay en localStorage, intentar cargar desde Firebase
+      try {
+        const user = this.authService.getCurrentUser();
+        if (user?.uid) {
+          const userRef = doc(this.firestore, 'users', user.uid);
+          const userDoc = await import('@angular/fire/firestore').then((m) =>
+            m.getDoc(userRef)
+          );
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            this.modoOscuroActivo = userData['modoOscuro'] || false;
+            // Guardar en localStorage para futuras sesiones
+            localStorage.setItem(
+              'modoOscuro',
+              JSON.stringify(this.modoOscuroActivo)
+            );
+          }
+        }
+      } catch (error) {
+        console.log(
+          'No se pudo cargar preferencia de Firebase, usando valor por defecto:',
+          error
+        );
+        this.modoOscuroActivo = false;
+      }
+    }
+
+    // Aplicar el modo oscuro si está activo
+    if (this.modoOscuroActivo) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }
 
   ngOnDestroy(): void {
@@ -267,33 +306,43 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
   }
 
-  private cargarCustomization(): void {
-    const customizationRef = collection(this.firestore, 'personalizacion');
-    const q = query(customizationRef, limit(1));
+  private async cargarCustomization(): Promise<void> {
+    try {
+      const user = this.authService.getCurrentUser();
+      if (user?.uid) {
+        // Cargar personalización del usuario
+        const userRef = doc(this.firestore, 'users', user.uid);
+        const userDoc = await import('@angular/fire/firestore').then((m) =>
+          m.getDoc(userRef)
+        );
 
-    this.subscriptions.add(
-      collectionData(q, { idField: 'id' }).subscribe((data: any[]) => {
-        if (data.length > 0) {
-          this.customizationExistente = data[0];
-          if (this.customizationExistente) {
-            this.customizationForm.patchValue(this.customizationExistente);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const personalizacion = userData['personalizacion'];
+
+          if (personalizacion) {
+            this.customizationExistente = personalizacion;
+            this.customizationForm.patchValue(personalizacion);
             this.customizationService.actualizarPersonalizacion(
-              this.customizationExistente
+              personalizacion
             );
-            // Actualizar el estado del switch después de cargar desde Firebase
-            this.modoOscuroActivo =
-              this.customizationExistente.modoOscuro || false;
+          } else {
+            // Aplicar colores por defecto
+            const coloresDefecto =
+              this.customizationService.obtenerPersonalizacionActual();
+            this.customizationForm.patchValue(coloresDefecto);
           }
-        } else {
-          // Aplicar colores por defecto
-          const coloresDefecto =
-            this.customizationService.obtenerPersonalizacionActual();
-          this.customizationForm.patchValue(coloresDefecto);
-          // Actualizar el estado del switch con los valores por defecto
-          this.modoOscuroActivo = coloresDefecto.modoOscuro || false;
         }
-      })
-    );
+      }
+    } catch (error) {
+      console.log(
+        'Error al cargar personalización, usando valores por defecto:',
+        error
+      );
+      const coloresDefecto =
+        this.customizationService.obtenerPersonalizacionActual();
+      this.customizationForm.patchValue(coloresDefecto);
+    }
   }
 
   actualizarPreview(): void {
@@ -343,11 +392,35 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
   }
 
-  alternarModoOscuro(): void {
-    this.customizationService.alternarModoOscuro();
-    this.modoOscuroActivo =
-      this.customizationService.obtenerPersonalizacionActual().modoOscuro ||
-      false;
+  async alternarModoOscuro(): Promise<void> {
+    this.modoOscuroActivo = !this.modoOscuroActivo;
+
+    // Guardar en localStorage del usuario
+    localStorage.setItem('modoOscuro', JSON.stringify(this.modoOscuroActivo));
+
+    // Aplicar inmediatamente
+    if (this.modoOscuroActivo) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+
+    // Guardar en el perfil del usuario en Firebase
+    try {
+      const user = this.authService.getCurrentUser();
+      if (user?.uid) {
+        const userRef = doc(this.firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+          modoOscuro: this.modoOscuroActivo,
+          fechaActualizacionPreferencias: new Date(),
+        });
+      }
+    } catch (error) {
+      console.log(
+        'No se pudo guardar en Firebase, pero se aplicó localmente:',
+        error
+      );
+    }
   }
 
   resetearColores(): void {
@@ -365,42 +438,28 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const customizationData = {
       ...formValue,
-      modoOscuro: this.modoOscuroActivo,
       fechaActualizacion: new Date(),
     };
 
     try {
-      if (this.customizationExistente?.id) {
-        // Actualizar personalización existente
-        const customizationRef = doc(
-          this.firestore,
-          'personalizacion',
-          this.customizationExistente.id
-        );
-        await updateDoc(
-          customizationRef,
-          this.cleanObjectForFirebase(customizationData)
-        );
-      } else {
-        // Crear nueva personalización
-        customizationData.fechaCreacion = new Date();
-        const customizationRef = collection(this.firestore, 'personalizacion');
-        const docRef = await addDoc(
-          customizationRef,
-          this.cleanObjectForFirebase(customizationData)
-        );
-        this.customizationExistente = {
-          ...customizationData,
-          id: docRef.id,
-        };
+      const user = this.authService.getCurrentUser();
+      if (user?.uid) {
+        // Guardar personalización en el perfil del usuario
+        const userRef = doc(this.firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+          personalizacion: this.cleanObjectForFirebase(customizationData),
+          fechaActualizacionPersonalizacion: new Date(),
+        });
+
+        this.customizationExistente = customizationData;
       }
 
-      // Aplicar los colores al sistema
+      // Aplicar los colores al sistema inmediatamente
       this.aplicarColoresAlSistema();
 
       Swal.fire({
         title: '¡Personalización Guardada!',
-        text: 'Los colores se han aplicado correctamente al sistema.',
+        text: 'Los colores se han aplicado correctamente a tu cuenta.',
         icon: 'success',
         timer: 2000,
         showConfirmButton: false,
@@ -447,7 +506,9 @@ export class SettingsPage implements OnInit, OnDestroy {
             console.log('Estado de apagado cargado:', this.appShutdownEnabled);
           } else {
             this.appShutdownEnabled = false;
-            console.log('No se encontró estado de apagado, estableciendo como false');
+            console.log(
+              'No se encontró estado de apagado, estableciendo como false'
+            );
           }
         })
       );
@@ -460,7 +521,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     console.log('=== INICIO toggleAppShutdown ===');
     console.log('Estado actual appShutdownEnabled:', this.appShutdownEnabled);
     console.log('Usuario ROOT:', this.isRootUser);
-    
+
     if (!this.isRootUser) {
       Swal.fire({
         title: 'Acceso Denegado',
@@ -473,7 +534,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const action = this.appShutdownEnabled ? 'activar' : 'desactivar';
     console.log('Acción determinada:', action);
-    
+
     const result = await Swal.fire({
       title: `¿${action === 'activar' ? 'Activar' : 'Desactivar'} Sistema?`,
       html: `
@@ -518,7 +579,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       try {
         const newState = !this.appShutdownEnabled;
         console.log('Nuevo estado calculado:', newState);
-        
+
         const shutdownData = {
           enabled: newState,
           changedBy: this.authService.getCurrentUser()?.email || 'unknown',
@@ -533,7 +594,10 @@ export class SettingsPage implements OnInit, OnDestroy {
         // Crear nuevo documento directamente (simplificado)
         const shutdownRef = collection(this.firestore, 'system_shutdown');
         console.log('Creando nuevo documento...');
-        const docRef = await addDoc(shutdownRef, this.cleanObjectForFirebase(shutdownData));
+        const docRef = await addDoc(
+          shutdownRef,
+          this.cleanObjectForFirebase(shutdownData)
+        );
         console.log('Nuevo documento creado exitosamente con ID:', docRef.id);
 
         // Actualizar el estado local inmediatamente después de guardar en Firebase
@@ -561,11 +625,18 @@ export class SettingsPage implements OnInit, OnDestroy {
         console.error('=== ERROR AL GUARDAR EN FIREBASE ===');
         console.error('Error completo:', error);
         console.error('Tipo de error:', typeof error);
-        console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack available');
-        
+        console.error(
+          'Stack trace:',
+          error instanceof Error ? error.stack : 'No stack available'
+        );
+
         Swal.fire({
           title: 'Error',
-          text: `Error al ${this.appShutdownEnabled ? 'activar' : 'desactivar'} el sistema: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+          text: `Error al ${
+            this.appShutdownEnabled ? 'activar' : 'desactivar'
+          } el sistema: ${
+            error instanceof Error ? error.message : 'Error desconocido'
+          }`,
           icon: 'error',
         });
       }
