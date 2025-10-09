@@ -404,17 +404,18 @@
                 <div class="mb-4">
                   <h6 class="mb-3">
                     <i class="bi bi-palette2 me-2"></i>
-                    Temas Predefinidos
+                    Temas Predefinidos con Gradientes
                   </h6>
                   <div class="row g-2">
+                    <!-- Fila 1: Temas Clásicos -->
                     <div class="col-6 col-md-4">
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
                         (click)="aplicarTema('default')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #dc3545;"></div>
-                          <span class="small">Por Defecto</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #122d44 0%, #6e120b 100%);"></div>
+                          <span class="small">Rigel Clásico</span>
                         </div>
                       </button>
                     </div>
@@ -422,10 +423,10 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('pink')">
+                        (click)="aplicarTema('ocean')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #e91e63;"></div>
-                          <span class="small">Rosado</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #0077be 0%, #00a8cc 100%);"></div>
+                          <span class="small">Océano</span>
                         </div>
                       </button>
                     </div>
@@ -433,10 +434,23 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('blue')">
+                        (click)="aplicarTema('sunset')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #007bff;"></div>
-                          <span class="small">Azul</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);"></div>
+                          <span class="small">Atardecer</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 2: Temas Naturales -->
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('forest')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2d5016 0%, #3e7b27 100%);"></div>
+                          <span class="small">Bosque</span>
                         </div>
                       </button>
                     </div>
@@ -444,10 +458,10 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('green')">
+                        (click)="aplicarTema('lavender')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #28a745;"></div>
-                          <span class="small">Verde</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                          <span class="small">Lavanda</span>
                         </div>
                       </button>
                     </div>
@@ -455,10 +469,23 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('purple')">
+                        (click)="aplicarTema('cherry')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #6f42c1;"></div>
-                          <span class="small">Morado</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);"></div>
+                          <span class="small">Cereza</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 3: Temas Modernos -->
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('midnight')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);"></div>
+                          <span class="small">Medianoche</span>
                         </div>
                       </button>
                     </div>
@@ -466,10 +493,10 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('barbie')">
+                        (click)="aplicarTema('aurora')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #ff1493;"></div>
-                          <span class="small">Barbie</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);"></div>
+                          <span class="small">Aurora</span>
                         </div>
                       </button>
                     </div>
@@ -477,10 +504,23 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('teal')">
+                        (click)="aplicarTema('cosmic')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #20c997;"></div>
-                          <span class="small">Turquesa</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);"></div>
+                          <span class="small">Cósmico</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 4: Temas Vibrantes -->
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('tropical')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                          <span class="small">Tropical</span>
                         </div>
                       </button>
                     </div>
@@ -488,10 +528,91 @@
                       <button
                         type="button"
                         class="btn btn-outline-secondary w-100 p-2"
-                        (click)="aplicarTema('indigo')">
+                        (click)="aplicarTema('volcano')">
                         <div class="d-flex align-items-center">
-                          <div class="color-preview me-2" style="background: #6610f2;"></div>
-                          <span class="small">Índigo</span>
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                          <span class="small">Volcán</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('emerald')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                          <span class="small">Esmeralda</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 5: Temas Elegantes -->
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('royal')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);"></div>
+                          <span class="small">Real</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('peach')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ed4264 0%, #ffedbc 100%);"></div>
+                          <span class="small">Durazno</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('mint')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);"></div>
+                          <span class="small">Menta</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 6: Temas Especiales -->
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('neon')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #b92b27 0%, #1565c0 100%);"></div>
+                          <span class="small">Neón</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('candy')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #d3959b 0%, #bfe6ba 100%);"></div>
+                          <span class="small">Caramelo</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary w-100 p-2"
+                        (click)="aplicarTema('galaxy')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2e1437 0%, #948e99 100%);"></div>
+                          <span class="small">Galaxia</span>
                         </div>
                       </button>
                     </div>

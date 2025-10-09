@@ -39,6 +39,7 @@ export class CategoriaPage implements OnInit, OnDestroy {
 
   categorias: Categoria[] = [];
   productos: Producto[] = [];
+  categoriaSeleccionada: Categoria | null = null;
   private categoriasSubscription?: Subscription;
   private productosSubscription?: Subscription;
 
@@ -495,5 +496,53 @@ export class CategoriaPage implements OnInit, OnDestroy {
     this.familias = [];
     this.nuevaFamilia = '';
     this.editandoFamiliaIndex = -1;
+  }
+
+  // Método para ver detalle de categoría
+  verDetalleCategoria(categoria: Categoria): void {
+    this.categoriaSeleccionada = categoria;
+    const modalEl = document.getElementById('detalleCategoriaModal');
+    if (modalEl) {
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  }
+
+  // Método para editar desde el modal de detalle
+  editarDesdeDetalle(): void {
+    if (this.categoriaSeleccionada) {
+      // Cerrar modal de detalle
+      const detalleModalEl = document.getElementById('detalleCategoriaModal');
+      if (detalleModalEl) {
+        const detalleModal = bootstrap.Modal.getInstance(detalleModalEl);
+        if (detalleModal) {
+          detalleModal.hide();
+        }
+      }
+
+      // Esperar a que se cierre el modal antes de abrir el de edición
+      setTimeout(() => {
+        this.editarCategoria(this.categoriaSeleccionada!);
+      }, 300);
+    }
+  }
+
+  // Método para eliminar desde el modal de detalle
+  async eliminarDesdeDetalle(): Promise<void> {
+    if (this.categoriaSeleccionada?.id) {
+      // Cerrar modal de detalle
+      const detalleModalEl = document.getElementById('detalleCategoriaModal');
+      if (detalleModalEl) {
+        const detalleModal = bootstrap.Modal.getInstance(detalleModalEl);
+        if (detalleModal) {
+          detalleModal.hide();
+        }
+      }
+
+      // Esperar a que se cierre el modal antes de mostrar la confirmación
+      setTimeout(async () => {
+        await this.eliminarCategoria(this.categoriaSeleccionada!.id!);
+      }, 300);
+    }
   }
 }

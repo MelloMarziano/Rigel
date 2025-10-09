@@ -1,0 +1,100 @@
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+.progress {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+// Animación para las tarjetas
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Estilos para filtros
+.input-group-text {
+  border-right: 0;
+}
+
+.input-group .form-control {
+  border-left: 0;
+
+  &:focus {
+    border-left: 0;
+    box-shadow: none;
+  }
+}
+
+// Botones de ordenamiento
+.btn-group {
+  .btn {
+    &.active {
+      background-color: var(--bs-primary);
+      color: white;
+      border-color: var(--bs-primary);
+    }
+  }
+}
+
+// Mejoras para el modal
+.modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+
+  h4,
+  h5 {
+    color: white;
+  }
+}
+
+// Tarjetas de estadísticas
+.card-body {
+  h2 {
+    font-weight: 700;
+  }
+}
+
+// Barra de progreso
+.progress-bar {
+  transition: width 0.6s ease;
+}
+
+// Alertas
+.alert {
+  border-radius: 8px;
+  border: none;
+
+  &.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+  }
+}

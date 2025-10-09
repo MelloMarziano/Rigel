@@ -54,7 +54,7 @@
   <!-- Categories List -->
   <div class="row mt-4">
     <div class="col-12 col-md-4 mb-4" *ngFor="let categoria of categorias">
-      <div class="card border-0 shadow-sm">
+      <div class="card border-0 shadow-sm h-100" style="cursor: pointer;" (click)="verDetalleCategoria(categoria)">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div class="d-flex align-items-center">
@@ -69,20 +69,6 @@
                 <p class="text-muted mb-0">{{categoria.descripcion}}</p>
               </div>
             </div>
-            <div>
-              <button
-                class="btn btn-outline-primary btn-sm me-2"
-                [disabled]="!categoria.id"
-                (click)="categoria.id && editarCategoria(categoria)">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button
-                class="btn btn-outline-danger btn-sm"
-                [disabled]="!categoria.id"
-                (click)="categoria.id && eliminarCategoria(categoria.id)">
-                <i class="bi bi-trash3-fill"></i>
-              </button>
-            </div>
           </div>
 
           <div class="mb-3">
@@ -90,67 +76,8 @@
               <i class="bi bi-box-seam-fill me-2 text-primary"></i>
               <div>
                 <small class="text-muted d-block"
-                  >Productos: <span>{{categoria.productos}}</span></small
+                  >{{categoria.productos || 0}} productos</small
                 >
-              </div>
-            </div>
-
-            <!-- Familias de la categoría -->
-            <div *ngIf="categoria.familias && categoria.familias.length > 0" class="mb-2">
-              <small class="text-muted d-block mb-1">Familias:</small>
-              <div class="d-flex flex-wrap gap-1">
-                <span
-                  class="badge rounded-pill bg-primary"
-                  *ngFor="let familia of categoria.familias"
-                  style="font-size: 0.7rem;">
-                  {{familia.nombre}} ({{familia.productos}})
-                </span>
-              </div>
-            </div>
-
-            <!-- Productos de la categoría -->
-            <div *ngIf="getProductosPorCategoria(categoria.id || '').length > 0" class="mt-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <small class="text-muted">Productos en esta categoría:</small>
-                <button
-                  class="btn btn-sm btn-outline-secondary"
-                  type="button"
-                  [attr.data-bs-toggle]="'collapse'"
-                  [attr.data-bs-target]="'#productos-' + categoria.id"
-                  [attr.aria-expanded]="false"
-                  [attr.aria-controls]="'productos-' + categoria.id">
-                  <i class="bi bi-eye"></i> Ver productos
-                </button>
-              </div>
-
-              <div class="collapse" [id]="'productos-' + categoria.id">
-                <div class="card card-body p-2" style="max-height: 200px; overflow-y: auto;">
-                  <!-- Productos agrupados por familia -->
-                  <div *ngFor="let familia of categoria.familias" class="mb-2">
-                    <div *ngIf="getProductosPorFamilia(categoria.id || '', familia.id || '').length > 0">
-                      <small class="fw-bold text-primary d-block mb-1">{{familia.nombre}}:</small>
-                      <div class="ms-2">
-                        <small
-                          *ngFor="let producto of getProductosPorFamilia(categoria.id || '', familia.id || ''); let last = last"
-                          class="d-block text-muted">
-                          • {{producto.nombre}}{{ !last ? '' : '' }}
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Productos sin familia asignada -->
-                  <div *ngIf="getProductosSinFamilia(categoria.id || '').length > 0">
-                    <small class="fw-bold text-warning d-block mb-1">Sin familia asignada:</small>
-                    <div class="ms-2">
-                      <small
-                        *ngFor="let producto of getProductosSinFamilia(categoria.id || '')"
-                        class="d-block text-muted">
-                        • {{producto.nombre}}
-                      </small>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -167,6 +94,149 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Vista Detallada -->
+<div class="modal fade" id="detalleCategoriaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center w-100">
+          <div class="rounded-circle me-3 d-flex justify-content-center align-items-center"
+               [style.background-color]="categoriaSeleccionada?.colorFondo"
+               style="width: 56px; height: 56px">
+            <i [class]="'bi ' + categoriaSeleccionada?.icono + ' text-white fs-3'"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">{{categoriaSeleccionada?.nombre}}</h4>
+            <p class="text-muted mb-0 small">{{categoriaSeleccionada?.descripcion}}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3" *ngIf="categoriaSeleccionada">
+        <!-- Estadísticas de la categoría -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card border-0 bg-primary bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-box-seam text-primary fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-primary">{{categoriaSeleccionada.productos || 0}}</h3>
+                <small class="text-muted">Productos</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-collection text-success fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-success">{{categoriaSeleccionada.familias?.length || 0}}</h3>
+                <small class="text-muted">Familias</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-rulers text-warning fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-warning">{{categoriaSeleccionada.unidadesDisponibles?.length || 0}}</h3>
+                <small class="text-muted">Unidades</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Familias -->
+        <div class="card border-0 bg-light mb-3" *ngIf="categoriaSeleccionada.familias && categoriaSeleccionada.familias.length > 0">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-collection me-2 text-primary"></i>Familias de Productos</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <span
+                class="badge bg-primary d-flex align-items-center gap-2"
+                *ngFor="let familia of categoriaSeleccionada.familias"
+                style="font-size: 0.85rem; padding: 8px 12px;">
+                {{familia.nombre}} ({{familia.productos}} productos)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unidades de medida -->
+        <div class="card border-0 bg-light mb-3">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-rulers me-2 text-primary"></i>Unidades de Medida Disponibles</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <span
+                class="badge bg-light text-dark border"
+                *ngFor="let unidad of categoriaSeleccionada.unidadesDisponibles"
+                style="font-size: 0.85rem; padding: 8px 12px;">
+                {{unidad}}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Productos de la categoría -->
+        <div class="card border-0 bg-light" *ngIf="getProductosPorCategoria(categoriaSeleccionada.id || '').length > 0">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-box-seam me-2 text-primary"></i>Productos en esta Categoría</h6>
+            <div style="max-height: 300px; overflow-y: auto;">
+              <!-- Productos agrupados por familia -->
+              <div *ngFor="let familia of categoriaSeleccionada.familias" class="mb-3">
+                <div *ngIf="getProductosPorFamilia(categoriaSeleccionada.id || '', familia.id || '').length > 0">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary me-2">{{familia.nombre}}</span>
+                    <small class="text-muted">{{getProductosPorFamilia(categoriaSeleccionada.id || '', familia.id || '').length}} productos</small>
+                  </div>
+                  <div class="ms-3">
+                    <div
+                      *ngFor="let producto of getProductosPorFamilia(categoriaSeleccionada.id || '', familia.id || '')"
+                      class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-1">
+                      <span>• {{producto.nombre}}</span>
+                      <span class="badge bg-secondary">{{producto.cantidad}} {{producto.unidadMedida}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Productos sin familia -->
+              <div *ngIf="getProductosSinFamilia(categoriaSeleccionada.id || '').length > 0" class="mb-3">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-warning text-dark me-2">Sin familia asignada</span>
+                  <small class="text-muted">{{getProductosSinFamilia(categoriaSeleccionada.id || '').length}} productos</small>
+                </div>
+                <div class="ms-3">
+                  <div
+                    *ngFor="let producto of getProductosSinFamilia(categoriaSeleccionada.id || '')"
+                    class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-1">
+                    <span>• {{producto.nombre}}</span>
+                    <span class="badge bg-secondary">{{producto.cantidad}} {{producto.unidadMedida}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje si no hay productos -->
+        <div class="alert alert-info" *ngIf="getProductosPorCategoria(categoriaSeleccionada.id || '').length === 0">
+          <i class="bi bi-info-circle me-2"></i>
+          Esta categoría aún no tiene productos asignados.
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-2"></i>Cerrar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()">
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="eliminarDesdeDetalle()">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
+        </button>
       </div>
     </div>
   </div>

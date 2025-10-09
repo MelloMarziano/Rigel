@@ -32,6 +32,7 @@ declare var $: any;
 export class AlbaranesPage implements OnInit, OnDestroy {
   albaranes: Albaran[] = [];
   albaranesFiltrados: Albaran[] = [];
+  albaranSeleccionado: Albaran | null = null;
   productos: Producto[] = [];
   productosProveedor: Producto[] = [];
   proveedores: Proveedor[] = [];
@@ -1066,5 +1067,58 @@ export class AlbaranesPage implements OnInit, OnDestroy {
       }
     }
     return cleaned;
+  }
+
+  // Método para ver detalle de albarán (abre el modal de detalle)
+  verDetalleAlbaran(albaran: Albaran): void {
+    this.albaranSeleccionado = albaran;
+    $('#detalleAlbaranModal').modal('show');
+  }
+
+  // Método para editar desde el modal de detalle
+  editarDesdeDetalle(): void {
+    if (this.albaranSeleccionado) {
+      $('#detalleAlbaranModal').modal('hide');
+      setTimeout(() => {
+        this.editarAlbaran(this.albaranSeleccionado!);
+      }, 300);
+    }
+  }
+
+  // Método para eliminar desde el modal de detalle
+  async eliminarDesdeDetalle(): Promise<void> {
+    if (this.albaranSeleccionado) {
+      $('#detalleAlbaranModal').modal('hide');
+      setTimeout(async () => {
+        await this.eliminarAlbaran(this.albaranSeleccionado!);
+      }, 300);
+    }
+  }
+
+  // Método para imprimir desde el modal de detalle
+  imprimirDesdeDetalle(): void {
+    if (this.albaranSeleccionado) {
+      this.imprimirAlbaran(this.albaranSeleccionado);
+    }
+  }
+
+  // Métodos para obtener información de productos en el modal
+  getProductoNombre(productoId: string): string {
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto?.nombre || 'Producto no encontrado';
+  }
+
+  getProductoDescripcion(productoId: string): string {
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto?.descripcion || '';
+  }
+
+  getProductoUnidad(productoId: string): string {
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto?.unidadMedida || '';
+  }
+
+  getProveedorCompleto(proveedorId: string): Proveedor | undefined {
+    return this.proveedores.find((p) => p.id === proveedorId);
   }
 }

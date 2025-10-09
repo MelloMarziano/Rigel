@@ -99,7 +99,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       try {
         const user = this.authService.getCurrentUser();
         if (user?.uid) {
-          const userRef = doc(this.firestore, 'users', user.uid);
+          const userRef = doc(this.firestore, 'usuarios', user.uid);
           const userDoc = await import('@angular/fire/firestore').then((m) =>
             m.getDoc(userRef)
           );
@@ -311,7 +311,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       const user = this.authService.getCurrentUser();
       if (user?.uid) {
         // Cargar personalización del usuario
-        const userRef = doc(this.firestore, 'users', user.uid);
+        const userRef = doc(this.firestore, 'usuarios', user.uid);
         const userDoc = await import('@angular/fire/firestore').then((m) =>
           m.getDoc(userRef)
         );
@@ -346,48 +346,149 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   actualizarPreview(): void {
-    // El preview se actualiza automáticamente con los bindings de Angular
-    // Este método puede usarse para lógica adicional si es necesario
+    // Aplicar colores en tiempo real para preview
+    const colores = this.customizationForm.value;
+    const personalizacionActual =
+      this.customizationService.obtenerPersonalizacionActual();
+    const nuevaPersonalizacion = {
+      ...colores,
+      modoOscuro: personalizacionActual.modoOscuro,
+    };
+    this.customizationService.actualizarPersonalizacion(nuevaPersonalizacion);
   }
 
   aplicarTema(tema: string): void {
-    // Usar el servicio para aplicar el tema predefinido
-    const temasValidos = [
-      'default',
-      'pink',
-      'barbie',
-      'blue',
-      'green',
-      'purple',
-      'orange',
-      'teal',
-      'indigo',
-    ];
-    if (temasValidos.includes(tema)) {
-      this.customizationService.aplicarTema(
-        tema as
-          | 'default'
-          | 'pink'
-          | 'barbie'
-          | 'blue'
-          | 'green'
-          | 'purple'
-          | 'orange'
-          | 'teal'
-          | 'indigo'
-      );
+    const temas: { [key: string]: any } = {
+      default: {
+        colorPrincipal: '#dc3545',
+        colorSidebar: '#122d44',
+        colorSidebarSecundario: '#6e120b',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#34495e',
+      },
+      ocean: {
+        colorPrincipal: '#0077be',
+        colorSidebar: '#0077be',
+        colorSidebarSecundario: '#00a8cc',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#005a8b',
+      },
+      sunset: {
+        colorPrincipal: '#ff6b35',
+        colorSidebar: '#ff6b35',
+        colorSidebarSecundario: '#f7931e',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#e55a2b',
+      },
+      forest: {
+        colorPrincipal: '#2d5016',
+        colorSidebar: '#2d5016',
+        colorSidebarSecundario: '#3e7b27',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#1e3a0f',
+      },
+      lavender: {
+        colorPrincipal: '#667eea',
+        colorSidebar: '#667eea',
+        colorSidebarSecundario: '#764ba2',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#5a6fd8',
+      },
+      cherry: {
+        colorPrincipal: '#eb3349',
+        colorSidebar: '#eb3349',
+        colorSidebarSecundario: '#f45c43',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#d42c40',
+      },
+      midnight: {
+        colorPrincipal: '#2c3e50',
+        colorSidebar: '#2c3e50',
+        colorSidebarSecundario: '#34495e',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#1a252f',
+      },
+      aurora: {
+        colorPrincipal: '#00c6ff',
+        colorSidebar: '#00c6ff',
+        colorSidebarSecundario: '#0072ff',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#00a8d6',
+      },
+      cosmic: {
+        colorPrincipal: '#8360c3',
+        colorSidebar: '#8360c3',
+        colorSidebarSecundario: '#2ebf91',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#7451b3',
+      },
+      tropical: {
+        colorPrincipal: '#f093fb',
+        colorSidebar: '#f093fb',
+        colorSidebarSecundario: '#f5576c',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#ee7ff9',
+      },
+      volcano: {
+        colorPrincipal: '#ff9a9e',
+        colorSidebar: '#ff9a9e',
+        colorSidebarSecundario: '#fecfef',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#ff8a8f',
+      },
+      emerald: {
+        colorPrincipal: '#11998e',
+        colorSidebar: '#11998e',
+        colorSidebarSecundario: '#38ef7d',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#0e8078',
+      },
+      royal: {
+        colorPrincipal: '#141e30',
+        colorSidebar: '#141e30',
+        colorSidebarSecundario: '#243b55',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#0a1118',
+      },
+      peach: {
+        colorPrincipal: '#ed4264',
+        colorSidebar: '#ed4264',
+        colorSidebarSecundario: '#ffedbc',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#d63555',
+      },
+      mint: {
+        colorPrincipal: '#00b09b',
+        colorSidebar: '#00b09b',
+        colorSidebarSecundario: '#96c93d',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#009688',
+      },
+      neon: {
+        colorPrincipal: '#b92b27',
+        colorSidebar: '#b92b27',
+        colorSidebarSecundario: '#1565c0',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#9a231f',
+      },
+      candy: {
+        colorPrincipal: '#d3959b',
+        colorSidebar: '#d3959b',
+        colorSidebarSecundario: '#bfe6ba',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#c27f86',
+      },
+      galaxy: {
+        colorPrincipal: '#2e1437',
+        colorSidebar: '#2e1437',
+        colorSidebarSecundario: '#948e99',
+        colorTextoSidebar: '#ffffff',
+        colorHoverSidebar: '#1f0d25',
+      },
+    };
 
-      // Actualizar el formulario con los nuevos valores
-      const personalizacionActual =
-        this.customizationService.obtenerPersonalizacionActual();
-      this.customizationForm.patchValue({
-        colorPrincipal: personalizacionActual.colorPrincipal,
-        colorSidebar: personalizacionActual.colorSidebar,
-        colorSidebarSecundario: personalizacionActual.colorSidebarSecundario,
-        colorTextoSidebar: personalizacionActual.colorTextoSidebar,
-        colorHoverSidebar: personalizacionActual.colorHoverSidebar,
-      });
-
+    if (temas[tema]) {
+      this.customizationForm.patchValue(temas[tema]);
       this.actualizarPreview();
     }
   }
@@ -409,7 +510,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     try {
       const user = this.authService.getCurrentUser();
       if (user?.uid) {
-        const userRef = doc(this.firestore, 'users', user.uid);
+        const userRef = doc(this.firestore, 'usuarios', user.uid);
         await updateDoc(userRef, {
           modoOscuro: this.modoOscuroActivo,
           fechaActualizacionPreferencias: new Date(),
@@ -429,7 +530,14 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   private aplicarColoresAlSistema(): void {
     const colores = this.customizationForm.value;
-    this.customizationService.actualizarPersonalizacion(colores);
+    // Mantener el estado del modo oscuro actual
+    const personalizacionActual =
+      this.customizationService.obtenerPersonalizacionActual();
+    const nuevaPersonalizacion = {
+      ...colores,
+      modoOscuro: personalizacionActual.modoOscuro,
+    };
+    this.customizationService.actualizarPersonalizacion(nuevaPersonalizacion);
   }
 
   async guardarPersonalizacion(): Promise<void> {
@@ -438,6 +546,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const customizationData = {
       ...formValue,
+      modoOscuro: this.modoOscuroActivo,
       fechaActualizacion: new Date(),
     };
 
@@ -445,9 +554,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       const user = this.authService.getCurrentUser();
       if (user?.uid) {
         // Guardar personalización en el perfil del usuario
-        const userRef = doc(this.firestore, 'users', user.uid);
+        const userRef = doc(this.firestore, 'usuarios', user.uid);
         await updateDoc(userRef, {
           personalizacion: this.cleanObjectForFirebase(customizationData),
+          modoOscuro: this.modoOscuroActivo,
           fechaActualizacionPersonalizacion: new Date(),
         });
 
@@ -459,7 +569,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
       Swal.fire({
         title: '¡Personalización Guardada!',
-        text: 'Los colores se han aplicado correctamente a tu cuenta.',
+        text: 'Los colores y preferencias se han guardado correctamente en tu cuenta.',
         icon: 'success',
         timer: 2000,
         showConfirmButton: false,

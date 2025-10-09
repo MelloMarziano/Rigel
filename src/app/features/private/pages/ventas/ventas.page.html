@@ -1,0 +1,267 @@
+<div class="pos-container">
+  <!-- Área principal de productos -->
+  <div class="pos-main">
+    <div class="main-header">
+      <h5 class="mb-0">Punto de Venta</h5>
+
+      <div class="header-actions">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Buscar producto..." [(ngModel)]="searchTerm">
+        </div>
+        <button class="btn-scan">
+          <i class="bi bi-upc-scan"></i>
+          Escanear
+        </button>
+      </div>
+    </div>
+
+    <!-- Categorías -->
+    <div class="categories-bar">
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'todos'"
+        (click)="seleccionarCategoria('todos')">
+        <i class="bi bi-grid"></i>
+        Todos
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'burger'"
+        (click)="seleccionarCategoria('burger')">
+        🍔 Burgers
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'pizza'"
+        (click)="seleccionarCategoria('pizza')">
+        🍕 Pizzas
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'pasta'"
+        (click)="seleccionarCategoria('pasta')">
+        🍝 Pastas
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'ensaladas'"
+        (click)="seleccionarCategoria('ensaladas')">
+        🥗 Ensaladas
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'bebidas'"
+        (click)="seleccionarCategoria('bebidas')">
+        🥤 Bebidas
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'postres'"
+        (click)="seleccionarCategoria('postres')">
+        🍰 Postres
+      </button>
+      <button
+        class="category-btn"
+        [class.active]="categoriaSeleccionada === 'servicios'"
+        (click)="seleccionarCategoria('servicios')">
+        🏖️ Servicios
+      </button>
+    </div>
+
+    <!-- Grid de productos -->
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let producto of productosFiltrados" (click)="agregarAlCarrito(producto)">
+        <div class="product-image">
+          <span class="product-emoji">{{ producto.emoji }}</span>
+          <span class="product-badge" *ngIf="producto.stock < 10">
+            <i class="bi bi-exclamation-circle"></i>
+          </span>
+        </div>
+        <div class="product-info">
+          <h6 class="product-name">{{ producto.nombre }}</h6>
+          <p class="product-price">{{ producto.precio | currency:'EUR':'symbol':'1.2-2' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel derecho - Carrito -->
+  <div class="pos-cart">
+    <div class="cart-header">
+      <h6 class="mb-0">
+        <i class="bi bi-receipt me-2"></i>
+        Pedido
+      </h6>
+      <span class="order-number">#{{ numeroPedido }}</span>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="customer-section">
+      <label class="section-label">
+        <i class="bi bi-person me-2"></i>
+        Cliente
+      </label>
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        placeholder="Nombre del cliente..."
+        [(ngModel)]="nombreCliente">
+    </div>
+
+    <!-- Selección de Mesa -->
+    <div class="table-section">
+      <label class="section-label">
+        <i class="bi bi-table me-2"></i>
+        Mesa
+      </label>
+      <div class="table-selector">
+        <select class="form-select form-select-sm" [(ngModel)]="mesaSeleccionada">
+          <option value="">Seleccionar mesa...</option>
+          <optgroup label="🏠 Interior">
+            <option value="I1">Mesa I1</option>
+            <option value="I2">Mesa I2</option>
+            <option value="I3">Mesa I3</option>
+            <option value="I4">Mesa I4</option>
+            <option value="I5">Mesa I5</option>
+            <option value="I6">Mesa I6</option>
+          </optgroup>
+          <optgroup label="🏖️ Exterior (Playa)">
+            <option value="E1">Mesa E1 - Con sombrilla</option>
+            <option value="E2">Mesa E2 - Con sombrilla</option>
+            <option value="E3">Mesa E3 - Con sombrilla</option>
+            <option value="E4">Mesa E4 - Con sombrilla</option>
+            <option value="E5">Mesa E5 - Con sombrilla</option>
+            <option value="E6">Mesa E6 - Con sombrilla</option>
+            <option value="E7">Mesa E7 - Con sombrilla</option>
+            <option value="E8">Mesa E8 - Con sombrilla</option>
+          </optgroup>
+        </select>
+        <button
+          class="btn-add-umbrella"
+          *ngIf="mesaSeleccionada && mesaSeleccionada.startsWith('E') && !tieneSombrilla"
+          (click)="agregarServicioSombrilla()"
+          title="Agregar servicio de sombrilla">
+          <i class="bi bi-umbrella-fill"></i>
+        </button>
+      </div>
+      <small class="text-muted" *ngIf="mesaSeleccionada && mesaSeleccionada.startsWith('E')">
+        <i class="bi bi-info-circle me-1"></i>
+        Mesa en la playa - Servicio de sombrilla disponible
+      </small>
+    </div>
+
+    <!-- Tipo de Servicio -->
+    <div class="service-type-tabs">
+      <button
+        class="service-tab"
+        [class.active]="tipoServicio === 'local'"
+        (click)="tipoServicio = 'local'">
+        <i class="bi bi-shop"></i>
+        <span>Local</span>
+      </button>
+      <button
+        class="service-tab"
+        [class.active]="tipoServicio === 'llevar'"
+        (click)="tipoServicio = 'llevar'">
+        <i class="bi bi-bag-check"></i>
+        <span>Para llevar</span>
+      </button>
+      <button
+        class="service-tab"
+        [class.active]="tipoServicio === 'delivery'"
+        (click)="tipoServicio = 'delivery'">
+        <i class="bi bi-truck"></i>
+        <span>Delivery</span>
+      </button>
+    </div>
+
+    <div class="cart-items-header">
+      <span>Items</span>
+      <span>Cant</span>
+      <span>Tamaño</span>
+      <span>Precio</span>
+    </div>
+
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of carrito; let i = index">
+        <div class="item-info">
+          <h6>{{ item.nombre }}</h6>
+        </div>
+        <div class="item-quantity">
+          <button class="btn-qty" (click)="disminuirCantidad(i)">
+            <i class="bi bi-dash"></i>
+          </button>
+          <span>{{ item.cantidad }}</span>
+          <button class="btn-qty" (click)="aumentarCantidad(i)">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+        <div class="item-size">
+          <span class="badge">{{ item.tamano || 'M' }}</span>
+        </div>
+        <div class="item-price">
+          <span>{{ item.precio * item.cantidad | currency:'EUR':'symbol':'1.0-0' }}</span>
+          <button class="btn-remove" (click)="eliminarDelCarrito(i)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="empty-cart" *ngIf="carrito.length === 0">
+        <i class="bi bi-cart-x"></i>
+        <p>Carrito vacío</p>
+        <small>Agrega productos para comenzar</small>
+      </div>
+    </div>
+
+    <div class="cart-footer">
+      <div class="order-info">
+        <div class="info-row">
+          <span class="text-muted">KOT 1 | Hora: {{ horaActual }}</span>
+          <button class="btn-expand">
+            <i class="bi bi-chevron-down"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="discount-section">
+        <div class="discount-badge">
+          <i class="bi bi-tag"></i>
+          Ahorra {{ descuento | currency:'EUR':'symbol':'1.0-0' }} en esta orden
+        </div>
+        <button class="btn-apply">Aplicar</button>
+      </div>
+
+      <div class="totals">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span>{{ subtotal | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="total-row">
+          <span>Descuento</span>
+          <span>{{ descuento | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="total-row total-final">
+          <span>Total a Pagar</span>
+          <span>{{ total | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-draft">
+          <i class="bi bi-save"></i>
+          Guardar
+        </button>
+        <button class="btn-pay">
+          <i class="bi bi-credit-card"></i>
+          Pagar
+        </button>
+        <button class="btn-later">
+          <i class="bi bi-clock"></i>
+          Más tarde
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

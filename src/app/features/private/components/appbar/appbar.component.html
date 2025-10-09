@@ -48,11 +48,6 @@
           <span class="notification-badge">3</span>
         </button>
 
-        <!-- Configuración - Solo visible en desktop -->
-        <button class="btn btn-link nav-icon-btn d-none d-lg-inline-block" title="Configuración" routerLink="/private/settings">
-          <i class="bi bi-gear"></i>
-        </button>
-
         <!-- Usuario -->
         <div class="dropdown">
           <button
@@ -83,13 +78,18 @@
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
-              <a class="dropdown-item" href="#" title="Próximamente">
+              <a class="dropdown-item" routerLink="/private/profile">
                 <i class="bi bi-person me-2"></i>Mi Perfil
               </a>
             </li>
             <li>
-              <a class="dropdown-item" routerLink="/private/settings">
-                <i class="bi bi-gear me-2"></i>Configuración
+              <a class="dropdown-item" routerLink="/private/personalization">
+                <i class="bi bi-palette me-2"></i>Personalización
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/private/about-system">
+                <i class="bi bi-info-circle me-2"></i>Acerca del Sistema
               </a>
             </li>
             <li><hr class="dropdown-divider"></li>

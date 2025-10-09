@@ -1,0 +1,272 @@
+<div class="container-fluid about-system-page py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="mb-1">
+            <i class="bi bi-info-circle me-2"></i>
+            Acerca del Sistema
+          </h3>
+          <span class="text-muted">
+            Información sobre Rigel y el equipo de desarrollo
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-info-circle me-2 text-primary"></i>
+            Sistema Rigel
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-lg-8">
+              <div class="d-flex align-items-center mb-3">
+                <div class="system-logo me-3">
+                  <img src="assets/logo-rigel2.png" alt="Rigel Logo" style="height: 54px;">
+                </div>
+                <div>
+                  <p class="text-muted mb-0 small">{{ infoSistema.descripcion }}</p>
+                  <small class="text-muted">Versión {{ infoSistema.version }}</small>
+                </div>
+              </div>
+
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-calendar-event text-info"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Fecha de Lanzamiento</h6>
+                      <p class="text-muted mb-0">{{ infoSistema.fechaLanzamiento }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-people text-success"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Equipo Fundador</h6>
+                      <p class="text-muted mb-0">
+                        {{ infoSistema.equipo.ceo.nombre }}, {{ infoSistema.equipo.cto.nombre }} & {{ infoSistema.equipo.designer.nombre }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-headset text-warning"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Soporte Técnico</h6>
+                      <p class="text-muted mb-0">
+                        🇪🇸
+                        <a href="tel:{{ infoSistema.equipo.cto.telefono }}" class="text-decoration-none">
+                          {{ infoSistema.equipo.cto.telefono }}
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <i class="bi bi-shield-check text-primary"></i>
+                    </div>
+                    <div class="info-content">
+                      <h6 class="mb-1">Estado del Sistema</h6>
+                      <p [class]="appShutdownEnabled ? 'text-danger' : 'text-success'" class="mb-0">
+                        <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i>
+                        {{ appShutdownEnabled ? 'Desactivado' : 'Operativo' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Control de Apagado del Sistema (Solo ROOT) -->
+              <div *ngIf="isRootUser" class="mt-4">
+                <div class="card border-warning">
+                  <div class="card-header bg-warning bg-opacity-10 border-warning">
+                    <h6 class="mb-0 text-warning">
+                      <i class="bi bi-shield-exclamation me-2"></i>
+                      Control de Sistema - Acceso ROOT
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-12 col-md-8">
+                        <h6 class="mb-1">Control de Acceso al Sistema</h6>
+                        <p class="text-muted mb-0 small">
+                          {{ appShutdownEnabled
+                            ? 'El sistema está actualmente desactivado. Los usuarios no pueden acceder.'
+                            : 'El sistema está operativo. Los usuarios pueden acceder normalmente.' }}
+                        </p>
+                        <small class="text-muted">
+                          <i class="bi bi-info-circle me-1"></i>
+                          Solo usuarios ROOT pueden controlar el estado del sistema
+                        </small>
+                      </div>
+                      <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          [class]="appShutdownEnabled ? 'btn-success' : 'btn-danger'"
+                          (click)="toggleAppShutdown()">
+                          <i [class]="appShutdownEnabled ? 'bi bi-power' : 'bi bi-stop-circle'" class="me-2"></i>
+                          {{ appShutdownEnabled ? 'Activar Sistema' : 'Desactivar Sistema' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <h6 class="mb-2 small">Características del Sistema</h6>
+                <div class="row g-2">
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Inventario</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Control de Proveedores</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Recetas</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Albaranes de Entrega</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Dashboard Analítico</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="feature-item-compact">
+                      <i class="bi bi-check-circle text-success me-2"></i>
+                      <span>Gestión de Usuarios</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+              <div class="company-info-card">
+                <h6 class="mb-3">
+                  <i class="bi bi-building me-2" style="color: var(--color-principal, #dc3545);"></i>
+                  Orion System
+                </h6>
+
+                <!-- Equipo Condensado -->
+                <div class="team-compact">
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-star-fill me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.ceo.nombre }}</div>
+                            <div class="member-role-compact">CEO & Fundador</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.ceo.bandera }}</div>
+                        </div>
+                        <a href="tel:{{ infoSistema.equipo.ceo.telefono }}" class="phone-compact">
+                          {{ infoSistema.equipo.ceo.telefono }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-graph-up-arrow me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.cto.nombre }}</div>
+                            <div class="member-role-compact">CTO & Ventas</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.cto.bandera }}</div>
+                        </div>
+                        <a href="tel:{{ infoSistema.equipo.cto.telefono }}" class="phone-compact">
+                          {{ infoSistema.equipo.cto.telefono }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="team-member-compact">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-palette me-3" style="color: var(--color-principal, #dc3545);"></i>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            <div class="member-name-compact">{{ infoSistema.equipo.designer.nombre }}</div>
+                            <div class="member-role-compact">UX/UI Designer</div>
+                          </div>
+                          <div class="flag-compact">{{ infoSistema.equipo.designer.bandera }}</div>
+                        </div>
+                        <div class="phone-compact-no-link">Diseño</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="company-details-compact mt-3">
+                  <div class="detail-item">
+                    <i class="bi bi-calendar-check text-warning me-2"></i>
+                    <span>{{ infoSistema.fechaLanzamiento }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-award text-danger me-2"></i>
+                    <span>Versión {{ infoSistema.version }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 p-3 bg-light rounded">
+                <h6 class="mb-2">
+                  <i class="bi bi-star text-warning me-1"></i>
+                  Constelación Orión
+                </h6>
+                <p class="small text-muted mb-0">
+                  Rigel es la estrella más brillante de la constelación de Orión,
+                  simbolizando la excelencia y precisión que buscamos en cada
+                  funcionalidad de nuestro sistema de gestión.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

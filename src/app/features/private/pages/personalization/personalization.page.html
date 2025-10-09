@@ -1,0 +1,470 @@
+<div class="container-fluid personalization-page py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="mb-1">
+            <i class="bi bi-palette me-2"></i>
+            Personalización
+          </h3>
+          <span class="text-muted">
+            Personaliza los colores y temas de tu interfaz
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-palette me-2 text-warning"></i>
+            Temas y Colores
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Panel de Configuración -->
+            <div class="col-12 col-lg-6">
+              <form [formGroup]="customizationForm" (ngSubmit)="guardarPersonalizacion()">
+                <!-- Modo Oscuro -->
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-moon me-2"></i>
+                    Apariencia Personal
+                  </h6>
+                  <div class="d-flex align-items-center justify-content-between p-3 border rounded">
+                    <div class="d-flex align-items-center flex-grow-1">
+                      <i class="bi bi-moon-fill me-3 fs-5"></i>
+                      <div>
+                        <div class="fw-medium">Modo Oscuro</div>
+                        <small class="text-muted">
+                          <i class="bi bi-person-fill me-1"></i>
+                          Esta preferencia es personal y solo afecta a tu cuenta
+                        </small>
+                      </div>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="modoOscuroSwitch"
+                        [checked]="modoOscuroActivo"
+                        (change)="alternarModoOscuro()">
+                      <label class="form-check-label" for="modoOscuroSwitch"></label>
+                    </div>
+                  </div>
+                  <div class="alert alert-info mt-2 py-2 px-3">
+                    <small>
+                      <i class="bi bi-info-circle me-1"></i>
+                      El modo oscuro se guarda automáticamente y se aplicará cada vez que inicies sesión
+                    </small>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-brush me-2"></i>
+                    Colores Personales
+                  </h6>
+                  <div class="alert alert-info py-2 px-3 mb-3">
+                    <small>
+                      <i class="bi bi-person-fill me-1"></i>
+                      <strong>Personalización Individual:</strong> Estos colores solo afectan a tu cuenta y se aplicarán en todos tus dispositivos
+                    </small>
+                  </div>
+
+                  <!-- Color Principal -->
+                  <div class="mb-3">
+                    <label class="form-label">Color Principal</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorPrincipal"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorPrincipal"
+                          (input)="actualizarPreview()"
+                          placeholder="#dc3545">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color usado en botones principales y elementos destacados</small>
+                  </div>
+
+                  <!-- Color Sidebar -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Sidebar (Superior)</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#122d44">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color superior del degradado del menú lateral</small>
+                  </div>
+
+                  <!-- Color Sidebar Secundario -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Sidebar (Inferior)</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorSidebarSecundario"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorSidebarSecundario"
+                          (input)="actualizarPreview()"
+                          placeholder="#6e120b">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color inferior del degradado del menú lateral</small>
+                  </div>
+
+                  <!-- Color Texto Sidebar -->
+                  <div class="mb-3">
+                    <label class="form-label">Color del Texto del Sidebar</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorTextoSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorTextoSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#ffffff">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color del texto en el menú lateral</small>
+                  </div>
+
+                  <!-- Color Hover Sidebar -->
+                  <div class="mb-4">
+                    <label class="form-label">Color Hover del Sidebar</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input
+                        type="color"
+                        class="form-control form-control-color"
+                        formControlName="colorHoverSidebar"
+                        (change)="actualizarPreview()"
+                        style="width: 60px; height: 40px;">
+                      <div class="flex-grow-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="colorHoverSidebar"
+                          (input)="actualizarPreview()"
+                          placeholder="#34495e">
+                      </div>
+                    </div>
+                    <small class="text-muted">Color al pasar el mouse sobre elementos del menú</small>
+                  </div>
+                </div>
+
+                <!-- Colores Predefinidos -->
+                <div class="mb-4">
+                  <h6 class="mb-3">
+                    <i class="bi bi-palette2 me-2"></i>
+                    Temas Predefinidos con Gradientes
+                  </h6>
+                  <div class="row g-2">
+                    <!-- Fila 1: Temas Clásicos -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('default')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #122d44 0%, #6e120b 100%);"></div>
+                          <span class="small">Rigel Clásico</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('ocean')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #0077be 0%, #00a8cc 100%);"></div>
+                          <span class="small">Océano</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('sunset')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);"></div>
+                          <span class="small">Atardecer</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 2: Temas Naturales -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('forest')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2d5016 0%, #3e7b27 100%);"></div>
+                          <span class="small">Bosque</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('lavender')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                          <span class="small">Lavanda</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('cherry')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);"></div>
+                          <span class="small">Cereza</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 3: Temas Modernos -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('midnight')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);"></div>
+                          <span class="small">Medianoche</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('aurora')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);"></div>
+                          <span class="small">Aurora</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('cosmic')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);"></div>
+                          <span class="small">Cósmico</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 4: Temas Vibrantes -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('tropical')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                          <span class="small">Tropical</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('volcano')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                          <span class="small">Volcán</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('emerald')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                          <span class="small">Esmeralda</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 5: Temas Elegantes -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('royal')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);"></div>
+                          <span class="small">Real</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('peach')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #ed4264 0%, #ffedbc 100%);"></div>
+                          <span class="small">Durazno</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('mint')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);"></div>
+                          <span class="small">Menta</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Fila 6: Temas Especiales -->
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('neon')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #b92b27 0%, #1565c0 100%);"></div>
+                          <span class="small">Neón</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('candy')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #d3959b 0%, #bfe6ba 100%);"></div>
+                          <span class="small">Caramelo</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <button type="button" class="btn btn-outline-secondary w-100 p-2" (click)="aplicarTema('galaxy')">
+                        <div class="d-flex align-items-center">
+                          <div class="color-preview-gradient me-2" style="background: linear-gradient(135deg, #2e1437 0%, #948e99 100%);"></div>
+                          <span class="small">Galaxia</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-secondary" (click)="resetearColores()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Resetear
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn"
+                    [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                    [style.border-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                    style="color: white;"
+                    [disabled]="guardandoCustomization">
+                    <span *ngIf="guardandoCustomization" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!guardandoCustomization" class="bi bi-save me-2"></i>
+                    {{ guardandoCustomization ? 'Guardando...' : 'Guardar Mi Personalización' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Panel de Preview -->
+            <div class="col-12 col-lg-6">
+              <div class="sticky-top" style="top: 20px;">
+                <h6 class="mb-3">
+                  <i class="bi bi-eye me-2"></i>
+                  Vista Previa
+                </h6>
+
+                <!-- Preview del Sidebar -->
+                <div class="preview-container">
+                  <div class="preview-sidebar"
+                       [style.background]="'linear-gradient(to bottom, ' + (customizationForm.get('colorSidebar')?.value || '#122d44') + ', ' + (customizationForm.get('colorSidebarSecundario')?.value || '#6e120b') + ')'">
+                    <div class="preview-logo p-3">
+                      <div class="d-flex align-items-center">
+                        <div class="preview-logo-icon me-2"
+                             [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                          <i class="bi bi-star-fill"></i>
+                        </div>
+                        <span class="preview-logo-text"
+                              [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                          Rigel
+                        </span>
+                      </div>
+                    </div>
+                    <div class="preview-menu">
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'"
+                           [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-box me-2"></i>
+                        Productos
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-people me-2"></i>
+                        Proveedores
+                      </div>
+                      <div class="preview-menu-item"
+                           [style.color]="customizationForm.get('colorTextoSidebar')?.value || '#ffffff'">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Albaranes
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Preview del Contenido -->
+                  <div class="preview-content">
+                    <div class="preview-header p-3 bg-white border-bottom">
+                      <h6 class="mb-0">Dashboard</h6>
+                    </div>
+                    <div class="preview-body p-3">
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="preview-card">
+                            <div class="preview-card-body">
+                              <h6>Total Productos</h6>
+                              <h4 class="text-primary">156</h4>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="preview-card">
+                            <div class="preview-card-body">
+                              <h6>Proveedores</h6>
+                              <h4 class="text-success">23</h4>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <button class="btn btn-sm me-2"
+                                [style.background-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                                [style.border-color]="customizationForm.get('colorPrincipal')?.value || '#dc3545'"
+                                style="color: white;">
+                          Botón Principal
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                          Botón Secundario
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

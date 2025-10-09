@@ -57,8 +57,22 @@ export class SidebarComponent implements OnInit {
       permission: 'recetas',
     },
     {
-      name: 'Ventas',
-      icon: 'shopping-cart',
+      name: 'Escandallos',
+      icon: 'Calculator',
+      iconColor: '#ffffff',
+      route: '/escandallos',
+      permission: 'escandallos',
+    },
+    {
+      name: 'Mermas',
+      icon: 'TriangleAlert',
+      iconColor: '#ffffff',
+      route: '/mermas',
+      permission: 'mermas',
+    },
+    {
+      name: 'POS',
+      icon: 'CreditCard',
       iconColor: '#ffffff',
       route: '/ventas',
       permission: 'ventas',
@@ -104,13 +118,6 @@ export class SidebarComponent implements OnInit {
       iconColor: '#38bdf8',
       route: '/inventario',
       permission: 'inventario',
-    },
-    {
-      name: 'Ajustes',
-      icon: 'settings',
-      iconColor: '#38bdf8',
-      route: '/ajustes',
-      permission: 'ajustes',
     },
   ];
 

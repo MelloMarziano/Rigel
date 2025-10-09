@@ -1,0 +1,153 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-8">
+      <button class="btn btn-link text-decoration-none ps-0 mb-2" routerLink="/private/mermas">
+        <i class="bi bi-arrow-left me-2"></i>Volver a Mermas
+      </button>
+      <h5>Reporte de Mermas</h5>
+      <span class="text-muted">Análisis del impacto de mermas en el inventario</span>
+    </div>
+    <div class="col text-end">
+      <button class="btn btn-outline-primary" (click)="exportarReporte()">
+        <i class="bi bi-download me-2"></i>
+        Exportar Reporte
+      </button>
+    </div>
+  </div>
+
+  <!-- Resumen General -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="bi bi-box-seam text-primary fs-1 mb-2"></i>
+          <h3 class="mb-0">{{ reportes.length }}</h3>
+          <span class="text-muted">Productos con Merma</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
+          <h3 class="mb-0">{{ totalPerdida | number:'1.1-1' }}</h3>
+          <span class="text-muted">Total Unidades Perdidas</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="bi bi-currency-dollar text-danger fs-1 mb-2"></i>
+          <h3 class="mb-0">${{ totalCostoPerdida | number:'1.2-2' }}</h3>
+          <span class="text-muted">Costo Total de Pérdidas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Producto con Mayor Merma -->
+  <div class="row mb-4" *ngIf="productoMayorMerma">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
+        <div class="card-body">
+          <h6 class="mb-3">
+            <i class="bi bi-trophy text-danger me-2"></i>
+            Producto con Mayor Pérdida
+          </h6>
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <h5 class="mb-0">{{ productoMayorMerma.producto.nombre }}</h5>
+              <small class="text-muted">{{ productoMayorMerma.merma.nombre }}</small>
+            </div>
+            <div class="col-md-2 text-center">
+              <div class="text-muted small">Merma</div>
+              <h4 class="mb-0 text-danger">{{ productoMayorMerma.merma.porcentajeMerma }}%</h4>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="text-muted small">Pérdida</div>
+              <h5 class="mb-0">{{ productoMayorMerma.perdidaEstimada | number:'1.1-1' }} {{ productoMayorMerma.producto.unidadMedida }}</h5>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="text-muted small">Costo Pérdida</div>
+              <h5 class="mb-0 text-danger">${{ productoMayorMerma.costoPerdida | number:'1.2-2' }}</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Reportes -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="mb-3">Detalle por Producto</h6>
+
+          <div *ngIf="reportes.length === 0" class="text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <h5 class="mt-3 text-muted">No hay datos para mostrar</h5>
+            <p class="text-muted">Configura mermas para tus productos para ver el reporte</p>
+          </div>
+
+          <div class="table-responsive" *ngIf="reportes.length > 0">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Merma</th>
+                  <th class="text-end">% Merma</th>
+                  <th class="text-end">Cantidad Comprada</th>
+                  <th class="text-end">Pérdida</th>
+                  <th class="text-end">Cantidad Útil</th>
+                  <th class="text-end">Costo Pérdida</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let reporte of reportes">
+                  <td>
+                    <strong>{{ reporte.producto.nombre }}</strong>
+                    <br>
+                    <small class="text-muted">{{ reporte.producto.categoriaId }}</small>
+                  </td>
+                  <td>{{ reporte.merma.nombre }}</td>
+                  <td class="text-end">
+                    <span class="badge bg-warning text-dark">
+                      {{ reporte.merma.porcentajeMerma }}%
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    {{ reporte.cantidadComprada | number:'1.1-1' }} {{ reporte.producto.unidadMedida }}
+                  </td>
+                  <td class="text-end text-danger">
+                    <strong>{{ reporte.perdidaEstimada | number:'1.1-1' }}</strong> {{ reporte.producto.unidadMedida }}
+                  </td>
+                  <td class="text-end text-success">
+                    <strong>{{ reporte.cantidadUtil | number:'1.1-1' }}</strong> {{ reporte.producto.unidadMedida }}
+                  </td>
+                  <td class="text-end text-danger">
+                    <strong>${{ reporte.costoPerdida | number:'1.2-2' }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="table-secondary">
+                  <td colspan="4" class="text-end"><strong>TOTALES:</strong></td>
+                  <td class="text-end text-danger">
+                    <strong>{{ totalPerdida | number:'1.1-1' }}</strong>
+                  </td>
+                  <td></td>
+                  <td class="text-end text-danger">
+                    <strong>${{ totalCostoPerdida | number:'1.2-2' }}</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

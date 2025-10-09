@@ -46,12 +46,47 @@
       <p class="text-muted">No se encontraron productos con los filtros seleccionados.</p>
     </div>
     <div class="col-12 col-sm-3 mb-4" *ngFor="let producto of filteredProducts">
-      <div class="card shadow-sm border-0 h-100" style="cursor: pointer;" (click)="verDetalleProducto(producto)">
+      <div class="card shadow-sm border-0 h-100 position-relative"
+           style="cursor: pointer;"
+           (click)="verDetalleProducto(producto)"
+           [class.border-warning]="!producto.esCombinado && (producto.stock || 0) <= (producto.stockMinimo || 0) && (producto.stock || 0) > 0"
+           [class.border-danger]="!producto.esCombinado && (producto.stock || 0) === 0"
+           [style.border-width]="(!producto.esCombinado && (producto.stock || 0) <= (producto.stockMinimo || 0)) ? '2px' : '1px'">
+
+        <!-- Indicador de stock bajo/agotado -->
+        <div *ngIf="!producto.esCombinado && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+             class="position-absolute top-0 end-0 m-2">
+          <div *ngIf="(producto.stock || 0) === 0"
+               class="badge bg-danger d-flex align-items-center gap-1 px-2 py-1"
+               style="font-size: 0.7rem;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            AGOTADO
+          </div>
+          <div *ngIf="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+               class="badge bg-warning text-dark d-flex align-items-center gap-1 px-2 py-1"
+               style="font-size: 0.7rem;">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            STOCK BAJO
+          </div>
+        </div>
+
+        <!-- Barra de alerta en la parte superior -->
+        <div *ngIf="!producto.esCombinado && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+             class="alert-bar position-absolute top-0 start-0 w-100"
+             [class.bg-danger]="(producto.stock || 0) === 0"
+             [class.bg-warning]="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+             style="height: 4px; border-radius: 0.375rem 0.375rem 0 0;"></div>
+
         <div class="card-body p-3">
           <!-- Header con título -->
           <div class="mb-3">
             <div class="flex-grow-1">
-              <h6 class="mb-1 fw-bold text-dark">{{producto.nombre}}</h6>
+              <h6 class="mb-1 fw-bold"
+                  [class.text-danger]="!producto.esCombinado && (producto.stock || 0) === 0"
+                  [class.text-warning]="!producto.esCombinado && (producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+                  [class.text-dark]="producto.esCombinado || (producto.stock || 0) > (producto.stockMinimo || 0)">
+                {{producto.nombre}}
+              </h6>
               <p class="text-muted small mb-2">{{producto.descripcion}}</p>
               <div class="d-flex flex-wrap gap-1">
                 <span class="badge rounded-pill"
@@ -68,22 +103,59 @@
             </div>
           </div>
 
-          <!-- Precios -->
+          <!-- Información del producto -->
           <div class="row mb-3">
+            <div class="col-12 mb-2">
+              <div class="text-muted small">Contenido por unidad</div>
+              <div class="fw-bold text-info" style="font-size: 1rem;">
+                {{ producto.cantidad }} {{ producto.unidadMedida }}
+              </div>
+            </div>
             <div class="col-6">
               <div class="text-muted small">Costo</div>
               <div class="fw-bold text-danger" style="font-size: 1.1rem;">
                 {{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}
               </div>
             </div>
-            <div class="col-6">
-              <div class="text-muted small">Stock Actual</div>
-              <div class="fw-bold">
-                {{ producto.stock  }}
+            <div class="col-6" *ngIf="!producto.esCombinado">
+              <div class="text-muted small">Stock (unidades)</div>
+              <div class="fw-bold d-flex align-items-center gap-1" [class]="getStockClass(producto)">
+                <span>{{ producto.stock || 0 }}</span>
+                <i *ngIf="(producto.stock || 0) === 0" class="bi bi-exclamation-triangle-fill text-danger"></i>
+                <i *ngIf="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)" class="bi bi-exclamation-circle-fill text-warning"></i>
+              </div>
+              <!-- Indicador de stock mínimo -->
+              <div *ngIf="(producto.stock || 0) <= (producto.stockMinimo || 0)" class="small mt-1">
+                <span class="text-muted">Mín: {{ producto.stockMinimo || 0 }}</span>
+                <span *ngIf="(producto.stock || 0) === 0" class="text-danger ms-2">
+                  <i class="bi bi-arrow-down-circle-fill me-1"></i>¡Reponer!
+                </span>
+                <span *ngIf="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)" class="text-warning ms-2">
+                  <i class="bi bi-exclamation-circle me-1"></i>Bajo
+                </span>
+              </div>
+            </div>
+            <div class="col-6" *ngIf="producto.esCombinado">
+              <div class="text-muted small">Tipo</div>
+              <div class="fw-bold text-warning" style="font-size: 0.9rem;">
+                Receta/Combinado
               </div>
             </div>
           </div>
 
+          <!-- Alerta de stock en la parte inferior -->
+          <div *ngIf="!producto.esCombinado && (producto.stock || 0) <= (producto.stockMinimo || 0)"
+               class="alert py-2 px-3 mb-0 d-flex align-items-center"
+               [class.alert-danger]="(producto.stock || 0) === 0"
+               [class.alert-warning]="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)">
+            <i class="bi me-2"
+               [class.bi-exclamation-triangle-fill]="(producto.stock || 0) === 0"
+               [class.bi-exclamation-circle-fill]="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)"></i>
+            <small class="mb-0">
+              <strong *ngIf="(producto.stock || 0) === 0">¡Stock agotado!</strong>
+              <strong *ngIf="(producto.stock || 0) > 0 && (producto.stock || 0) <= (producto.stockMinimo || 0)">Stock bajo</strong>
+            </small>
+          </div>
         </div>
       </div>
     </div>
@@ -188,8 +260,12 @@
               <div class="card-body">
                 <h6 class="mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Información del Producto</h6>
                 <div class="mb-3">
-                  <small class="text-muted d-block">Cantidad por unidad</small>
-                  <strong class="fs-5">{{productoSeleccionado.cantidad}} {{productoSeleccionado.unidadMedida}}</strong>
+                  <small class="text-muted d-block">Contenido por unidad</small>
+                  <strong class="fs-5 text-info">{{productoSeleccionado.cantidad}} {{productoSeleccionado.unidadMedida}}</strong>
+                  <small class="text-muted d-block mt-1">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Cada unidad contiene esta cantidad
+                  </small>
                 </div>
                 <div class="mb-3">
                   <small class="text-muted d-block">Proveedor</small>
@@ -253,7 +329,7 @@
 
 <!-- Modal de Edición -->
 <div class="modal fade" id="productModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
       <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
         <div class="modal-header">
@@ -261,89 +337,169 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Coca-Cola">
-            <div *ngIf="productoForm.get('nombre')?.hasError('productNameExists')" class="text-danger mt-1">
-              Este nombre de producto ya existe.
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Descripción <span class="text-danger">*</span></label>
-            <textarea class="form-control" formControlName="descripcion" placeholder="Descripción del producto"></textarea>
-          </div>
+          <!-- Información básica en dos columnas -->
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Costo <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" formControlName="costo" placeholder="0.00">
+            <!-- Columna izquierda -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Coca-Cola">
+                <div *ngIf="productoForm.get('nombre')?.hasError('productNameExists')" class="text-danger mt-1">
+                  Este nombre de producto ya existe.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Descripción <small class="text-muted">(Opcional)</small></label>
+                <textarea class="form-control" formControlName="descripcion" placeholder="Descripción del producto" rows="2"></textarea>
+              </div>
+
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Costo <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="costo" placeholder="0.00" step="0.01">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">IVA(%) <span class="text-danger">*</span></label>
+                  <select formControlName="IVA" class="form-select">
+                    <option selected disabled>Selecciona un IVA</option>
+                    <option value="4">4%</option>
+                    <option value="10">10%</option>
+                    <option value="21">21%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="categoriaId">
+                  <option value="" disabled>Selecciona una categoría</option>
+                  <option *ngFor="let categoria of categorias" [value]="categoria.id">{{categoria.nombre}}</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Familia <span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="familiaId" [disabled]="familiasDisponibles.length === 0">
+                  <option value="" disabled>
+                    {{ familiasDisponibles.length === 0 ? 'Primero selecciona una categoría' : 'Selecciona una familia' }}
+                  </option>
+                  <option *ngFor="let familia of familiasDisponibles" [value]="familia.id">{{familia.nombre}}</option>
+                </select>
+                <small class="text-muted" *ngIf="familiasDisponibles.length === 0">
+                  Las familias se cargarán al seleccionar una categoría
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Proveedor <small class="text-muted">(Opcional)</small></label>
+                <select class="form-select" formControlName="proveedorId">
+                  <option [ngValue]="null">Ninguno</option>
+                  <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{proveedor.nombre}}</option>
+                </select>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" formControlName="esCombinado" id="esCombinadoCheck">
+                <label class="form-check-label" for="esCombinadoCheck">
+                  Es Receta/Combinado (sin control de stock)
+                </label>
+              </div>
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">IVA(%) <span class="text-danger">*</span></label>
-              <select formControlName="IVA" class="form-control">
-                <option selected disabled>Selecciona un IVA</option>
-                <option value="4">4%</option>
-                <option value="10">10%</option>
-                <option value="21">21%</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Categoría <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="categoriaId">
-              <option value="" disabled>Selecciona una categoría</option>
-              <option *ngFor="let categoria of categorias" [value]="categoria.id">{{categoria.nombre}}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Familia <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="familiaId" [disabled]="familiasDisponibles.length === 0">
-              <option value="" disabled>
-                {{ familiasDisponibles.length === 0 ? 'Primero selecciona una categoría' : 'Selecciona una familia' }}
-              </option>
-              <option *ngFor="let familia of familiasDisponibles" [value]="familia.id">{{familia.nombre}}</option>
-            </select>
-            <small class="text-muted" *ngIf="familiasDisponibles.length === 0">
-              Las familias se cargarán al seleccionar una categoría
-            </small>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Proveedor <small class="text-muted">(Opcional)</small></label>
-            <select class="form-select" formControlName="proveedorId">
-              <option [ngValue]="null">Ninguno</option>
-              <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{proveedor.nombre}}</option>
-            </select>
-          </div>
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" formControlName="esCombinado" id="esCombinadoCheck">
-            <label class="form-check-label" for="esCombinadoCheck">
-              Es Receta/Combinado (sin control de stock)
-            </label>
-          </div>
-          <div class="row">
-            <div class="col-md-4 mb-3" *ngIf="!productoForm.get('esCombinado')?.value">
-              <label class="form-label">Stock Actual</label>
-              <input type="number" class="form-control" formControlName="stock" placeholder="0">
-            </div>
-            <div class="col-md-4 mb-3" *ngIf="!productoForm.get('esCombinado')?.value">
-              <label class="form-label">Stock Mínimo</label>
-              <input type="number" class="form-control" formControlName="stockMinimo" placeholder="0">
-            </div>
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Cantidad <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" formControlName="cantidad" placeholder="0">
-            </div>
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
-              <select class="form-select" formControlName="unidadMedida">
-                <option value="" disabled>Selecciona una unidad</option>
-                <option *ngFor="let unidad of unidadesDisponibles" [value]="unidad">{{unidad}}</option>
-              </select>
+
+            <!-- Columna derecha -->
+            <div class="col-md-6">
+              <!-- Información del contenido del producto -->
+              <div class="card bg-light mb-3">
+                <div class="card-body">
+                  <h6 class="card-title mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información del Producto
+                  </h6>
+                  <div class="row">
+                    <div class="col-6 mb-3">
+                      <label class="form-label">
+                        Contenido por Unidad <span class="text-danger">*</span>
+                        <i class="bi bi-question-circle text-info ms-1"
+                           title="¿Cuánto contiene cada unidad? Ej: 500ml, 1kg, 250g"></i>
+                      </label>
+                      <input type="number" class="form-control" formControlName="cantidad"
+                             placeholder="Ej: 500" step="0.01">
+                    </div>
+                    <div class="col-6 mb-3">
+                      <label class="form-label">
+                        Unidad de Medida <span class="text-danger">*</span>
+                      </label>
+                      <select class="form-select" formControlName="unidadMedida">
+                        <option value="" disabled>Selecciona una unidad</option>
+                        <option *ngFor="let unidad of unidadesDisponibles" [value]="unidad">{{unidad}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="alert alert-info py-2 px-3 mb-0">
+                    <small>
+                      <i class="bi bi-lightbulb me-1"></i>
+                      <strong>Ejemplo:</strong> Botella de 500ml → Contenido: 500, Unidad: ml
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Control de inventario (solo para productos físicos) -->
+              <div class="card bg-light" *ngIf="!productoForm.get('esCombinado')?.value">
+                <div class="card-body">
+                  <h6 class="card-title mb-3">
+                    <i class="bi bi-boxes me-2"></i>
+                    Control de Inventario
+                  </h6>
+                  <div class="row">
+                    <div class="col-6 mb-3">
+                      <label class="form-label">
+                        Stock Actual
+                        <i class="bi bi-question-circle text-info ms-1"
+                           title="¿Cuántas unidades tienes en inventario?"></i>
+                      </label>
+                      <input type="number" class="form-control" formControlName="stock"
+                             placeholder="Ej: 24" min="0">
+                    </div>
+                    <div class="col-6 mb-3">
+                      <label class="form-label">
+                        Stock Mínimo
+                        <i class="bi bi-question-circle text-info ms-1"
+                           title="¿Cuándo quieres que te avise para reponer?"></i>
+                      </label>
+                      <input type="number" class="form-control" formControlName="stockMinimo"
+                             placeholder="Ej: 5" min="0">
+                    </div>
+                  </div>
+                  <div class="alert alert-warning py-2 px-3 mb-0">
+                    <small>
+                      <i class="bi bi-exclamation-triangle me-1"></i>
+                      El stock se cuenta en unidades completas del producto.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mensaje para productos combinados -->
+              <div class="card bg-warning bg-opacity-10" *ngIf="productoForm.get('esCombinado')?.value">
+                <div class="card-body text-center">
+                  <i class="bi bi-cup-straw fs-1 text-warning mb-2"></i>
+                  <h6 class="text-warning">Producto Receta/Combinado</h6>
+                  <small class="text-muted">
+                    Este producto no maneja stock físico ya que se prepara con otros ingredientes.
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-danger" [disabled]="productoForm.invalid">{{ productoForm.get('id')?.value ? 'Actualizar' : 'Crear' }}</button>
+          <button type="submit" class="btn btn-danger" [disabled]="productoForm.invalid">
+            <i class="bi bi-save me-2"></i>
+            {{ productoForm.get('id')?.value ? 'Actualizar' : 'Crear' }}
+          </button>
         </div>
       </form>
     </div>

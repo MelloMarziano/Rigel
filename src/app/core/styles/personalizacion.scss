@@ -9,6 +9,36 @@
   --border-color: #dee2e6;
   --input-bg: #ffffff;
   --input-border: #ced4da;
+
+  // Transición suave para cambio de modo
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Transiciones suaves para el cambio de modo oscuro
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Transiciones para elementos específicos (más eficiente que aplicar a todos)
+.card,
+.modal-content,
+.dropdown-menu,
+.form-control,
+.form-select,
+.btn,
+.table,
+.navbar,
+.sidebar-container,
+.alert,
+.badge,
+.list-group-item,
+.nav-link,
+.preview-container,
+.info-card,
+.feature-item-compact,
+.company-info-card,
+.team-member-compact {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body.dark-mode {
@@ -25,6 +55,25 @@ body.dark-mode {
 
   background-color: var(--bg-body) !important;
   color: var(--text-primary) !important;
+
+  // Headers y títulos principales
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+  }
+
+  // Contenedor principal
+  .container-fluid {
+    background-color: var(--bg-body) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // Páginas específicas
+  .personalization-page,
+  .profile-page,
+  .about-system-page {
+    background-color: var(--bg-body) !important;
+    color: var(--text-primary) !important;
+  }
 
   // Cards y superficies
   .card {
@@ -64,6 +113,19 @@ body.dark-mode {
       background-color: var(--bg-surface) !important;
       border-bottom-color: var(--border-color) !important;
       color: var(--text-primary) !important;
+
+      // Sobrescribir bg-white en modo oscuro
+      &.bg-white {
+        background-color: var(--bg-surface) !important;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+      }
+
+      i {
+        color: inherit !important;
+      }
     }
 
     .card-footer {
@@ -458,11 +520,27 @@ body.dark-mode {
   .bg-light {
     background-color: var(--bg-surface) !important;
     color: var(--text-primary) !important;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary) !important;
+    }
+
+    p, span, div {
+      color: var(--text-primary) !important;
+    }
   }
 
   .bg-white {
     background-color: var(--bg-card) !important;
     color: var(--text-primary) !important;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary) !important;
+    }
+
+    p, span, div {
+      color: var(--text-primary) !important;
+    }
   }
 
   // Alertas específicas

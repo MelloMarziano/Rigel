@@ -264,19 +264,35 @@ export class PersonalizacionService {
   async cargarPersonalizacionUsuario(userId: string): Promise<void> {
     try {
       const { doc, getDoc } = await import('@angular/fire/firestore');
-      const userRef = doc(this.firestore, 'users', userId);
+      const userRef = doc(this.firestore, 'usuarios', userId);
       const userDoc = await getDoc(userRef);
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const personalizacion = userData['personalizacion'];
+        const modoOscuro = userData['modoOscuro'];
 
         if (personalizacion) {
-          this.actualizarPersonalizacion(personalizacion);
+          // Combinar personalización con modo oscuro
+          const personalizacionCompleta = {
+            ...personalizacion,
+            modoOscuro: modoOscuro !== undefined ? modoOscuro : false,
+          };
+          this.actualizarPersonalizacion(personalizacionCompleta);
         } else {
-          // Si no tiene personalización, usar colores por defecto
-          this.actualizarPersonalizacion(this.coloresDefecto);
+          // Si no tiene personalización, usar colores por defecto pero con su modo oscuro
+          const personalizacionDefecto = {
+            ...this.coloresDefecto,
+            modoOscuro: modoOscuro !== undefined ? modoOscuro : false,
+          };
+          this.actualizarPersonalizacion(personalizacionDefecto);
         }
+      } else {
+        // Si el documento no existe, usar valores por defecto
+        console.log(
+          'Usuario no encontrado en Firebase, usando valores por defecto'
+        );
+        this.actualizarPersonalizacion(this.coloresDefecto);
       }
     } catch (error) {
       console.log(

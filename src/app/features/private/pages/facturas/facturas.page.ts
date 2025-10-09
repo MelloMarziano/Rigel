@@ -71,6 +71,7 @@ interface IvaBreakdown {
 export class FacturasPage implements OnInit, OnDestroy {
   facturas: Factura[] = [];
   facturasFiltradas: Factura[] = [];
+  facturaSeleccionada: Factura | null = null;
   productos: Producto[] = [];
 
   facturaForm!: FormGroup;
@@ -619,5 +620,60 @@ export class FacturasPage implements OnInit, OnDestroy {
   isFacturaVencida(factura: Factura): boolean {
     const hoy = new Date();
     return factura.fechaVencimiento < hoy && factura.estado !== 'Pagada';
+  }
+
+  // Método para ver detalle de factura
+  verDetalleFactura(factura: Factura): void {
+    this.facturaSeleccionada = factura;
+    const modalEl = document.getElementById('detalleFacturaModal');
+    if (modalEl) {
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  }
+
+  // Método para editar desde el modal de detalle
+  editarDesdeDetalle(): void {
+    if (this.facturaSeleccionada) {
+      // Cerrar modal de detalle
+      const detalleModalEl = document.getElementById('detalleFacturaModal');
+      if (detalleModalEl) {
+        const detalleModal = bootstrap.Modal.getInstance(detalleModalEl);
+        if (detalleModal) {
+          detalleModal.hide();
+        }
+      }
+
+      // Esperar a que se cierre el modal antes de abrir el de edición
+      setTimeout(() => {
+        this.editarFactura(this.facturaSeleccionada!);
+      }, 300);
+    }
+  }
+
+  // Método para eliminar desde el modal de detalle
+  async eliminarDesdeDetalle(): Promise<void> {
+    if (this.facturaSeleccionada) {
+      // Cerrar modal de detalle
+      const detalleModalEl = document.getElementById('detalleFacturaModal');
+      if (detalleModalEl) {
+        const detalleModal = bootstrap.Modal.getInstance(detalleModalEl);
+        if (detalleModal) {
+          detalleModal.hide();
+        }
+      }
+
+      // Esperar a que se cierre el modal antes de mostrar la confirmación
+      setTimeout(async () => {
+        await this.eliminarFactura(this.facturaSeleccionada!);
+      }, 300);
+    }
+  }
+
+  // Método para imprimir desde el modal de detalle
+  imprimirDesdeDetalle(): void {
+    if (this.facturaSeleccionada) {
+      this.imprimirFactura(this.facturaSeleccionada);
+    }
   }
 }

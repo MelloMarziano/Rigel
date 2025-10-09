@@ -6,6 +6,15 @@
   border: 1px solid #dee2e6;
 }
 
+.color-preview-gradient {
+  width: 28px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
 .preview-container {
   border: 1px solid #dee2e6;
   border-radius: 8px;
@@ -113,7 +122,8 @@
 // Estilos para los botones de tema
 .btn-outline-secondary {
   &:hover {
-    .color-preview {
+    .color-preview,
+    .color-preview-gradient {
       transform: scale(1.1);
     }
   }

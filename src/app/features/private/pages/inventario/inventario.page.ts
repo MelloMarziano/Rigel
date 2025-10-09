@@ -61,6 +61,27 @@ export class InventarioPage implements OnInit, OnDestroy {
   familiaSeleccionada = '';
   productosFiltrados: InventarioProducto[] = [];
 
+  // Búsqueda de productos
+  busquedaProducto = '';
+  productosSinFiltrar: InventarioProducto[] = [];
+
+  // Propiedades para el historial
+  historialInventarios: Inventario[] = [];
+  historialFiltrado: Inventario[] = [];
+  historialFiltroCategoria = '';
+  historialFiltroEstado = '';
+  historialLimite = '25';
+  isLoadingHistorial = false;
+  modalHistorial: any;
+
+  // Propiedades para agregar productos
+  productosDisponiblesParaAgregar: Producto[] = [];
+  productosSeleccionadosParaAgregar = new Set<string>();
+  busquedaProductosNuevos = '';
+  isLoadingProductosNuevos = false;
+  isAgregarProductos = false;
+  modalAgregarProductos: any;
+
   private subscriptions = new Subscription();
 
   constructor(private firestore: Firestore, private authService: AuthService) {}
@@ -435,12 +456,19 @@ export class InventarioPage implements OnInit, OnDestroy {
     if (this.inventarioActual.estado === 'borrador') {
       const result = await Swal.fire({
         title: '¿Finalizar inventario?',
-        text: 'Una vez finalizado, no podrás editarlo. ¿Estás seguro?',
+        html: `
+          <p>Una vez finalizado, no podrás editarlo.</p>
+          <div class="alert alert-warning mt-3">
+            <strong>Nota:</strong> Los stocks de los productos NO se actualizarán automáticamente.
+            Usa el botón "Actualizar Productos" cuando estés listo.
+          </div>
+          <p>¿Estás seguro?</p>
+        `,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, finalizar',
+        confirmButtonText: 'Sí, finalizar inventario',
         cancelButtonText: 'Cancelar',
       });
 
@@ -480,16 +508,150 @@ export class InventarioPage implements OnInit, OnDestroy {
         this.inventarioActual.estado = 'finalizado';
       }
 
-      Swal.fire(
-        '¡Finalizado!',
-        'Inventario finalizado exitosamente',
-        'success'
-      );
+      Swal.fire({
+        title: '¡Inventario Finalizado!',
+        html: `
+          <p>El inventario ha sido finalizado exitosamente.</p>
+          <div class="alert alert-info mt-3">
+            <strong>Recuerda:</strong> Usa el botón "Actualizar Productos" para aplicar los cambios de stock.
+          </div>
+        `,
+        icon: 'success',
+        timer: 4000,
+        timerProgressBar: true,
+      });
     } catch (error) {
+      console.error('Error al finalizar inventario:', error);
       Swal.fire('Error', 'Error al finalizar el inventario', 'error');
     } finally {
       this.isSaving = false;
     }
+  }
+
+  async actualizarProductosInventario(): Promise<void> {
+    if (!this.inventarioActual) return;
+
+    const productosParaActualizar = this.inventarioActual.productos.filter(
+      (producto) =>
+        producto.stockContado !== null && producto.stockContado !== undefined
+    );
+
+    if (productosParaActualizar.length === 0) {
+      Swal.fire(
+        'Información',
+        'No hay productos con stock contado para actualizar',
+        'info'
+      );
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: '¿Actualizar stocks de productos?',
+      html: `
+        <p>Se actualizarán los stocks de <strong>${productosParaActualizar.length} productos</strong> con los valores contados en el inventario.</p>
+        <div class="alert alert-warning mt-3">
+          <strong>¡Atención!</strong> Esta acción modificará permanentemente los stocks en tu inventario de productos.
+        </div>
+        <p>¿Estás seguro de continuar?</p>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, actualizar stocks',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.isSaving = true;
+    try {
+      await this.actualizarStocksProductos();
+
+      Swal.fire({
+        title: '¡Productos Actualizados!',
+        html: `
+          <p>Los stocks han sido actualizados exitosamente.</p>
+          <div class="alert alert-success mt-3">
+            <strong>${productosParaActualizar.length} productos</strong> han sido actualizados con el nuevo stock.
+          </div>
+        `,
+        icon: 'success',
+        timer: 4000,
+        timerProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error al actualizar productos:', error);
+      Swal.fire(
+        'Error',
+        'Error al actualizar los stocks de productos',
+        'error'
+      );
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  private async actualizarStocksProductos(): Promise<void> {
+    if (!this.inventarioActual) return;
+
+    const productosParaActualizar = this.inventarioActual.productos.filter(
+      (producto) =>
+        producto.stockContado !== null && producto.stockContado !== undefined
+    );
+
+    if (productosParaActualizar.length === 0) {
+      console.log('No hay productos con stock contado para actualizar');
+      return;
+    }
+
+    console.log(
+      `Actualizando stock de ${productosParaActualizar.length} productos...`
+    );
+
+    // Actualizar productos en lotes para mejor rendimiento
+    const promesasActualizacion = productosParaActualizar.map(
+      async (productoInventario) => {
+        try {
+          const productoRef = doc(
+            this.firestore,
+            'productos',
+            productoInventario.productoId
+          );
+
+          await updateDoc(productoRef, {
+            stock: productoInventario.stockContado,
+            fechaActualizacion: serverTimestamp(),
+            ultimoInventario: this.fechaSeleccionada
+              .toISOString()
+              .split('T')[0],
+          });
+
+          // Actualizar también en el array local para reflejar los cambios inmediatamente
+          const productoLocal = this.productos.find(
+            (p) => p.id === productoInventario.productoId
+          );
+          if (productoLocal) {
+            productoLocal.stock = productoInventario.stockContado!;
+          }
+
+          console.log(
+            `Stock actualizado para ${productoInventario.nombre}: ${productoInventario.stockContado}`
+          );
+        } catch (error) {
+          console.error(
+            `Error actualizando producto ${productoInventario.nombre}:`,
+            error
+          );
+          throw error; // Re-lanzar para que se capture en el catch principal
+        }
+      }
+    );
+
+    // Ejecutar todas las actualizaciones en paralelo
+    await Promise.all(promesasActualizacion);
+
+    console.log('Todos los stocks han sido actualizados exitosamente');
   }
 
   getStockClass(stock: number): string {
@@ -886,6 +1048,9 @@ export class InventarioPage implements OnInit, OnDestroy {
   private aplicarFiltroFamilia(): void {
     if (!this.inventarioActual) return;
 
+    // Actualizar productos sin filtrar
+    this.productosSinFiltrar = [...this.inventarioActual.productos];
+
     if (!this.familiaSeleccionada) {
       this.productosFiltrados = [...this.inventarioActual.productos];
     } else {
@@ -897,6 +1062,11 @@ export class InventarioPage implements OnInit, OnDestroy {
           return productoCompleto?.familiaId === this.familiaSeleccionada;
         }
       );
+    }
+
+    // Aplicar búsqueda si hay texto
+    if (this.busquedaProducto.trim()) {
+      this.filtrarProductosPorBusqueda();
     }
   }
 
@@ -927,8 +1097,9 @@ export class InventarioPage implements OnInit, OnDestroy {
     if (!this.inventarioActual) return 0;
 
     const productosFamilia = this.getProductosPorFamilia(familiaId);
-    return productosFamilia.filter(producto => 
-      producto.stockContado === null || producto.stockContado === undefined
+    return productosFamilia.filter(
+      (producto) =>
+        producto.stockContado === null || producto.stockContado === undefined
     ).length;
   }
 
@@ -938,7 +1109,7 @@ export class InventarioPage implements OnInit, OnDestroy {
     const productosFamilia = this.getProductosPorFamilia(familiaId);
     return productosFamilia.reduce((total, producto) => {
       const stockContado = producto.stockContado ?? 0;
-      return total + (stockContado * producto.costoUnitario);
+      return total + stockContado * producto.costoUnitario;
     }, 0);
   }
 
@@ -948,7 +1119,7 @@ export class InventarioPage implements OnInit, OnDestroy {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     });
   }
 
@@ -956,8 +1127,9 @@ export class InventarioPage implements OnInit, OnDestroy {
   getTotalProductosSinContar(): number {
     if (!this.inventarioActual) return 0;
 
-    return this.inventarioActual.productos.filter(producto => 
-      producto.stockContado === null || producto.stockContado === undefined
+    return this.inventarioActual.productos.filter(
+      (producto) =>
+        producto.stockContado === null || producto.stockContado === undefined
     ).length;
   }
 
@@ -966,17 +1138,452 @@ export class InventarioPage implements OnInit, OnDestroy {
 
     return this.inventarioActual.productos.reduce((total, producto) => {
       const stockContado = producto.stockContado ?? 0;
-      return total + (stockContado * producto.costoUnitario);
+      return total + stockContado * producto.costoUnitario;
     }, 0);
   }
 
   // Filtrar familias que tienen productos
   getFamiliasConProductos(): FamiliaCategoria[] {
     if (!this.familiasDisponibles) return [];
-    
-    return this.familiasDisponibles.filter(familia => {
-      const cantidadProductos = this.getProductosPorFamilia(familia.id || '').length;
+
+    return this.familiasDisponibles.filter((familia) => {
+      const cantidadProductos = this.getProductosPorFamilia(
+        familia.id || ''
+      ).length;
       return cantidadProductos > 0;
     });
+  }
+
+  // Métodos de búsqueda de productos
+  filtrarProductosPorBusqueda(): void {
+    if (!this.inventarioActual) return;
+
+    // Guardar productos sin filtrar si es la primera vez
+    if (this.productosSinFiltrar.length === 0) {
+      this.productosSinFiltrar = [...this.inventarioActual.productos];
+    }
+
+    let productosBase = this.productosSinFiltrar;
+
+    // Aplicar filtro de familia si está activo
+    if (this.familiaSeleccionada) {
+      productosBase = this.productosSinFiltrar.filter((producto) => {
+        const productoCompleto = this.productos.find(
+          (p) => p.id === producto.productoId
+        );
+        return productoCompleto?.familiaId === this.familiaSeleccionada;
+      });
+    }
+
+    // Aplicar filtro de búsqueda
+    if (!this.busquedaProducto.trim()) {
+      this.productosFiltrados = [...productosBase];
+      return;
+    }
+
+    const busqueda = this.busquedaProducto.toLowerCase().trim();
+    this.productosFiltrados = productosBase.filter((producto) => {
+      const productoCompleto = this.productos.find(
+        (p) => p.id === producto.productoId
+      );
+
+      if (!productoCompleto) return false;
+
+      // Buscar en nombre del producto
+      const nombreCoincide = productoCompleto.nombre
+        .toLowerCase()
+        .includes(busqueda);
+
+      // Buscar en categoría
+      const categoria = this.categorias.find(
+        (c) => c.id === productoCompleto.categoriaId
+      );
+      const categoriaCoincide =
+        categoria?.nombre.toLowerCase().includes(busqueda) || false;
+
+      // Buscar en proveedor
+      const proveedor = this.proveedores.find(
+        (p) => p.id === productoCompleto.proveedorId
+      );
+      const proveedorCoincide =
+        proveedor?.nombre.toLowerCase().includes(busqueda) || false;
+
+      return nombreCoincide || categoriaCoincide || proveedorCoincide;
+    });
+  }
+
+  limpiarBusqueda(): void {
+    this.busquedaProducto = '';
+    this.filtrarProductosPorBusqueda();
+  }
+
+  limpiarTodosFiltros(): void {
+    this.busquedaProducto = '';
+    this.familiaSeleccionada = '';
+    this.aplicarFiltroFamilia();
+  }
+
+  // Métodos para el historial de inventarios
+  async abrirModalHistorial(): Promise<void> {
+    const modalEl = document.getElementById('modalHistorial');
+    if (modalEl) {
+      this.modalHistorial = new bootstrap.Modal(modalEl);
+      this.modalHistorial.show();
+      await this.cargarHistorial();
+    }
+  }
+
+  cerrarModalHistorial(): void {
+    if (this.modalHistorial) {
+      this.modalHistorial.hide();
+    }
+  }
+
+  async cargarHistorial(): Promise<void> {
+    this.isLoadingHistorial = true;
+    try {
+      const inventariosRef = collection(this.firestore, 'inventarios');
+
+      // Usar query con límite para mejor rendimiento
+      const limite = parseInt(this.historialLimite);
+      const querySnapshot = await getDocs(inventariosRef);
+
+      this.historialInventarios = [];
+      const inventariosTemp: Inventario[] = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data['eliminado']) {
+          // Solo incluir inventarios no eliminados
+          const inventario = {
+            id: doc.id,
+            ...data,
+            fecha: this.convertirFecha(data['fecha']) || data['fecha'],
+            fechaCreacion: this.convertirFecha(data['fechaCreacion']),
+            fechaActualizacion: this.convertirFecha(data['fechaActualizacion']),
+          } as Inventario;
+          inventariosTemp.push(inventario);
+        }
+      });
+
+      // Ordenar por fecha de creación (más recientes primero) y limitar
+      inventariosTemp.sort((a, b) => {
+        const fechaA = a.fechaCreacion || new Date(0);
+        const fechaB = b.fechaCreacion || new Date(0);
+        return fechaB.getTime() - fechaA.getTime();
+      });
+
+      // Aplicar límite
+      this.historialInventarios = inventariosTemp.slice(0, limite);
+
+      this.filtrarHistorial();
+
+      console.log(
+        `Historial cargado: ${this.historialInventarios.length} inventarios`
+      );
+    } catch (error) {
+      console.error('Error cargando historial:', error);
+      Swal.fire(
+        'Error',
+        'Error al cargar el historial de inventarios',
+        'error'
+      );
+    } finally {
+      this.isLoadingHistorial = false;
+    }
+  }
+
+  filtrarHistorial(): void {
+    this.historialFiltrado = this.historialInventarios.filter((inventario) => {
+      const cumpleCategoria =
+        !this.historialFiltroCategoria ||
+        inventario.categoriaId === this.historialFiltroCategoria;
+      const cumpleEstado =
+        !this.historialFiltroEstado ||
+        inventario.estado === this.historialFiltroEstado;
+
+      return cumpleCategoria && cumpleEstado;
+    });
+  }
+
+  cargarInventarioDesdeHistorial(inventario: Inventario): void {
+    // Establecer la fecha seleccionada
+    this.fechaSeleccionada = new Date(inventario.fecha);
+    this.fechaFiltro.setValue(
+      this.fechaSeleccionada.toISOString().split('T')[0]
+    );
+
+    // Cargar el inventario
+    this.inventarioActual = { ...inventario };
+
+    // Configurar familias y filtros
+    this.configurarFamiliasDisponibles();
+    this.aplicarFiltroFamilia();
+
+    // Cerrar modal
+    this.cerrarModalHistorial();
+
+    Swal.fire({
+      title: 'Inventario cargado',
+      text: `Se ha cargado el inventario del ${inventario.fecha}`,
+      icon: 'success',
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  }
+
+  async eliminarInventarioHistorial(inventario: Inventario): Promise<void> {
+    if (inventario.estado === 'finalizado') {
+      Swal.fire(
+        'Error',
+        'No se pueden eliminar inventarios finalizados',
+        'error'
+      );
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: '¿Eliminar inventario?',
+      text: `Se eliminará el inventario del ${inventario.fecha}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      if (inventario.id) {
+        const inventarioRef = doc(this.firestore, 'inventarios', inventario.id);
+        await deleteDoc(inventarioRef);
+
+        // Recargar historial
+        await this.cargarHistorial();
+
+        // Si era el inventario actual, limpiarlo
+        if (this.inventarioActual?.id === inventario.id) {
+          this.inventarioActual = null;
+          this.familiasDisponibles = [];
+          this.familiaSeleccionada = '';
+          this.productosFiltrados = [];
+        }
+
+        Swal.fire('¡Eliminado!', 'El inventario ha sido eliminado', 'success');
+      }
+    } catch (error) {
+      console.error('Error eliminando inventario:', error);
+      Swal.fire('Error', 'Error al eliminar el inventario', 'error');
+    }
+  }
+
+  getCategoriaNombre(categoriaId?: string): string {
+    if (!categoriaId) return 'Sin categoría';
+    const categoria = this.categorias.find((c) => c.id === categoriaId);
+    return categoria?.nombre || 'Sin categoría';
+  }
+
+  // Métodos para agregar productos
+  abrirModalAgregarProductos(): void {
+    if (
+      !this.inventarioActual ||
+      this.inventarioActual.estado === 'finalizado'
+    ) {
+      Swal.fire('Error', 'No hay inventario activo o está finalizado', 'error');
+      return;
+    }
+
+    // Cargar productos ANTES de abrir el modal para que aparezcan inmediatamente
+    this.cargarProductosDisponibles();
+
+    const modalEl = document.getElementById('modalAgregarProductos');
+    if (modalEl) {
+      this.modalAgregarProductos = new bootstrap.Modal(modalEl);
+      this.modalAgregarProductos.show();
+    }
+  }
+
+  cerrarModalAgregarProductos(): void {
+    if (this.modalAgregarProductos) {
+      this.modalAgregarProductos.hide();
+    }
+    this.limpiarSeleccionProductos();
+  }
+
+  cargarProductosDisponibles(): void {
+    if (!this.inventarioActual) {
+      this.productosDisponiblesParaAgregar = [];
+      return;
+    }
+
+    // Obtener IDs de productos ya en el inventario (optimizado)
+    const productosEnInventario = new Set(
+      this.inventarioActual.productos.map((p) => p.productoId)
+    );
+
+    // Filtrar productos de la misma categoría que no estén en el inventario (optimizado)
+    this.productosDisponiblesParaAgregar = this.productos.filter((producto) => {
+      // Verificaciones rápidas primero
+      if (!producto.id || producto.esCombinado) return false;
+      if (producto.categoriaId !== this.inventarioActual?.categoriaId)
+        return false;
+      if (productosEnInventario.has(producto.id)) return false;
+
+      return true;
+    });
+
+    // Limpiar búsqueda
+    this.busquedaProductosNuevos = '';
+
+    console.log(
+      `Productos disponibles para agregar: ${this.productosDisponiblesParaAgregar.length}`
+    );
+  }
+
+  filtrarProductosNuevos(): void {
+    if (!this.busquedaProductosNuevos.trim()) {
+      this.cargarProductosDisponibles();
+      return;
+    }
+
+    const busqueda = this.busquedaProductosNuevos.toLowerCase();
+    const productosEnInventario = new Set(
+      this.inventarioActual?.productos.map((p) => p.productoId) || []
+    );
+
+    this.productosDisponiblesParaAgregar = this.productos.filter(
+      (producto) =>
+        producto.categoriaId === this.inventarioActual?.categoriaId &&
+        !producto.esCombinado &&
+        !productosEnInventario.has(producto.id!) &&
+        producto.nombre.toLowerCase().includes(busqueda)
+    );
+  }
+
+  toggleProductoSeleccionado(productoId: string, event: any): void {
+    if (event.target.checked) {
+      this.productosSeleccionadosParaAgregar.add(productoId);
+    } else {
+      this.productosSeleccionadosParaAgregar.delete(productoId);
+    }
+  }
+
+  toggleTodosProductos(event: any): void {
+    if (event.target.checked) {
+      this.productosDisponiblesParaAgregar.forEach((producto) => {
+        if (producto.id) {
+          this.productosSeleccionadosParaAgregar.add(producto.id);
+        }
+      });
+    } else {
+      this.productosSeleccionadosParaAgregar.clear();
+    }
+  }
+
+  todosProductosSeleccionados(): boolean {
+    return (
+      this.productosDisponiblesParaAgregar.length > 0 &&
+      this.productosDisponiblesParaAgregar.every(
+        (producto) =>
+          producto.id && this.productosSeleccionadosParaAgregar.has(producto.id)
+      )
+    );
+  }
+
+  async agregarProductosSeleccionados(): Promise<void> {
+    if (
+      this.productosSeleccionadosParaAgregar.size === 0 ||
+      !this.inventarioActual
+    ) {
+      return;
+    }
+
+    this.isAgregarProductos = true;
+    try {
+      // Crear nuevos productos para el inventario
+      const nuevosProductos: InventarioProducto[] = [];
+
+      this.productosSeleccionadosParaAgregar.forEach((productoId) => {
+        const producto = this.productos.find((p) => p.id === productoId);
+        if (producto) {
+          const categoria = this.categorias.find(
+            (c) => c.id === producto.categoriaId
+          );
+          const proveedor = this.proveedores.find(
+            (p) => p.id === producto.proveedorId
+          );
+
+          const nuevoProducto: InventarioProducto = {
+            productoId: producto.id!,
+            nombre: producto.nombre,
+            categoria: categoria?.nombre || 'Sin categoría',
+            proveedor: proveedor?.nombre || 'Sin proveedor',
+            stockActual: producto.stock || 0,
+            stockContado: null,
+            costoUnitario: producto.costo,
+            valorTotal: (producto.stock || 0) * producto.costo,
+            unidadMedida: producto.unidadMedida,
+            diferencia: 0,
+          };
+
+          // Agregar familiaId si existe
+          if (producto.familiaId) {
+            (nuevoProducto as any).familiaId = producto.familiaId;
+          }
+
+          nuevosProductos.push(nuevoProducto);
+        }
+      });
+
+      // Agregar productos al inventario actual
+      this.inventarioActual.productos.push(...nuevosProductos);
+      this.inventarioActual.totalProductos =
+        this.inventarioActual.productos.length;
+
+      // Recalcular totales
+      this.recalcularTotales();
+
+      // Guardar en Firebase
+      if (this.inventarioActual.id) {
+        const inventarioRef = doc(
+          this.firestore,
+          'inventarios',
+          this.inventarioActual.id
+        );
+        await updateDoc(inventarioRef, {
+          productos: this.inventarioActual.productos,
+          totalProductos: this.inventarioActual.totalProductos,
+          inversionTotal: this.inventarioActual.inversionTotal,
+          totalUnidades: this.inventarioActual.totalUnidades,
+          costoPromedio: this.inventarioActual.costoPromedio,
+          fechaActualizacion: serverTimestamp(),
+        });
+      }
+
+      // Reconfigurar familias y filtros
+      this.configurarFamiliasDisponibles();
+      this.aplicarFiltroFamilia();
+
+      this.cerrarModalAgregarProductos();
+
+      Swal.fire(
+        '¡Productos agregados!',
+        `Se agregaron ${nuevosProductos.length} productos al inventario`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Error agregando productos:', error);
+      Swal.fire('Error', 'Error al agregar productos al inventario', 'error');
+    } finally {
+      this.isAgregarProductos = false;
+    }
+  }
+
+  limpiarSeleccionProductos(): void {
+    this.productosSeleccionadosParaAgregar.clear();
+    this.busquedaProductosNuevos = '';
+    this.productosDisponiblesParaAgregar = [];
   }
 }

@@ -63,12 +63,30 @@ const routes: Routes = [
       },
       // Rutas adicionales para completar el sidebar
       {
+        path: 'escandallos',
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
+        data: { permissions: ['escandallos'] },
+        loadChildren: () =>
+          import('./pages/escandallos/escandallos.module').then(
+            (m) => m.EscandallosPageModule
+          ),
+      },
+      {
         path: 'recetas',
         canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
         data: { permissions: ['recetas'] },
         loadChildren: () =>
           import('./pages/recetas/recetas.module').then(
             (m) => m.RecetasPageModule
+          ),
+      },
+      {
+        path: 'mermas',
+        canActivate: [appShutdownGuard, ConfigGuard, roleGuard],
+        data: { permissions: ['mermas'] },
+        loadChildren: () =>
+          import('./pages/mermas/mermas.module').then(
+            (m) => m.MermasPageModule
           ),
       },
       {
@@ -118,13 +136,36 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'ajustes',
-        canActivate: [appShutdownGuard, roleGuard],
-        data: { permissions: ['ajustes'] },
+        path: 'profile',
+        canActivate: [appShutdownGuard],
         loadChildren: () =>
-          import('./pages/settings/settings.module').then(
-            (m) => m.SettingsPageModule
+          import('./pages/profile/profile.module').then((m) => m.ProfileModule),
+      },
+      {
+        path: 'personalization',
+        canActivate: [appShutdownGuard],
+        loadChildren: () =>
+          import('./pages/personalization/personalization.module').then(
+            (m) => m.PersonalizationModule
           ),
+      },
+      {
+        path: 'about-system',
+        canActivate: [appShutdownGuard],
+        loadChildren: () =>
+          import('./pages/about-system/about-system.module').then(
+            (m) => m.AboutSystemModule
+          ),
+      },
+      {
+        path: 'settings',
+        redirectTo: 'profile',
+        pathMatch: 'full',
+      },
+      {
+        path: 'ajustes',
+        redirectTo: 'profile',
+        pathMatch: 'full',
       },
       {
         path: 'access-denied',

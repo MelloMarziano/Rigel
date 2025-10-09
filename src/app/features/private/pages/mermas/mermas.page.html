@@ -1,0 +1,619 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row">
+    <div class="col-8">
+      <h5>Gestión de Mermas</h5>
+      <span>Controla las pérdidas de cocina y productos operacionales</span>
+    </div>
+    <div class="col text-end">
+      <button class="btn btn-outline-primary me-2" routerLink="/private/mermas/reportes">
+        <i class="bi bi-graph-up me-2"></i> Ver Reportes
+      </button>
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus-lg me-2"></i> Nueva Merma
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Búsqueda por texto -->
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text bg-white">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar por nombre, descripción o producto..."
+                  [(ngModel)]="filtroTexto"
+                  (ngModelChange)="aplicarFiltros()"
+                />
+              </div>
+            </div>
+
+            <!-- Filtro por tipo -->
+            <div class="col-md-2">
+              <select
+                class="form-select"
+                [(ngModel)]="filtroTipo"
+                (ngModelChange)="aplicarFiltros()"
+              >
+                <option value="todos">Todos los tipos</option>
+                <option value="cocina">🔪 Cocina</option>
+                <option value="producto">📦 Producto</option>
+              </select>
+            </div>
+
+            <!-- Filtro por estado -->
+            <div class="col-md-2">
+              <select
+                class="form-select"
+                [(ngModel)]="filtroEstado"
+                (ngModelChange)="aplicarFiltros()"
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="activo">Activos</option>
+                <option value="inactivo">Inactivos</option>
+              </select>
+            </div>
+
+            <!-- Filtro por producto -->
+            <div class="col-md-2">
+              <select
+                class="form-select"
+                [(ngModel)]="filtroProducto"
+                (ngModelChange)="aplicarFiltros()"
+              >
+                <option value="">Todos los productos</option>
+                <option *ngFor="let producto of productos" [value]="producto.id">
+                  {{ producto.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Botón limpiar -->
+            <div class="col-md-2">
+              <button
+                class="btn btn-outline-secondary w-100"
+                (click)="limpiarFiltros()"
+                [disabled]="!filtroTexto && filtroEstado === 'todos' && filtroTipo === 'todos' && !filtroProducto"
+              >
+                <i class="bi bi-x-circle me-1"></i>
+                Limpiar
+              </button>
+            </div>
+          </div>
+
+          <!-- Contador de resultados y ordenamiento -->
+          <div class="mt-3 d-flex justify-content-between align-items-center">
+            <div *ngIf="filtroTexto || filtroEstado !== 'todos' || filtroTipo !== 'todos' || filtroProducto">
+              <small class="text-muted">
+                <i class="bi bi-funnel me-1"></i>
+                Mostrando {{ mermasFiltradas.length }} de {{ mermas.length }} mermas
+              </small>
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                [class.active]="ordenarPor === 'nombre'"
+                (click)="cambiarOrden('nombre')"
+              >
+                <i class="bi bi-sort-alpha-down me-1" *ngIf="ordenarPor === 'nombre' && ordenDireccion === 'asc'"></i>
+                <i class="bi bi-sort-alpha-up me-1" *ngIf="ordenarPor === 'nombre' && ordenDireccion === 'desc'"></i>
+                <i class="bi bi-sort-alpha-down me-1" *ngIf="ordenarPor !== 'nombre'"></i>
+                Nombre
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                [class.active]="ordenarPor === 'porcentaje'"
+                (click)="cambiarOrden('porcentaje')"
+              >
+                <i class="bi bi-sort-numeric-down me-1" *ngIf="ordenarPor === 'porcentaje' && ordenDireccion === 'asc'"></i>
+                <i class="bi bi-sort-numeric-up me-1" *ngIf="ordenarPor === 'porcentaje' && ordenDireccion === 'desc'"></i>
+                <i class="bi bi-sort-numeric-down me-1" *ngIf="ordenarPor !== 'porcentaje'"></i>
+                Porcentaje
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                [class.active]="ordenarPor === 'fecha'"
+                (click)="cambiarOrden('fecha')"
+              >
+                <i class="bi bi-sort-down me-1" *ngIf="ordenarPor === 'fecha' && ordenDireccion === 'asc'"></i>
+                <i class="bi bi-sort-up me-1" *ngIf="ordenarPor === 'fecha' && ordenDireccion === 'desc'"></i>
+                <i class="bi bi-sort-down me-1" *ngIf="ordenarPor !== 'fecha'"></i>
+                Fecha
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="row mt-4">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-primary mb-0">{{ totalMermas }}</h2>
+          <span class="text-muted">Total Mermas</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-success mb-0">{{ mermasActivas }}</h2>
+          <span class="text-muted">Activas</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="text-warning mb-0">{{ promedioMerma | number:'1.1-1' }}%</h2>
+          <span class="text-muted">Promedio de Merma</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Mermas -->
+  <div class="row mt-4">
+    <div *ngIf="mermasFiltradas.length === 0 && mermas.length === 0" class="col-12 text-center py-5">
+      <i class="bi bi-inbox fs-1 text-muted"></i>
+      <h5 class="mt-3 text-muted">No hay mermas registradas</h5>
+      <p class="text-muted">Crea tu primera merma para comenzar</p>
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus me-1"></i>
+        Nueva Merma
+      </button>
+    </div>
+
+    <div *ngIf="mermasFiltradas.length === 0 && mermas.length > 0" class="col-12 text-center py-5">
+      <i class="bi bi-search fs-1 text-muted"></i>
+      <h5 class="mt-3 text-muted">No se encontraron resultados</h5>
+      <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+      <button class="btn btn-outline-secondary" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle me-1"></i>
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let merma of mermasFiltradas">
+      <div class="card shadow-sm border-0 h-100" style="cursor: pointer;" (click)="verDetalleMerma(merma)">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="d-flex align-items-start mb-3">
+            <div class="rounded-circle me-3 d-flex justify-content-center align-items-center"
+                 [style.background-color]="merma.tipo === 'cocina' ? '#ffc107' : '#dc3545'"
+                 style="width: 48px; height: 48px; min-width: 48px;">
+              <i class="text-white fs-5"
+                 [ngClass]="merma.tipo === 'cocina' ? 'bi-scissors' : 'bi-exclamation-triangle-fill'"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h6 class="mb-0 fw-bold">{{ merma.nombre }}</h6>
+                <span class="badge badge-sm"
+                      [ngClass]="merma.tipo === 'cocina' ? 'bg-warning text-dark' : 'bg-danger'">
+                  {{ merma.tipo === 'cocina' ? '🔪 Cocina' : '📦 Producto' }}
+                </span>
+              </div>
+              <p class="text-muted small mb-2">{{ merma.descripcion || 'Sin descripción' }}</p>
+            </div>
+          </div>
+
+          <!-- Producto -->
+          <div class="mb-3">
+            <div class="d-flex align-items-center p-2 bg-light rounded">
+              <i class="bi bi-box me-2 text-primary"></i>
+              <small class="text-muted">Producto:</small>
+              <strong class="ms-2 small">{{ getProductoNombre(merma.productoId) }}</strong>
+            </div>
+          </div>
+
+          <!-- Porcentaje de Merma (solo para cocina) o Cantidad (para producto) -->
+          <div class="mb-3" *ngIf="merma.tipo === 'cocina'">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <small class="text-muted">
+                <i class="bi bi-percent me-1"></i>
+                Porcentaje de Merma
+              </small>
+              <h4 class="mb-0 text-warning">{{ merma.porcentajeMerma }}%</h4>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar bg-warning"
+                   role="progressbar"
+                   [style.width.%]="merma.porcentajeMerma"
+                   [attr.aria-valuenow]="merma.porcentajeMerma"
+                   aria-valuemin="0"
+                   aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de merma de producto -->
+          <div class="mb-3" *ngIf="merma.tipo === 'producto'">
+            <div class="row g-2">
+              <div class="col-6">
+                <small class="text-muted d-block">Cantidad Perdida</small>
+                <strong class="text-danger">{{ merma.cantidadPerdida }} {{ merma.unidadMedida }}</strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Costo Pérdida</small>
+                <strong class="text-danger">{{ merma.costoPerdida | currency:'EUR':'symbol':'1.2-2' }}</strong>
+              </div>
+            </div>
+            <small class="text-muted d-block mt-2">
+              <i class="bi bi-calendar3 me-1"></i>
+              {{ merma.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}
+            </small>
+          </div>
+
+          <!-- Estado -->
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Estado</small>
+            <span class="badge" [ngClass]="merma.activo ? 'bg-success' : 'bg-secondary'">
+              <i class="bi" [ngClass]="merma.activo ? 'bi-check-circle' : 'bi-x-circle'"></i>
+              {{ merma.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Vista Detallada -->
+<div class="modal fade" id="detalleMermaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle me-3 d-flex justify-content-center align-items-center"
+               [style.background-color]="mermaSeleccionada?.tipo === 'cocina' ? '#ffc107' : '#dc3545'"
+               style="width: 56px; height: 56px">
+            <i class="text-white fs-3"
+               [ngClass]="mermaSeleccionada?.tipo === 'cocina' ? 'bi-scissors' : 'bi-exclamation-triangle-fill'"></i>
+          </div>
+          <div>
+            <h4 class="mb-0">{{ mermaSeleccionada?.nombre }}</h4>
+            <small class="text-muted">{{ mermaSeleccionada?.descripcion || 'Sin descripción' }}</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3" *ngIf="mermaSeleccionada">
+        <!-- Badge de tipo y estado -->
+        <div class="mb-4">
+          <span class="badge px-3 py-2 me-2"
+                [ngClass]="mermaSeleccionada.tipo === 'cocina' ? 'bg-warning text-dark' : 'bg-danger'">
+            <i [ngClass]="mermaSeleccionada.tipo === 'cocina' ? 'bi-scissors' : 'bi-exclamation-triangle'"></i>
+            {{ mermaSeleccionada.tipo === 'cocina' ? 'Merma de Cocina' : 'Merma de Producto' }}
+          </span>
+          <span class="badge px-3 py-2" [ngClass]="mermaSeleccionada.activo ? 'bg-success' : 'bg-secondary'" *ngIf="mermaSeleccionada.tipo === 'cocina'">
+            <i class="bi" [ngClass]="mermaSeleccionada.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+            {{ mermaSeleccionada.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        <!-- Información del Producto -->
+        <div class="card border-0 bg-light mb-3">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-box me-2 text-primary"></i>Producto Asociado</h6>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-box-seam fs-3 text-primary me-3"></i>
+              <div>
+                <strong class="d-block">{{ mermaSeleccionada.productoNombre }}</strong>
+                <small class="text-muted">Producto afectado por esta merma</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENIDO PARA MERMA DE COCINA -->
+        <div *ngIf="mermaSeleccionada.tipo === 'cocina'">
+          <!-- Porcentaje de Merma -->
+          <div class="card border-0 bg-warning bg-opacity-10 mb-3">
+            <div class="card-body text-center">
+              <i class="bi bi-percent text-warning fs-1 d-block mb-2"></i>
+              <h1 class="mb-0 text-warning">{{ mermaSeleccionada.porcentajeMerma }}%</h1>
+              <small class="text-muted">Porcentaje de Merma en Cocina</small>
+              <div class="progress mt-3" style="height: 12px;">
+                <div class="progress-bar bg-warning"
+                     role="progressbar"
+                     [style.width.%]="mermaSeleccionada.porcentajeMerma"
+                     [attr.aria-valuenow]="mermaSeleccionada.porcentajeMerma"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ejemplo de Cálculo -->
+          <div class="card border-0 bg-light">
+            <div class="card-body">
+              <h6 class="mb-3">
+                <i class="bi bi-calculator me-2 text-primary"></i>
+                Ejemplo de Cálculo
+              </h6>
+              <div class="alert alert-info mb-0">
+                <strong>Si compras {{ getProductoCantidad(mermaSeleccionada.productoId) }} {{ getProductoUnidadMedida(mermaSeleccionada.productoId) }} y la merma es del {{ mermaSeleccionada.porcentajeMerma }}%, tendrás:</strong>
+                <div class="mt-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Cantidad comprada:</span>
+                    <strong>{{ getProductoCantidad(mermaSeleccionada.productoId) }} {{ getProductoUnidadMedida(mermaSeleccionada.productoId) }}</strong>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Pérdida por merma ({{ mermaSeleccionada.porcentajeMerma }}%):</span>
+                    <strong class="text-warning">{{ calcularPerdida(getProductoCantidad(mermaSeleccionada.productoId), mermaSeleccionada.porcentajeMerma) | number:'1.1-1' }} {{ getProductoUnidadMedida(mermaSeleccionada.productoId) }}</strong>
+                  </div>
+                  <hr>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>Cantidad útil:</strong></span>
+                    <h5 class="mb-0 text-success">{{ calcularUnidadesUtiles(getProductoCantidad(mermaSeleccionada.productoId), mermaSeleccionada.porcentajeMerma) | number:'1.1-1' }} {{ getProductoUnidadMedida(mermaSeleccionada.productoId) }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENIDO PARA MERMA DE PRODUCTO -->
+        <div *ngIf="mermaSeleccionada.tipo === 'producto'">
+          <!-- Información de la Pérdida -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="card border-0 bg-danger bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                  <i class="bi bi-box-seam text-danger fs-2 d-block mb-2"></i>
+                  <h3 class="mb-0 text-danger">{{ mermaSeleccionada.cantidadPerdida }}</h3>
+                  <small class="text-muted">{{ mermaSeleccionada.unidadMedida }} perdidas</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-0 bg-danger bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                  <i class="bi bi-cash-coin text-danger fs-2 d-block mb-2"></i>
+                  <h3 class="mb-0 text-danger">{{ mermaSeleccionada.costoPerdida | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                  <small class="text-muted">Costo de la pérdida</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Motivo -->
+          <div class="card border-0 bg-light mb-3">
+            <div class="card-body">
+              <h6 class="mb-2">
+                <i class="bi bi-info-circle me-2 text-primary"></i>
+                Motivo de la Pérdida
+              </h6>
+              <span class="badge bg-danger px-3 py-2">{{ getMotivoTexto(mermaSeleccionada.motivo || '') }}</span>
+            </div>
+          </div>
+
+          <!-- Fecha de Registro -->
+          <div class="card border-0 bg-light">
+            <div class="card-body">
+              <h6 class="mb-2">
+                <i class="bi bi-calendar3 me-2 text-primary"></i>
+                Fecha de Registro
+              </h6>
+              <p class="mb-0">{{ mermaSeleccionada.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-2"></i>Cerrar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()">
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="eliminarDesdeDetalle()">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Creación/Edición -->
+<div class="modal fade" id="mermaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="mermaForm" (ngSubmit)="guardarMerma()">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title mb-1">{{ mermaForm.get('id')?.value ? 'Editar Merma' : 'Nueva Merma' }}</h5>
+            <span class="badge" [ngClass]="mermaForm.get('tipo')?.value === 'cocina' ? 'bg-warning text-dark' : 'bg-danger'">
+              <i [ngClass]="mermaForm.get('tipo')?.value === 'cocina' ? 'bi-scissors' : 'bi-exclamation-triangle'"></i>
+              {{ mermaForm.get('tipo')?.value === 'cocina' ? 'Merma de Cocina' : 'Merma de Producto' }}
+            </span>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Tipo de Merma (solo visible al crear) -->
+          <div class="mb-3" *ngIf="!mermaForm.get('id')?.value">
+            <label class="form-label">Tipo de Merma <span class="text-danger">*</span></label>
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="form-check card p-3" [class.border-warning]="mermaForm.get('tipo')?.value === 'cocina'">
+                  <input class="form-check-input" type="radio" formControlName="tipo" value="cocina" id="tipoCocina">
+                  <label class="form-check-label" for="tipoCocina">
+                    <i class="bi bi-scissors text-warning fs-4 d-block mb-2"></i>
+                    <strong>Cocina</strong>
+                    <small class="d-block text-muted">Pérdidas durante preparación</small>
+                  </label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-check card p-3" [class.border-danger]="mermaForm.get('tipo')?.value === 'producto'">
+                  <input class="form-check-input" type="radio" formControlName="tipo" value="producto" id="tipoProducto">
+                  <label class="form-check-label" for="tipoProducto">
+                    <i class="bi bi-exclamation-triangle text-danger fs-4 d-block mb-2"></i>
+                    <strong>Producto</strong>
+                    <small class="d-block text-muted">Roturas, cancelaciones</small>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Producto con Buscador -->
+          <div class="mb-3">
+            <label class="form-label">Producto <span class="text-danger">*</span></label>
+            <div class="position-relative">
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="busquedaProducto"
+                [ngModelOptions]="{standalone: true}"
+                (focus)="mostrarListaProductos = true"
+                (input)="filtrarProductos()"
+                placeholder="Buscar producto..."
+                autocomplete="off"
+              />
+              <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+
+              <!-- Lista de productos filtrados -->
+              <div class="list-group position-absolute w-100 shadow-lg" style="max-height: 300px; overflow-y: auto; z-index: 1000;" *ngIf="mostrarListaProductos && productosFiltrados.length > 0">
+                <button
+                  type="button"
+                  class="list-group-item list-group-item-action"
+                  *ngFor="let producto of productosFiltrados"
+                  (click)="seleccionarProducto(producto)"
+                >
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ producto.nombre }}</strong>
+                      <br>
+                      <small class="text-muted">{{ producto.cantidad }} {{ producto.unidadMedida }}</small>
+                    </div>
+                    <span class="badge bg-primary">{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Mensaje si no hay resultados -->
+              <div class="alert alert-info mt-2 py-2" *ngIf="mostrarListaProductos && busquedaProducto && productosFiltrados.length === 0">
+                <small>No se encontraron productos</small>
+              </div>
+            </div>
+            <input type="hidden" formControlName="productoId" />
+          </div>
+
+          <!-- Nombre (Opcional) -->
+          <div class="mb-3">
+            <label class="form-label">Nombre <small class="text-muted">(Opcional)</small></label>
+            <input type="text" class="form-control" formControlName="nombre"
+                   [placeholder]="mermaForm.get('tipo')?.value === 'cocina' ? 'Ej: Merma de Papa al pelar' : 'Ej: Refresco caído'">
+            <small class="text-muted">Si no se especifica, se usará el nombre del producto</small>
+          </div>
+
+          <!-- Descripción (Opcional) -->
+          <div class="mb-3">
+            <label class="form-label">Descripción <small class="text-muted">(Opcional)</small></label>
+            <textarea class="form-control" formControlName="descripcion" rows="2"
+                      [placeholder]="mermaForm.get('tipo')?.value === 'cocina' ? 'Ej: Pérdida durante pelado y limpieza' : 'Ej: Se cayó al suelo durante el servicio'"></textarea>
+          </div>
+
+          <!-- CAMPOS PARA MERMA DE COCINA -->
+          <div *ngIf="mermaForm.get('tipo')?.value === 'cocina'">
+            <!-- Porcentaje de Merma -->
+            <div class="mb-3">
+              <label class="form-label">Porcentaje de Merma (%) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="number" class="form-control" formControlName="porcentajeMerma"
+                       placeholder="0" min="0" max="100" step="0.1">
+                <span class="input-group-text">%</span>
+              </div>
+              <small class="text-muted">Porcentaje estimado de pérdida durante el procesamiento</small>
+            </div>
+
+            <!-- Ejemplo de Cálculo Dinámico -->
+            <div class="alert alert-warning" *ngIf="mermaForm.get('porcentajeMerma')?.value >= 0">
+              <h6 class="alert-heading">
+                <i class="bi bi-calculator me-2"></i>
+                Ejemplo de cálculo:
+              </h6>
+              <p class="mb-0">
+                Si compras <strong>100 unidades</strong> y la merma es del <strong>{{ mermaForm.get('porcentajeMerma')?.value || 0 }}%</strong>,
+                tendrás <strong class="text-success">{{ calcularUnidadesUtiles(100, mermaForm.get('porcentajeMerma')?.value || 0) | number:'1.1-1' }} unidades útiles</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- CAMPOS PARA MERMA DE PRODUCTO -->
+          <div *ngIf="mermaForm.get('tipo')?.value === 'producto'">
+            <!-- Cantidad Perdida -->
+            <div class="mb-3">
+              <label class="form-label">Cantidad Perdida <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="number" class="form-control" formControlName="cantidadPerdida"
+                       placeholder="0" min="0" step="0.01">
+                <span class="input-group-text">{{ getProductoUnidadMedida(mermaForm.get('productoId')?.value) || 'unidades' }}</span>
+              </div>
+              <small class="text-muted">Cantidad exacta del producto perdido</small>
+            </div>
+
+            <!-- Motivo -->
+            <div class="mb-3">
+              <label class="form-label">Motivo <span class="text-danger">*</span></label>
+              <select class="form-select" formControlName="motivo">
+                <option value="">Seleccionar motivo</option>
+                <option value="rotura">Rotura/Caída</option>
+                <option value="cancelacion">Cancelación de pedido</option>
+                <option value="vencimiento">Vencimiento</option>
+                <option value="deterioro">Deterioro/Mal estado</option>
+                <option value="error">Error de preparación</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <!-- Costo de la Pérdida (calculado automáticamente) -->
+            <div class="alert alert-danger" *ngIf="mermaForm.get('cantidadPerdida')?.value > 0 && mermaForm.get('productoId')?.value">
+              <h6 class="alert-heading">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Costo de la Pérdida:
+              </h6>
+              <h4 class="mb-0 text-danger">
+                {{ calcularCostoPerdida(mermaForm.get('productoId')?.value, mermaForm.get('cantidadPerdida')?.value) | currency:'EUR':'symbol':'1.2-2' }}
+              </h4>
+            </div>
+          </div>
+
+          <!-- Activo (solo para mermas de cocina) -->
+          <div class="form-check" *ngIf="mermaForm.get('tipo')?.value === 'cocina'">
+            <input class="form-check-input" type="checkbox" formControlName="activo" id="activoCheck">
+            <label class="form-check-label" for="activoCheck">
+              Activo (usar en escandallos)
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn"
+                  [ngClass]="mermaForm.get('tipo')?.value === 'cocina' ? 'btn-warning' : 'btn-danger'"
+                  [disabled]="mermaForm.invalid">
+            {{ mermaForm.get('id')?.value ? 'Actualizar' : 'Registrar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

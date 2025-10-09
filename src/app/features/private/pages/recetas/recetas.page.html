@@ -1,394 +1,591 @@
 <div class="container-fluid">
   <!-- Header -->
   <div class="row">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h3 class="mb-1">Gestión de Recetas</h3>
-          <span class="text-muted">Administra tus productos combinados y recetas</span>
-        </div>
-        <button class="btn btn-danger" (click)="abrirModalReceta()">
-          <i class="bi bi-plus"></i> Nueva Receta
-        </button>
-      </div>
+    <div class="col-8">
+      <h5>Recetas Pre-elaboradas</h5>
+      <span>Productos combinados para usar en tus escandallos</span>
+    </div>
+    <div class="col text-end">
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus-lg me-2"></i> Nueva Receta
+      </button>
     </div>
   </div>
 
-  <!-- Cards de estadísticas -->
+  <!-- Estadísticas -->
   <div class="row mt-4">
-    <div class="col-12 col-md-6 col-xl-3 mb-4">
-      <div class="card border-0 shadow-sm h-100">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
-          <h2 class="text-primary fw-bold mb-1">{{ estadisticas.totalRecetas }}</h2>
-          <p class="text-muted mb-0">Total Recetas</p>
+          <h2 class="text-primary mb-0">{{ totalRecetas }}</h2>
+          <span class="text-muted">Total Recetas</span>
         </div>
       </div>
     </div>
-
-    <div class="col-12 col-md-6 col-xl-3 mb-4">
-      <div class="card border-0 shadow-sm h-100">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
-          <h2 class="text-warning fw-bold mb-1">{{ estadisticas.cocteles }}</h2>
-          <p class="text-muted mb-0">Cocteles</p>
+          <h2 class="text-success mb-0">{{ recetasActivas }}</h2>
+          <span class="text-muted">Activas</span>
         </div>
       </div>
     </div>
-
-    <div class="col-12 col-md-6 col-xl-3 mb-4">
-      <div class="card border-0 shadow-sm h-100">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
-          <h2 class="text-info fw-bold mb-1">{{ estadisticas.platos }}</h2>
-          <p class="text-muted mb-0">Platos</p>
+          <h2 class="text-info mb-0">{{ totalIngredientes }}</h2>
+          <span class="text-muted">Total Ingredientes</span>
         </div>
       </div>
     </div>
-
-    <div class="col-12 col-md-6 col-xl-3 mb-4">
-      <div class="card border-0 shadow-sm h-100">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
-          <h2 class="text-success fw-bold mb-1">{{ estadisticas.ingredientesTotales }}</h2>
-          <p class="text-muted mb-0">Ingredientes Totales</p>
+          <h2 class="text-warning mb-0">
+            {{ costoPromedio | currency:'EUR':'symbol':'1.2-2' }}
+          </h2>
+          <span class="text-muted">Costo Promedio</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Buscador y Filtros -->
+  <!-- Lista de Recetas -->
   <div class="row mt-4">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="bi bi-search"></i>
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Buscar recetas por nombre o descripción..."
-                  [(ngModel)]="filtros.busqueda"
-                  (input)="aplicarFiltros()">
-              </div>
+    <div *ngIf="recetas.length === 0" class="col-12 text-center py-5">
+      <i class="bi bi-inbox fs-1 text-muted"></i>
+      <h5 class="mt-3 text-muted">No hay recetas registradas</h5>
+      <p class="text-muted">Crea tu primera receta para comenzar</p>
+      <button class="btn btn-danger" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus me-1"></i>
+        Nueva Receta
+      </button>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let receta of recetas">
+      <div
+        class="card shadow-sm border-0 h-100"
+        style="cursor: pointer"
+        (click)="verDetalleReceta(receta)"
+      >
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="d-flex align-items-start mb-3">
+            <div
+              class="rounded-circle me-3 d-flex justify-content-center align-items-center"
+              style="
+                background-color: #6c757d;
+                width: 48px;
+                height: 48px;
+                min-width: 48px;
+              "
+            >
+              <i class="bi bi-cup-straw text-white fs-5"></i>
             </div>
-            <div class="col-12 col-md-3">
-              <select class="form-select" [(ngModel)]="filtros.tipo" (change)="aplicarFiltros()">
-                <option value="">Todos los tipos</option>
-                <option value="Cocteles">Cocteles</option>
-                <option value="Platos">Platos</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-3">
-              <select class="form-select" [(ngModel)]="filtros.disponibilidad" (change)="aplicarFiltros()">
-                <option value="">Todas las recetas</option>
-                <option value="disponible">Solo disponibles</option>
-                <option value="no-disponible">No disponibles</option>
-              </select>
+            <div class="flex-grow-1">
+              <h6 class="mb-1 fw-bold">{{ receta.nombre }}</h6>
+              <span
+                class="badge rounded-pill"
+                [ngClass]="getCategoriaBadgeClass(receta.categoriaId)"
+              >
+                {{ getCategoriaNombre(receta.categoriaId) }}
+              </span>
             </div>
           </div>
 
-          <!-- Resultados de búsqueda -->
-          <div class="mt-3" *ngIf="filtros.busqueda || filtros.tipo || filtros.disponibilidad">
-            <small class="text-muted">
-              <i class="bi bi-funnel me-1"></i>
-              Mostrando {{ recetasFiltradas.length }} de {{ recetas.length }} recetas
-              <button class="btn btn-sm btn-link p-0 ms-2" (click)="limpiarFiltros()">
-                <i class="bi bi-x-circle"></i> Limpiar filtros
-              </button>
+          <!-- Costo -->
+          <div class="mb-3">
+            <div class="text-muted small">Costo Total</div>
+            <div class="fw-bold text-warning" style="font-size: 1.3rem">
+              <span
+                *ngIf="receta.costoTotal !== undefined && receta.costoTotal !== null && isFinite(receta.costoTotal); else noCosto"
+              >
+                {{ receta.costoTotal | currency:'EUR':'symbol':'1.2-2' }}
+              </span>
+              <ng-template #noCosto>
+                <span class="text-muted">€0.00</span>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Ingredientes -->
+          <div class="mb-3">
+            <small class="text-muted d-block mb-2">
+              <i class="bi bi-list-ul me-1"></i>
+              Ingredientes:
             </small>
+            <div class="d-flex flex-wrap gap-1">
+              <span
+                class="badge bg-light text-dark"
+                *ngFor="let ing of receta.ingredientes.slice(0, 3)"
+              >
+                {{ getProductoNombre(ing.productoId) }}
+              </span>
+              <span
+                class="badge bg-light text-dark"
+                *ngIf="receta.ingredientes.length > 3"
+              >
+                +{{ receta.ingredientes.length - 3 }} más
+              </span>
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+              <i class="bi bi-box-seam me-1"></i>
+              {{ receta.ingredientes.length }} ingredientes
+            </small>
+            <span
+              class="badge"
+              [ngClass]="receta.activo ? 'bg-success' : 'bg-secondary'"
+            >
+              <i
+                class="bi"
+                [ngClass]="receta.activo ? 'bi-check-circle' : 'bi-x-circle'"
+              ></i>
+              {{ receta.activo ? 'Activo' : 'Inactivo' }}
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Lista de recetas -->
-  <div class="row">
-    <div class="col-12 col-lg-6 mb-4" *ngFor="let receta of recetasFiltradas">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-funnel text-muted me-2"></i>
-              <h5 class="mb-0">{{ receta.nombre }}</h5>
-            </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-primary" (click)="verReceta(receta)" title="Ver receta">
-                <i class="bi bi-eye"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-secondary" (click)="editarReceta(receta)" title="Editar receta">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" (click)="eliminarReceta(receta)" title="Eliminar receta">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
+<!-- Modal de Vista Detallada -->
+<div
+  class="modal fade"
+  id="detalleRecetaModal"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center">
+          <div
+            class="rounded-circle me-3 d-flex justify-content-center align-items-center"
+            style="background-color: #6c757d; width: 56px; height: 56px"
+          >
+            <i class="bi bi-cup-straw text-white fs-3"></i>
           </div>
-
-          <p class="text-muted small mb-3">{{ receta.descripcion }}</p>
-
-          <div class="mb-3">
-            <span class="badge"
-                  [class]="receta.tipo === 'Cocteles' ? 'bg-warning text-dark' : 'bg-info'">
-              {{ receta.tipo }}
-            </span>
+          <div>
+            <h4 class="mb-0">{{ recetaSeleccionada?.nombre }}</h4>
           </div>
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body pt-3" *ngIf="recetaSeleccionada">
+        <!-- Badge de categoría y estado -->
+        <div class="mb-4">
+          <span
+            class="badge px-3 py-2 me-2"
+            [ngClass]="getCategoriaBadgeClass(recetaSeleccionada.categoriaId)"
+          >
+            <i class="bi bi-tag-fill me-1"></i>
+            {{ getCategoriaNombre(recetaSeleccionada.categoriaId) }}
+          </span>
+          <span
+            class="badge px-3 py-2"
+            [ngClass]="recetaSeleccionada.activo ? 'bg-success' : 'bg-secondary'"
+          >
+            <i
+              class="bi"
+              [ngClass]="recetaSeleccionada.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"
+            ></i>
+            {{ recetaSeleccionada.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
 
-          <div class="row mb-3">
-            <div class="col-4">
-              <small class="text-muted">Precio Venta</small>
-              <div class="fw-bold">{{ receta.precioVenta | currency:'EUR':'symbol':'1.0-0' }}</div>
-            </div>
-            <div class="col-4">
-              <small class="text-muted">Costo Receta</small>
-              <div class="fw-bold">{{ receta.costoTotal | currency:'EUR':'symbol':'1.0-0' }}</div>
-            </div>
-            <div class="col-4">
-              <small class="text-muted">Margen</small>
-              <div class="fw-bold"
-                   [class]="(receta.margen || 0) >= 0 ? 'text-success' : 'text-danger'">
-                {{ receta.margen | number:'1.1-1' }}%
+        <!-- Costo principal -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-12">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-cash-coin text-warning fs-2 d-block mb-2"></i>
+                <h3 class="mb-0 text-warning">
+                  {{ recetaSeleccionada.costoTotal |
+                  currency:'EUR':'symbol':'1.2-2' }}
+                </h3>
+                <small class="text-muted">Costo Total de la Receta</small>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <small class="text-muted d-block mb-2">Ingredientes:</small>
-            <div class="ingredient-list">
-              <div *ngFor="let ingrediente of receta.ingredientes" class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small">{{ ingrediente.nombre }}</span>
-                <span class="small text-muted">{{ ingrediente.cantidad }} {{ ingrediente.unidad }}</span>
+        <!-- Desglose de Costos -->
+        <div class="card border-0 bg-light mb-3">
+          <div class="card-body">
+            <h6 class="mb-3">
+              <i class="bi bi-calculator me-2 text-primary"></i>
+              Desglose de Costos
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>Ingrediente</th>
+                    <th class="text-end">Cantidad</th>
+                    <th class="text-end">Costo</th>
+                    <th class="text-end">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ing of recetaSeleccionada.ingredientes">
+                    <td>
+                      <strong>{{ getProductoNombre(ing.productoId) }}</strong>
+                      <br />
+                      <small class="text-muted">
+                        Costo/unidad: {{ (ing.costo || 0) / ing.cantidad |
+                        currency:'EUR':'symbol':'1.3-3' }}
+                      </small>
+                    </td>
+                    <td class="text-end">
+                      {{ ing.cantidad }} {{ ing.unidadMedida }}
+                    </td>
+                    <td class="text-end">
+                      {{ ing.costo | currency:'EUR':'symbol':'1.2-2' }}
+                    </td>
+                    <td class="text-end">
+                      <span class="badge bg-secondary">
+                        {{ calcularPorcentajeCosto(ing, recetaSeleccionada) |
+                        number:'1.1-1' }}%
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-3">
+                  <i class="bi bi-list-ul me-2 text-primary"></i>
+                  Ingredientes
+                </h6>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-box-seam fs-2 text-primary me-3"></i>
+                  <div>
+                    <h3 class="mb-0">
+                      {{ recetaSeleccionada.ingredientes.length }}
+                    </h3>
+                    <small class="text-muted">productos utilizados</small>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-3">
+                  <i class="bi bi-cash-stack me-2 text-primary"></i>
+                  Costo Total
+                </h6>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-calculator fs-2 text-primary me-3"></i>
+                  <div>
+                    <h3 class="mb-0">
+                      {{ recetaSeleccionada.costoTotal |
+                      currency:'EUR':'symbol':'1.2-2' }}
+                    </h3>
+                    <small class="text-muted">costo de preparación</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <div class="d-flex justify-content-between align-items-center">
-            <small class="text-muted">Disponibilidad</small>
-            <span class="badge"
-                  [class]="receta.disponible ? 'bg-success' : 'bg-secondary'">
-              {{ receta.disponible ? 'Disponible' : 'No disponible' }}
-            </span>
+        <!-- Notas de preparación -->
+        <div
+          class="card border-0 bg-primary bg-opacity-10 mt-3"
+          *ngIf="recetaSeleccionada.notasPreparacion"
+        >
+          <div class="card-body">
+            <h6 class="mb-2">
+              <i class="bi bi-journal-text me-2 text-primary"></i>
+              Notas de Preparación
+            </h6>
+            <p class="mb-0 small">{{ recetaSeleccionada.notasPreparacion }}</p>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Mensaje cuando no hay resultados -->
-    <div class="col-12" *ngIf="recetasFiltradas.length === 0 && recetas.length > 0">
-      <div class="text-center py-5">
-        <i class="bi bi-search fs-1 text-muted"></i>
-        <h5 class="mt-3 text-muted">No se encontraron recetas</h5>
-        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
-        <button class="btn btn-outline-primary" (click)="limpiarFiltros()">
-          <i class="bi bi-arrow-clockwise me-1"></i>
-          Mostrar todas las recetas
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-2"></i>Cerrar
         </button>
-      </div>
-    </div>
-
-    <!-- Mensaje cuando no hay recetas -->
-    <div class="col-12" *ngIf="recetas.length === 0">
-      <div class="text-center py-5">
-        <i class="bi bi-cup-straw fs-1 text-muted"></i>
-        <h5 class="mt-3 text-muted">No tienes recetas creadas</h5>
-        <p class="text-muted">Crea tu primera receta para comenzar</p>
-        <button class="btn btn-danger" (click)="abrirModalReceta()">
-          <i class="bi bi-plus me-1"></i>
-          Nueva Receta
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="editarDesdeDetalle()"
+        >
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="eliminarDesdeDetalle()"
+        >
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Nueva/Editar Receta -->
-<div class="modal fade" id="modalReceta" tabindex="-1" data-bs-backdrop="static">
-  <div class="modal-dialog modal-xl">
+<!-- Modal de Creación/Edición -->
+<div
+  class="modal fade"
+  id="recetaModal"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ modoEdicion ? 'Editar' : 'Nueva' }} Receta</h5>
-        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="recetaForm" (ngSubmit)="guardarReceta()">
+      <form [formGroup]="recetaForm" (ngSubmit)="guardarReceta()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ recetaForm.get('id')?.value ? 'Editar Receta' : 'Nueva Receta' }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <!-- Información básica -->
           <div class="row">
-            <!-- Información de la Receta -->
-            <div class="col-12 col-lg-6">
-              <div class="card border-0 bg-light mb-4">
-                <div class="card-header bg-transparent border-0">
-                  <h6 class="mb-0">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Información de la Receta
-                  </h6>
-                </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label class="form-label">Nombre de la Receta *</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      formControlName="nombre"
-                      placeholder="Ej: Mojito Clásico">
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Tipo de Receta *</label>
-                    <select class="form-select" formControlName="tipo">
-                      <option value="Cocteles">Cocteles</option>
-                      <option value="Platos">Platos</option>
-                    </select>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Descripción</label>
-                    <textarea
-                      class="form-control"
-                      rows="3"
-                      formControlName="descripcion"
-                      placeholder="Descripción de la receta (opcional)"></textarea>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Precio de Venta *</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      formControlName="precioVenta"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00">
-                  </div>
-                </div>
-              </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="nombre"
+                placeholder="Ej: Puré de Papa"
+              />
             </div>
-
-            <!-- Análisis de Costos -->
-            <div class="col-12 col-lg-6">
-              <div class="card border-0 bg-light mb-4">
-                <div class="card-header bg-transparent border-0">
-                  <h6 class="mb-0">
-                    <i class="bi bi-calculator me-2"></i>
-                    Análisis de Costos
-                  </h6>
-                </div>
-                <div class="card-body">
-                  <div class="row mb-3">
-                    <div class="col-6">
-                      <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
-                        <h4 class="mb-1">{{ costoReceta | currency:'EUR':'symbol':'1.0-0' }}</h4>
-                        <small class="text-muted">Costo de Receta</small>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="text-center p-3 bg-success bg-opacity-10 rounded">
-                        <h4 class="mb-1 text-success">{{ margenReceta | number:'1.1-1' }}%</h4>
-                        <small class="text-muted">Margen de Ganancia</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Explicación del cálculo -->
-                  <div class="alert alert-info py-2 px-3 mb-0">
-                    <small>
-                      <strong><i class="bi bi-info-circle me-1"></i>¿Cómo se calcula?</strong><br>
-                      • <strong>Costo:</strong> Suma del precio de todos los ingredientes según su cantidad<br>
-                      • <strong>Margen:</strong> Porcentaje de ganancia = ((Precio Venta - Costo) ÷ Precio Venta) × 100<br>
-                      • <strong>Ganancia:</strong> {{ (recetaForm.get('precioVenta')?.value || 0) - costoReceta | currency:'EUR':'symbol':'1.2-2' }} por receta
-                    </small>
-                  </div>
-                </div>
-              </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Categoría</label>
+              <select class="form-select" formControlName="categoriaId">
+                <option value="">Seleccionar categoría</option>
+                <option *ngFor="let cat of categorias" [value]="cat.id">
+                  {{ cat.nombre }}
+                </option>
+              </select>
             </div>
           </div>
 
-          <!-- Ingredientes de la Receta -->
-          <div class="card border-0 bg-light">
-            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-              <h6 class="mb-0">Ingredientes de la Receta</h6>
-              <button type="button" class="btn btn-sm btn-info" (click)="agregarIngrediente()">
-                <i class="bi bi-plus"></i> Agregar Ingrediente
+          <!-- Notas de preparación -->
+          <div class="mb-3">
+            <label class="form-label">Notas de Preparación</label>
+            <textarea
+              class="form-control"
+              formControlName="notasPreparacion"
+              rows="2"
+              placeholder="Instrucciones especiales o notas importantes"
+            ></textarea>
+          </div>
+
+          <!-- Ingredientes -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Ingredientes</label>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="agregarIngrediente()"
+              >
+                <i class="bi bi-plus me-1"></i>Agregar
               </button>
             </div>
-            <div class="card-body">
-              <div class="table-responsive" style="max-height: 400px;">
-                <table class="table table-borderless table-sm">
-                  <thead class="sticky-top bg-light">
-                    <tr>
-                      <th style="width: 40%;">Producto</th>
-                      <th style="width: 20%;">Cantidad</th>
-                      <th style="width: 20%;">Unidad</th>
-                      <th style="width: 20%;"></th>
-                    </tr>
-                  </thead>
-                  <tbody formArrayName="ingredientes">
-                    <tr *ngFor="let ingrediente of ingredientesFormArray.controls; let i = index" [formGroupName]="i">
-                      <td>
+
+            <div formArrayName="ingredientes">
+              <div
+                *ngFor="let ingrediente of ingredientes.controls; let i = index"
+                [formGroupName]="i"
+                class="card mb-2"
+              >
+                <div class="card-body p-3">
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <label class="form-label small text-muted mb-1"
+                        >Producto</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        #productoInput
+                        [value]="getProductoNombreById(ingrediente.get('productoId')?.value)"
+                        (input)="onProductoInput(i, $event)"
+                        (change)="onProductoInput(i, $event)"
+                        (blur)="onProductoBlur(i, $event)"
+                        [attr.list]="'productos-list-' + i"
+                        placeholder="Buscar producto..."
+                        autocomplete="off"
+                      />
+                      <datalist [id]="'productos-list-' + i">
+                        <option
+                          *ngFor="let producto of productos"
+                          [value]="producto.nombre"
+                        >
+                          Stock: {{ producto.cantidad }} {{
+                          producto.unidadMedida }} - {{ producto.costo |
+                          currency:'EUR':'symbol':'1.2-2' }}
+                        </option>
+                      </datalist>
+                      <input type="hidden" formControlName="productoId" />
+
+                      <!-- Info del producto seleccionado -->
+                      <div
+                        *ngIf="getProductoById(ingrediente.get('productoId')?.value) as producto"
+                        class="mt-1"
+                      >
+                        <small class="text-success d-block">
+                          <i class="bi bi-box-seam me-1"></i>
+                          Stock: {{ producto.cantidad }} {{
+                          producto.unidadMedida }}
+                        </small>
+                        <small class="text-info d-block">
+                          <i class="bi bi-cash me-1"></i>
+                          Costo: {{ producto.costo |
+                          currency:'EUR':'symbol':'1.2-2' }}
+                        </small>
+                      </div>
+                    </div>
+
+                    <div class="col-md-2">
+                      <label class="form-label small text-muted mb-1"
+                        >Cantidad</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control form-control-sm"
+                        formControlName="cantidad"
+                        placeholder="0"
+                        step="0.01"
+                        min="0"
+                        (input)="actualizarCostoIngrediente(i)"
+                      />
+                    </div>
+
+                    <div class="col-md-2">
+                      <label class="form-label small text-muted mb-1"
+                        >Unidad</label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        formControlName="unidadMedida"
+                        (change)="actualizarCostoIngrediente(i)"
+                      >
+                        <option value="">Seleccionar</option>
+                        <option
+                          *ngFor="let unidad of getUnidadesCompatibles(ingrediente.get('productoId')?.value)"
+                          [value]="unidad"
+                        >
+                          {{ unidad }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-3">
+                      <label class="form-label small text-muted mb-1"
+                        >Costo</label
+                      >
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">€</span>
                         <input
                           type="text"
                           class="form-control form-control-sm"
-                          [attr.list]="'productos-datalist-' + i"
-                          placeholder="Escribe para buscar..."
-                          [value]="getProductoNombre(ingrediente.get('productoId')?.value)"
-                          (input)="onProductoInput($event, i)"
-                          (change)="onProductoSeleccionado($event, i)">
-                        <datalist [id]="'productos-datalist-' + i">
-                          <option *ngFor="let producto of productos" [value]="producto.nombre" [attr.data-id]="producto.id">
-                        </datalist>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          class="form-control form-control-sm"
-                          formControlName="cantidad"
-                          min="0"
-                          step="0.01"
-                          placeholder="0"
-                          (input)="calcularCostos()">
-                      </td>
-                      <td>
-                        <select class="form-select form-select-sm" formControlName="unidad">
-                          <option value="ml">ml</option>
-                          <option value="gr">gr</option>
-                          <option value="kg">kg</option>
-                          <option value="l">l</option>
-                          <option value="unidad">unidad</option>
-                        </select>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger"
-                          (click)="eliminarIngrediente(i)">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="ingredientesFormArray.length === 0">
-                      <td colspan="4" class="text-center text-muted py-3">
-                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                        No hay ingredientes. Haz clic en "Agregar Ingrediente" para comenzar.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                          [value]="calcularCostoIngredientePreview(i) | currency:'EUR':'symbol-narrow':'1.3-3'"
+                          readonly
+                          style="background-color: #f8f9fa"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-md-1">
+                      <label class="form-label small text-muted mb-1"
+                        >&nbsp;</label
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger w-100 d-block"
+                        (click)="eliminarIngrediente(i)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div
+              *ngIf="ingredientes.length === 0"
+              class="alert alert-info py-2 px-3"
+            >
+              <small>
+                <i class="bi bi-info-circle me-1"></i>
+                Haz clic en "Agregar" para añadir ingredientes a la receta
+              </small>
+            </div>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
-          (click)="guardarReceta()"
-          [disabled]="!recetaForm.valid">
-          {{ modoEdicion ? 'Actualizar' : 'Crear' }} Receta
-        </button>
-      </div>
+
+          <!-- Preview de costos -->
+          <div class="alert alert-info mb-3" *ngIf="ingredientes.length > 0">
+            <h6 class="alert-heading">
+              <i class="bi bi-calculator me-2"></i>
+              Preview de Costos
+            </h6>
+            <div class="text-center">
+              <small class="text-muted d-block">Costo Total</small>
+              <strong class="fs-4 text-warning"
+                >{{ costoPreview.costoTotal | currency:'EUR':'symbol':'1.2-2'
+                }}</strong
+              >
+            </div>
+          </div>
+
+          <!-- Activo -->
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              formControlName="activo"
+              id="activoCheck"
+            />
+            <label class="form-check-label" for="activoCheck"> Activo </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger">
+            {{ recetaForm.get('id')?.value ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

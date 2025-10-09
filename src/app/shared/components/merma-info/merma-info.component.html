@@ -1,0 +1,33 @@
+<div *ngIf="merma" class="merma-info">
+  <div class="alert alert-warning mb-0" [class.alert-sm]="!mostrarDetalle">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div class="flex-grow-1">
+        <strong>{{ merma.nombre }}</strong>
+        <span class="ms-2 badge bg-warning text-dark">{{ merma.porcentajeMerma }}% merma</span>
+      </div>
+    </div>
+
+    <div *ngIf="mostrarDetalle && cantidad > 0" class="mt-2 small">
+      <div class="row g-2">
+        <div class="col-4">
+          <div class="text-muted">Cantidad comprada:</div>
+          <strong>{{ cantidad | number:'1.1-1' }} {{ unidadMedida }}</strong>
+        </div>
+        <div class="col-4">
+          <div class="text-muted">Pérdida:</div>
+          <strong class="text-danger">{{ perdida | number:'1.1-1' }} {{ unidadMedida }}</strong>
+        </div>
+        <div class="col-4">
+          <div class="text-muted">Cantidad útil:</div>
+          <strong class="text-success">{{ cantidadUtil | number:'1.1-1' }} {{ unidadMedida }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!merma && mostrarDetalle" class="text-muted small">
+  <i class="bi bi-info-circle me-1"></i>
+  Sin merma configurada para este producto
+</div>

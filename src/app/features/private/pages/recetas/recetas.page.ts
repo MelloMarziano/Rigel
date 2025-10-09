@@ -1,24 +1,40 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import {
   Firestore,
   collection,
-  collectionData,
   addDoc,
-  updateDoc,
+  collectionData,
   doc,
   deleteDoc,
+  updateDoc,
+  serverTimestamp,
 } from '@angular/fire/firestore';
-import { Subscription, combineLatest } from 'rxjs';
-import {
-  Receta,
-  IngredienteReceta,
-  EstadisticasRecetas,
-} from '../../../../core/models/receta.model';
-import { Producto } from '../../../../core/models/producto.model';
 import Swal from 'sweetalert2';
+import { Subscription } from 'rxjs';
+import { Producto } from '../../../../core/models/producto.model';
 
-declare var $: any;
+declare var bootstrap: any;
+
+interface Ingrediente {
+  productoId: string;
+  productoNombre?: string;
+  cantidad: number;
+  unidadMedida: string;
+  costo?: number;
+}
+
+interface Receta {
+  id?: string;
+  nombre: string;
+  categoriaId: string;
+  notasPreparacion?: string;
+  ingredientes: Ingrediente[];
+  costoTotal?: number;
+  activo: boolean;
+  fechaCreacion?: any;
+  fechaActualizacion?: any;
+}
 
 @Component({
   selector: 'app-recetas-page',
@@ -27,26 +43,50 @@ declare var $: any;
 })
 export class RecetasPage implements OnInit, OnDestroy {
   recetas: Receta[] = [];
-  recetasFiltradas: Receta[] = [];
   productos: Producto[] = [];
-  estadisticas: EstadisticasRecetas = {
-    totalRecetas: 0,
-    cocteles: 0,
-    platos: 0,
-    ingredientesTotales: 0,
-  };
-
-  filtros = {
-    busqueda: '',
-    tipo: '',
-    disponibilidad: '',
-  };
-
   recetaForm!: FormGroup;
-  modoEdicion = false;
-  recetaEditando: Receta | null = null;
-  costoReceta = 0;
-  margenReceta = 0;
+  modal: any;
+  detalleModal: any;
+  recetaSeleccionada: Receta | null = null;
+
+  // Estadísticas
+  totalRecetas = 0;
+  recetasActivas = 0;
+  totalIngredientes = 0;
+  costoPromedio = 0;
+
+  // Categorías de recetas
+  categorias = [
+    { id: 'platos', nombre: 'Platos' },
+    { id: 'bebidas', nombre: 'Bebidas' },
+    { id: 'postres', nombre: 'Postres' },
+    { id: 'entradas', nombre: 'Entradas' },
+    { id: 'salsas', nombre: 'Salsas' },
+    { id: 'guarniciones', nombre: 'Guarniciones' },
+  ];
+
+  // Conversiones de unidades
+  private conversionesUnidades: { [key: string]: { [key: string]: number } } = {
+    'kg (kilogramos)': {
+      'g (gramos)': 1000,
+      'kg (kilogramos)': 1,
+    },
+    'g (gramos)': {
+      'g (gramos)': 1,
+      'kg (kilogramos)': 0.001,
+    },
+    'L (litros)': {
+      'ml (mililitros)': 1000,
+      'L (litros)': 1,
+    },
+    'ml (mililitros)': {
+      'ml (mililitros)': 1,
+      'L (litros)': 0.001,
+    },
+    unidades: {
+      unidades: 1,
+    },
+  };
 
   private subscriptions = new Subscription();
 
@@ -55,7 +95,19 @@ export class RecetasPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.cargarDatos();
+    // Cargar productos primero, luego recetas
+    this.cargarProductos();
+    this.cargarRecetas();
+
+    const modalEl = document.getElementById('recetaModal');
+    if (modalEl) {
+      this.modal = new bootstrap.Modal(modalEl);
+    }
+
+    const detalleModalEl = document.getElementById('detalleRecetaModal');
+    if (detalleModalEl) {
+      this.detalleModal = new bootstrap.Modal(detalleModalEl);
+    }
   }
 
   ngOnDestroy(): void {
@@ -64,327 +116,180 @@ export class RecetasPage implements OnInit, OnDestroy {
 
   private inicializarForm(): void {
     this.recetaForm = this.fb.group({
-      nombre: ['', [Validators.required]],
-      tipo: ['Cocteles', [Validators.required]],
-      descripcion: [''], // Descripción opcional
-      precioVenta: [null, [Validators.required, Validators.min(0)]],
+      id: [''],
+      nombre: [''],
+      categoriaId: [''],
+      notasPreparacion: [''],
       ingredientes: this.fb.array([]),
+      activo: [true],
     });
   }
 
-  get ingredientesFormArray(): FormArray {
+  get ingredientes(): FormArray {
     return this.recetaForm.get('ingredientes') as FormArray;
-  }
-
-  private cargarDatos(): void {
-    const recetasRef = collection(this.firestore, 'recetas');
-    const productosRef = collection(this.firestore, 'productos');
-
-    this.subscriptions.add(
-      combineLatest([
-        collectionData(recetasRef, { idField: 'id' }),
-        collectionData(productosRef, { idField: 'id' }),
-      ]).subscribe(([recetas, productos]: [any[], any[]]) => {
-        this.recetas = recetas.map((r) => ({
-          ...r,
-          costoTotal: this.calcularCostoReceta(r.ingredientes || []),
-          margen: this.calcularMargen(
-            r.precioVenta,
-            this.calcularCostoReceta(r.ingredientes || [])
-          ),
-          disponible: this.verificarDisponibilidad(r.ingredientes || []),
-        }));
-
-        this.productos = productos.filter((p) => !p.esCombinado);
-        this.calcularEstadisticas();
-        this.actualizarNombresIngredientes();
-        this.aplicarFiltros();
-      })
-    );
-  }
-
-  private calcularEstadisticas(): void {
-    this.estadisticas = {
-      totalRecetas: this.recetas.length,
-      cocteles: this.recetas.filter((r) => r.tipo === 'Cocteles').length,
-      platos: this.recetas.filter((r) => r.tipo === 'Platos').length,
-      ingredientesTotales: this.recetas.reduce(
-        (acc, r) => acc + (r.ingredientes?.length || 0),
-        0
-      ),
-    };
-  }
-
-  private actualizarNombresIngredientes(): void {
-    this.recetas.forEach((receta) => {
-      if (receta.ingredientes) {
-        receta.ingredientes.forEach((ingrediente) => {
-          const producto = this.productos.find(
-            (p) => p.id === ingrediente.productoId
-          );
-          if (producto) {
-            ingrediente.nombre = producto.nombre;
-          }
-        });
-      }
-    });
-  }
-
-  private calcularCostoReceta(ingredientes: IngredienteReceta[]): number {
-    return ingredientes.reduce((total, ingrediente) => {
-      const producto = this.productos.find(
-        (p) => p.id === ingrediente.productoId
-      );
-      if (producto) {
-        const costoPorUnidad = this.calcularCostoPorUnidad(
-          producto,
-          ingrediente.unidad
-        );
-        return total + costoPorUnidad * ingrediente.cantidad;
-      }
-      return total;
-    }, 0);
-  }
-
-  private calcularCostoPorUnidad(producto: Producto, unidad: string): number {
-    // Convertir el costo del producto a la unidad solicitada
-    const costoBase = producto.costo;
-    const unidadBase = producto.unidadMedida;
-
-    // Conversiones básicas (esto se puede expandir según necesidades)
-    if (unidadBase === unidad) {
-      return costoBase;
-    }
-
-    // Conversiones comunes
-    const conversiones: { [key: string]: { [key: string]: number } } = {
-      kg: { gr: 1000, ml: 1000 },
-      l: { ml: 1000 },
-      unidad: { ml: 1, gr: 1 },
-    };
-
-    if (conversiones[unidadBase] && conversiones[unidadBase][unidad]) {
-      return costoBase / conversiones[unidadBase][unidad];
-    }
-
-    return costoBase; // Fallback
-  }
-
-  private calcularMargen(precioVenta: number, costo: number): number {
-    if (precioVenta === 0) return 0;
-    return ((precioVenta - costo) / precioVenta) * 100;
-  }
-
-  private verificarDisponibilidad(ingredientes: IngredienteReceta[]): boolean {
-    if (!ingredientes || ingredientes.length === 0) {
-      return true; // Si no tiene ingredientes, está disponible
-    }
-
-    return ingredientes.every((ingrediente) => {
-      const producto = this.productos.find(
-        (p) => p.id === ingrediente.productoId
-      );
-      // Si no encuentra el producto o no tiene stock suficiente, no está disponible
-      if (!producto) return false;
-
-      const stockDisponible = producto.stock || 0;
-      return stockDisponible >= (ingrediente.cantidad || 0);
-    });
-  }
-
-  abrirModalReceta(): void {
-    this.modoEdicion = false;
-    this.recetaEditando = null;
-    this.recetaForm.reset();
-    this.ingredientesFormArray.clear();
-    this.costoReceta = 0;
-    this.margenReceta = 0;
-    $('#modalReceta').modal('show');
-  }
-
-  editarReceta(receta: Receta): void {
-    this.modoEdicion = true;
-    this.recetaEditando = receta;
-
-    this.recetaForm.patchValue({
-      nombre: receta.nombre,
-      tipo: receta.tipo,
-      descripcion: receta.descripcion,
-      precioVenta: receta.precioVenta,
-    });
-
-    // Limpiar ingredientes existentes
-    this.ingredientesFormArray.clear();
-
-    // Agregar ingredientes de la receta
-    if (receta.ingredientes) {
-      receta.ingredientes.forEach((ingrediente) => {
-        this.ingredientesFormArray.push(
-          this.fb.group({
-            productoId: [ingrediente.productoId, Validators.required],
-            cantidad: [
-              ingrediente.cantidad,
-              [Validators.required, Validators.min(0)],
-            ],
-            unidad: [ingrediente.unidad, Validators.required],
-          })
-        );
-      });
-    }
-
-    this.calcularCostos();
-    $('#modalReceta').modal('show');
-  }
-
-  verReceta(receta: Receta): void {
-    const ingredientesHtml =
-      receta.ingredientes
-        ?.map((ing) => `<li>${ing.nombre}: ${ing.cantidad} ${ing.unidad}</li>`)
-        .join('') || '';
-
-    Swal.fire({
-      title: receta.nombre,
-      html: `
-        <div class="text-start">
-          <p><strong>Tipo:</strong> ${receta.tipo}</p>
-          <p><strong>Descripción:</strong> ${receta.descripcion}</p>
-          <p><strong>Precio de Venta:</strong> €${receta.precioVenta}</p>
-          <p><strong>Costo:</strong> €${receta.costoTotal?.toFixed(2)}</p>
-          <p><strong>Margen:</strong> ${receta.margen?.toFixed(1)}%</p>
-          <p><strong>Ingredientes:</strong></p>
-          <ul>${ingredientesHtml}</ul>
-        </div>
-      `,
-      width: 600,
-      confirmButtonText: 'Cerrar',
-    });
   }
 
   agregarIngrediente(): void {
     const ingredienteGroup = this.fb.group({
-      productoId: ['', Validators.required],
-      cantidad: [null, [Validators.required, Validators.min(0)]],
-      unidad: ['ml', Validators.required],
+      productoId: [''],
+      cantidad: [0],
+      unidadMedida: ['g (gramos)'],
     });
-
-    this.ingredientesFormArray.push(ingredienteGroup);
+    this.ingredientes.push(ingredienteGroup);
   }
 
   eliminarIngrediente(index: number): void {
-    this.ingredientesFormArray.removeAt(index);
-    this.calcularCostos();
+    this.ingredientes.removeAt(index);
   }
 
-  onProductoChange(index: number): void {
-    this.calcularCostos();
+  private cargarRecetas(): void {
+    const recetasRef = collection(this.firestore, 'recetas');
+    this.subscriptions.add(
+      collectionData(recetasRef, { idField: 'id' }).subscribe((data: any[]) => {
+        this.recetas = data.map((receta) => this.calcularCostos(receta));
+        this.calcularEstadisticas();
+      })
+    );
   }
 
-  calcularCostos(): void {
-    const ingredientes = this.ingredientesFormArray.value;
-    this.costoReceta = this.calcularCostoReceta(ingredientes);
+  private cargarProductos(): void {
+    const productosRef = collection(this.firestore, 'productos');
+    this.subscriptions.add(
+      collectionData(productosRef, { idField: 'id' }).subscribe(
+        (data: any[]) => {
+          this.productos = data.filter((p) => !p.esCombinado);
 
-    const precioVenta = this.recetaForm.get('precioVenta')?.value || 0;
-    this.margenReceta = this.calcularMargen(precioVenta, this.costoReceta);
+          // Recalcular costos de recetas existentes cuando los productos estén cargados
+          if (this.recetas.length > 0) {
+            this.recetas = this.recetas.map((receta) =>
+              this.calcularCostos(receta)
+            );
+            this.calcularEstadisticas();
+          }
+        }
+      )
+    );
   }
 
-  async guardarReceta(): Promise<void> {
-    if (!this.recetaForm.valid) {
-      Swal.fire(
-        'Error',
-        'Por favor completa todos los campos requeridos',
-        'error'
-      );
-      return;
+  private calcularCostos(receta: Receta): Receta {
+    let costoTotal = 0;
+
+    // Si no hay productos cargados aún, retornar la receta sin calcular
+    if (!this.productos || this.productos.length === 0) {
+      receta.costoTotal = 0;
+      return receta;
     }
 
-    const formValue = this.recetaForm.value;
-    const recetaData: Receta = {
-      ...formValue,
-      costoTotal: this.costoReceta,
-      margen: this.margenReceta,
-      disponible: this.verificarDisponibilidad(formValue.ingredientes),
-      fechaActualizacion: new Date(),
-    };
+    receta.ingredientes.forEach((ing) => {
+      const producto = this.productos.find((p) => p.id === ing.productoId);
+      if (producto) {
+        ing.productoNombre = producto.nombre;
 
-    try {
-      if (this.modoEdicion && this.recetaEditando?.id) {
-        const recetaRef = doc(
-          this.firestore,
-          'recetas',
-          this.recetaEditando.id
-        );
-        await updateDoc(recetaRef, this.cleanObjectForFirebase(recetaData));
-        Swal.fire('¡Éxito!', 'Receta actualizada correctamente', 'success');
+        // Mantener la unidad seleccionada en la receta, no la del producto
+        if (!ing.unidadMedida) {
+          ing.unidadMedida = producto.unidadMedida;
+        }
+
+        // Verificar que los valores sean válidos antes de calcular
+        if (ing.cantidad > 0 && producto.cantidad > 0 && producto.costo > 0) {
+          // Convertir la cantidad a la unidad original del producto para calcular el costo
+          const factorConversion = this.obtenerFactorConversion(
+            ing.unidadMedida,
+            producto.unidadMedida
+          );
+
+          if (factorConversion > 0) {
+            const cantidadEnUnidadOriginal = ing.cantidad * factorConversion;
+            const costoPorUnidadOriginal = producto.costo / producto.cantidad;
+            const costoIngrediente =
+              costoPorUnidadOriginal * cantidadEnUnidadOriginal;
+
+            // Verificar que el resultado sea finito
+            if (isFinite(costoIngrediente) && costoIngrediente >= 0) {
+              ing.costo = costoIngrediente;
+              costoTotal += costoIngrediente;
+            } else {
+              ing.costo = 0;
+            }
+          } else {
+            ing.costo = 0;
+          }
+        } else {
+          ing.costo = 0;
+        }
       } else {
-        recetaData.fechaCreacion = new Date();
-        const recetasRef = collection(this.firestore, 'recetas');
-        await addDoc(recetasRef, this.cleanObjectForFirebase(recetaData));
-        Swal.fire('¡Éxito!', 'Receta creada correctamente', 'success');
+        // Producto no encontrado
+        ing.costo = 0;
       }
+    });
 
-      this.cerrarModal();
-    } catch (error) {
-      console.error('Error al guardar receta:', error);
-      Swal.fire('Error', 'No se pudo guardar la receta', 'error');
-    }
+    receta.costoTotal = isFinite(costoTotal) ? costoTotal : 0;
+    return receta;
   }
 
-  cerrarModal(): void {
-    $('#modalReceta').modal('hide');
-    this.recetaForm.reset();
-    this.ingredientesFormArray.clear();
-    this.modoEdicion = false;
-    this.recetaEditando = null;
-  }
+  private calcularEstadisticas(): void {
+    this.totalRecetas = this.recetas.length;
+    this.recetasActivas = this.recetas.filter((r) => r.activo).length;
+    this.totalIngredientes = this.recetas.reduce(
+      (sum, r) => sum + r.ingredientes.length,
+      0
+    );
 
-  aplicarFiltros(): void {
-    let recetasFiltradas = [...this.recetas];
-
-    // Filtro por búsqueda (nombre o descripción)
-    if (this.filtros.busqueda.trim()) {
-      const busqueda = this.filtros.busqueda.toLowerCase().trim();
-      recetasFiltradas = recetasFiltradas.filter(
-        (receta) =>
-          receta.nombre.toLowerCase().includes(busqueda) ||
-          receta.descripcion.toLowerCase().includes(busqueda)
+    if (this.recetas.length > 0) {
+      const sumaCostos = this.recetas.reduce(
+        (sum, r) => sum + (r.costoTotal || 0),
+        0
       );
+      this.costoPromedio = sumaCostos / this.recetas.length;
+    } else {
+      this.costoPromedio = 0;
     }
-
-    // Filtro por tipo
-    if (this.filtros.tipo) {
-      recetasFiltradas = recetasFiltradas.filter(
-        (receta) => receta.tipo === this.filtros.tipo
-      );
-    }
-
-    // Filtro por disponibilidad
-    if (this.filtros.disponibilidad) {
-      if (this.filtros.disponibilidad === 'disponible') {
-        recetasFiltradas = recetasFiltradas.filter(
-          (receta) => receta.disponible
-        );
-      } else if (this.filtros.disponibilidad === 'no-disponible') {
-        recetasFiltradas = recetasFiltradas.filter(
-          (receta) => !receta.disponible
-        );
-      }
-    }
-
-    this.recetasFiltradas = recetasFiltradas;
   }
 
-  async eliminarReceta(receta: Receta): Promise<void> {
+  abrirModalNuevo(): void {
+    this.recetaForm.reset({
+      id: '',
+      nombre: '',
+      categoriaId: '',
+      notasPreparacion: '',
+      activo: true,
+    });
+    this.ingredientes.clear();
+    this.agregarIngrediente();
+    this.modal.show();
+  }
+
+  verDetalleReceta(receta: Receta): void {
+    this.recetaSeleccionada = this.calcularCostos({ ...receta });
+    this.detalleModal.show();
+  }
+
+  editarReceta(receta: Receta): void {
+    this.recetaForm.patchValue(receta);
+    this.ingredientes.clear();
+
+    receta.ingredientes.forEach((ing) => {
+      const ingredienteGroup = this.fb.group({
+        productoId: [ing.productoId],
+        cantidad: [ing.cantidad],
+        unidadMedida: [ing.unidadMedida],
+      });
+      this.ingredientes.push(ingredienteGroup);
+    });
+    this.modal.show();
+  }
+
+  editarDesdeDetalle(): void {
+    if (this.recetaSeleccionada) {
+      this.detalleModal.hide();
+      this.editarReceta(this.recetaSeleccionada);
+    }
+  }
+
+  async eliminarReceta(recetaId: string): Promise<void> {
     const result = await Swal.fire({
-      title: '¿Eliminar receta?',
-      html: `
-        <div class="text-start">
-          <p>¿Estás seguro de que quieres eliminar la receta <strong>"${receta.nombre}"</strong>?</p>
-          <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            Esta acción no se puede deshacer.
-          </div>
-        </div>
-      `,
+      title: '¿Eliminar Receta?',
+      text: 'Esta acción no se puede deshacer.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc3545',
@@ -393,71 +298,212 @@ export class RecetasPage implements OnInit, OnDestroy {
       cancelButtonText: 'Cancelar',
     });
 
-    if (result.isConfirmed && receta.id) {
+    if (result.isConfirmed) {
       try {
-        const recetaRef = doc(this.firestore, 'recetas', receta.id);
-        await deleteDoc(recetaRef);
-
-        Swal.fire({
-          title: '¡Eliminada!',
-          text: 'La receta ha sido eliminada correctamente.',
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false,
-        });
+        await deleteDoc(doc(this.firestore, 'recetas', recetaId));
+        Swal.fire('¡Eliminada!', 'La receta ha sido eliminada.', 'success');
       } catch (error) {
         console.error('Error al eliminar receta:', error);
-        Swal.fire('Error', 'No se pudo eliminar la receta', 'error');
+        Swal.fire('Error', 'No se pudo eliminar la receta.', 'error');
       }
     }
   }
 
-  limpiarFiltros(): void {
-    this.filtros = {
-      busqueda: '',
-      tipo: '',
-      disponibilidad: '',
+  async eliminarDesdeDetalle(): Promise<void> {
+    if (this.recetaSeleccionada?.id) {
+      this.detalleModal.hide();
+      await this.eliminarReceta(this.recetaSeleccionada.id);
+      this.recetaSeleccionada = null;
+    }
+  }
+
+  async guardarReceta(): Promise<void> {
+    const formValue = this.recetaForm.value;
+    const recetaData = {
+      nombre: formValue.nombre || '',
+      categoriaId: formValue.categoriaId || '',
+      notasPreparacion: formValue.notasPreparacion || '',
+      ingredientes: formValue.ingredientes || [],
+      activo: formValue.activo,
+      fechaActualizacion: new Date(),
     };
-    this.aplicarFiltros();
+
+    try {
+      if (formValue.id) {
+        const recetaRef = doc(this.firestore, 'recetas', formValue.id);
+        await updateDoc(recetaRef, recetaData);
+        Swal.fire('¡Actualizada!', 'La receta ha sido actualizada.', 'success');
+      } else {
+        const newRecetaData = {
+          ...recetaData,
+          fechaCreacion: serverTimestamp(),
+        };
+        await addDoc(collection(this.firestore, 'recetas'), newRecetaData);
+        Swal.fire('¡Creada!', 'La nueva receta ha sido guardada.', 'success');
+      }
+      this.modal.hide();
+      this.recetaForm.reset();
+    } catch (error) {
+      console.error('Error al guardar receta:', error);
+      Swal.fire('Error', 'Hubo un problema al guardar la receta.', 'error');
+    }
   }
 
-  private cleanObjectForFirebase(obj: any): any {
-    const cleaned: any = {};
-    for (const key in obj) {
-      if (obj[key] !== undefined && obj[key] !== null) {
-        if (obj[key] instanceof Date) {
-          cleaned[key] = obj[key];
-        } else if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-          cleaned[key] = this.cleanObjectForFirebase(obj[key]);
-        } else {
-          cleaned[key] = obj[key];
-        }
-      }
-    }
-    return cleaned;
+  getCategoriaNombre(categoriaId: string): string {
+    const categoria = this.categorias.find((c) => c.id === categoriaId);
+    return categoria?.nombre || 'Sin categoría';
+  }
+
+  getCategoriaBadgeClass(categoriaId: string): string {
+    const clases: { [key: string]: string } = {
+      platos: 'bg-primary',
+      bebidas: 'bg-info',
+      postres: 'bg-warning text-dark',
+      entradas: 'bg-success',
+      salsas: 'bg-danger',
+      guarniciones: 'bg-secondary',
+    };
+    return clases[categoriaId] || 'bg-secondary';
   }
 
   getProductoNombre(productoId: string): string {
-    if (!productoId) return '';
     const producto = this.productos.find((p) => p.id === productoId);
-    return producto ? producto.nombre : '';
+    return producto?.nombre || 'Producto no encontrado';
   }
 
-  onProductoInput(event: any, index: number): void {
-    // Este método se ejecuta mientras el usuario escribe
-    // El datalist se encarga de filtrar automáticamente
+  calcularPorcentajeCosto(ingrediente: Ingrediente, receta: Receta): number {
+    if (!receta.costoTotal || receta.costoTotal === 0) return 0;
+    return ((ingrediente.costo || 0) / receta.costoTotal) * 100;
   }
 
-  onProductoSeleccionado(event: any, index: number): void {
-    const nombreProducto = event.target.value;
-    const producto = this.productos.find((p) => p.nombre === nombreProducto);
+  getProductoNombreById(productoId: string): string {
+    const producto = this.productos.find((p) => p.id === productoId);
+    return producto?.nombre || '';
+  }
+
+  onProductoInput(index: number, event: any): void {
+    const nombreProducto = event.target.value.trim();
+
+    // Buscar producto por nombre exacto
+    const producto = this.productos.find(
+      (p) => p.nombre.toLowerCase() === nombreProducto.toLowerCase()
+    );
+
+    const ingredienteControl = this.ingredientes.at(index);
 
     if (producto) {
-      const ingredienteGroup = this.ingredientesFormArray.at(index);
-      ingredienteGroup.patchValue({
+      // Producto encontrado - establecer ID y unidad por defecto
+      ingredienteControl.patchValue({
         productoId: producto.id,
+        unidadMedida: producto.unidadMedida,
       });
-      this.calcularCostos();
+    } else {
+      // No se encontró producto exacto - limpiar solo el ID
+      ingredienteControl.patchValue({
+        productoId: '',
+      });
     }
+  }
+
+  onProductoBlur(index: number, event: any): void {
+    const nombreProducto = event.target.value.trim();
+    const producto = this.productos.find(
+      (p) => p.nombre.toLowerCase() === nombreProducto.toLowerCase()
+    );
+
+    if (producto) {
+      // Establecer el nombre completo del producto
+      event.target.value = producto.nombre;
+    } else if (nombreProducto === '') {
+      // Si está vacío, limpiar todo
+      const ingredienteControl = this.ingredientes.at(index);
+      ingredienteControl.patchValue({
+        productoId: '',
+        unidadMedida: '',
+      });
+    }
+  }
+
+  getProductoById(productoId: string): Producto | null {
+    return this.productos.find((p) => p.id === productoId) || null;
+  }
+
+  isFinite(value: any): boolean {
+    return Number.isFinite(value);
+  }
+
+  getUnidadesCompatibles(productoId: string): string[] {
+    const producto = this.productos.find((p) => p.id === productoId);
+    if (!producto) return [];
+
+    const unidadOriginal = producto.unidadMedida;
+    const conversiones = this.conversionesUnidades[unidadOriginal];
+
+    return conversiones ? Object.keys(conversiones) : [unidadOriginal];
+  }
+
+  actualizarCostoIngrediente(index: number): void {
+    // Este método se llama cuando cambia la cantidad o unidad
+    // El cálculo se hace automáticamente en calcularCostoIngredientePreview
+  }
+
+  calcularCostoIngredientePreview(index: number): number {
+    const ingredienteControl = this.ingredientes.at(index);
+    const productoId = ingredienteControl.get('productoId')?.value;
+    const cantidad = ingredienteControl.get('cantidad')?.value || 0;
+    const unidadSeleccionada = ingredienteControl.get('unidadMedida')?.value;
+
+    if (!productoId || cantidad <= 0 || !unidadSeleccionada) return 0;
+
+    const producto = this.productos.find((p) => p.id === productoId);
+    if (!producto || producto.cantidad <= 0 || producto.costo <= 0) return 0;
+
+    // Convertir la cantidad a la unidad original del producto
+    const factorConversion = this.obtenerFactorConversion(
+      unidadSeleccionada,
+      producto.unidadMedida
+    );
+    if (factorConversion === 0) return 0;
+
+    const cantidadEnUnidadOriginal = cantidad * factorConversion;
+
+    // Calcular costo
+    const costoPorUnidadOriginal = producto.costo / producto.cantidad;
+    const costoTotal = costoPorUnidadOriginal * cantidadEnUnidadOriginal;
+
+    return isFinite(costoTotal) ? costoTotal : 0;
+  }
+
+  private obtenerFactorConversion(
+    unidadOrigen: string,
+    unidadDestino: string
+  ): number {
+    if (unidadOrigen === unidadDestino) return 1;
+
+    // Buscar en las conversiones
+    const conversionesOrigen = this.conversionesUnidades[unidadOrigen];
+    if (conversionesOrigen && conversionesOrigen[unidadDestino]) {
+      return 1 / conversionesOrigen[unidadDestino];
+    }
+
+    const conversionesDestino = this.conversionesUnidades[unidadDestino];
+    if (conversionesDestino && conversionesDestino[unidadOrigen]) {
+      return conversionesDestino[unidadOrigen];
+    }
+
+    return 0; // No hay conversión disponible
+  }
+
+  get costoPreview(): { costoTotal: number } {
+    let costoTotal = 0;
+
+    this.ingredientes.controls.forEach((control, index) => {
+      const costoIngrediente = this.calcularCostoIngredientePreview(index);
+      costoTotal += costoIngrediente;
+    });
+
+    return {
+      costoTotal: isFinite(costoTotal) ? costoTotal : 0,
+    };
   }
 }

@@ -22,6 +22,8 @@ import {
   ShieldUser,
   PackageSearch,
   ReceiptEuro,
+  TriangleAlert,
+  Calculator,
 } from 'lucide-angular';
 
 @NgModule({
@@ -44,6 +46,8 @@ import {
       ShieldUser,
       PackageSearch,
       ReceiptEuro,
+      TriangleAlert,
+      Calculator,
     }),
   ],
   declarations: [
@@ -52,7 +56,12 @@ import {
     SidebarComponent,
     AccessDeniedComponent,
   ],
-  exports: [CommonModule, ReactiveFormsModule, FormsModule],
+  exports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    PrivateRoutingModule,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PrivateModule {}

@@ -19,8 +19,10 @@ export class AppComponent implements OnInit {
     // Cargar personalización del usuario si está autenticado
     const user = this.authService.getCurrentUser();
     if (user?.id) {
+      // Usuario autenticado, cargar su personalización desde Firebase
       this.personalizacionService.cargarPersonalizacionUsuario(user.id);
     } else {
+      // Usuario no autenticado, usar colores por defecto
       this.personalizacionService.resetearADefecto();
     }
   }

@@ -124,7 +124,7 @@
       class="col-12 col-lg-6 mb-4"
       *ngFor="let factura of facturasFiltradas"
     >
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-sm h-100" style="cursor: pointer;" (click)="verDetalleFactura(factura)">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div class="d-flex align-items-center">
@@ -136,38 +136,6 @@
               >
                 {{ factura.estado }}
               </span>
-            </div>
-            <div class="d-flex gap-2">
-              <button
-                class="btn btn-sm btn-outline-primary"
-                (click)="verFactura(factura)"
-                title="Ver factura"
-              >
-                <i class="bi bi-eye"></i>
-              </button>
-              <button
-                class="btn btn-sm btn-outline-info"
-                (click)="imprimirFactura(factura)"
-                title="Imprimir factura"
-              >
-                <i class="bi bi-printer"></i>
-              </button>
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                (click)="editarFactura(factura)"
-                title="Editar factura"
-                [disabled]="factura.estado === 'Pagada'"
-              >
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button
-                class="btn btn-sm btn-outline-danger"
-                (click)="eliminarFactura(factura)"
-                title="Eliminar factura"
-                [disabled]="factura.estado === 'Pagada'"
-              >
-                <i class="bi bi-trash"></i>
-              </button>
             </div>
           </div>
 
@@ -297,6 +265,194 @@
         <button class="btn btn-danger" (click)="abrirModalFactura()">
           <i class="bi bi-plus me-1"></i>
           Nueva Factura
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Vista Detallada -->
+<div class="modal fade" id="detalleFacturaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center w-100">
+          <div class="rounded-circle me-3 d-flex justify-content-center align-items-center bg-primary bg-opacity-10"
+               style="width: 56px; height: 56px">
+            <i class="bi bi-receipt text-primary fs-3"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">Factura {{facturaSeleccionada?.numero}}</h4>
+            <p class="text-muted mb-0 small">
+              {{facturaSeleccionada?.clienteNombre}}
+            </p>
+          </div>
+          <div class="text-end">
+            <span class="badge fs-6 px-3 py-2" [ngClass]="getEstadoBadgeClass(facturaSeleccionada?.estado || '')">
+              {{facturaSeleccionada?.estado}}
+            </span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3" *ngIf="facturaSeleccionada">
+        <!-- Información general -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="card border-0 bg-primary bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-calendar text-primary fs-2 d-block mb-2"></i>
+                <h6 class="mb-0 text-primary">{{facturaSeleccionada.fechaEmision | date:'dd/MM/yyyy'}}</h6>
+                <small class="text-muted">Fecha Emisión</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-calendar-check text-warning fs-2 d-block mb-2"></i>
+                <h6 class="mb-0 text-warning" [class.text-danger]="isFacturaVencida(facturaSeleccionada)">
+                  {{facturaSeleccionada.fechaVencimiento | date:'dd/MM/yyyy'}}
+                </h6>
+                <small class="text-muted">Vencimiento</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-info bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-credit-card text-info fs-2 d-block mb-2"></i>
+                <h6 class="mb-0 text-info">{{facturaSeleccionada.metodoPago}}</h6>
+                <small class="text-muted">Método de Pago</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-box-seam text-success fs-2 d-block mb-2"></i>
+                <h5 class="mb-0 text-success">{{facturaSeleccionada.productos?.length || 0}}</h5>
+                <small class="text-muted">Productos</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del cliente -->
+        <div class="card border-0 bg-light mb-4">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-person me-2 text-primary"></i>Información del Cliente</h6>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-2">
+                  <strong>{{facturaSeleccionada.clienteNombre}}</strong>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="facturaSeleccionada.clienteEmail">
+                <div class="text-muted">
+                  <i class="bi bi-envelope me-1"></i>
+                  {{facturaSeleccionada.clienteEmail}}
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="facturaSeleccionada.clienteTelefono">
+                <div class="text-muted">
+                  <i class="bi bi-telephone me-1"></i>
+                  {{facturaSeleccionada.clienteTelefono}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de productos -->
+        <div class="card border-0 bg-light mb-4">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="bi bi-list-ul me-2 text-primary"></i>Productos de la Factura</h6>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Precio Unit.</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-end">IVA</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of facturaSeleccionada.productos">
+                    <td>
+                      <div class="fw-bold">{{item.productoNombre}}</div>
+                      <small class="text-muted">IVA: {{item.ivaProducto}}%</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-secondary">{{item.cantidad}}</span>
+                    </td>
+                    <td class="text-end">
+                      {{item.precioUnitario | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td class="text-end">
+                      {{item.subtotal | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td class="text-end text-info">
+                      {{item.ivaImporte | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td class="text-end fw-bold">
+                      {{item.total | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot class="table-light">
+                  <tr>
+                    <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                    <td class="text-end fw-bold">
+                      {{facturaSeleccionada.subtotal | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="text-end fw-bold">IVA Total:</td>
+                    <td class="text-end fw-bold text-info">
+                      {{facturaSeleccionada.iva | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
+                    <td class="text-end fw-bold fs-5 text-success">
+                      {{facturaSeleccionada.total | currency:'EUR':'symbol':'1.2-2'}}
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones si existen -->
+        <div class="card border-0 bg-light" *ngIf="facturaSeleccionada.observaciones">
+          <div class="card-body">
+            <h6 class="mb-2"><i class="bi bi-chat-text me-2 text-primary"></i>Observaciones</h6>
+            <p class="mb-0">{{facturaSeleccionada.observaciones}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-2"></i>Cerrar
+        </button>
+        <button type="button" class="btn btn-info" (click)="imprimirDesdeDetalle()">
+          <i class="bi bi-printer me-2"></i>Imprimir
+        </button>
+        <button type="button" class="btn btn-primary" (click)="editarDesdeDetalle()"
+                [disabled]="facturaSeleccionada?.estado === 'Pagada'">
+          <i class="bi bi-pencil-fill me-2"></i>Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="eliminarDesdeDetalle()"
+                [disabled]="facturaSeleccionada?.estado === 'Pagada'">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar
         </button>
       </div>
     </div>

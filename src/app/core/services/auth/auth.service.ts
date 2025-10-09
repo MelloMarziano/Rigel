@@ -11,12 +11,17 @@ import {
   doc,
   updateDoc,
 } from '@angular/fire/firestore';
+import { PersonalizacionService } from '../personalizacion.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private router: Router, private firestore: Firestore) {
+  constructor(
+    private router: Router,
+    private firestore: Firestore,
+    private personalizacionService: PersonalizacionService
+  ) {
     // this.firestore = getFirestore();
   }
 
@@ -47,6 +52,11 @@ export class AuthService {
           telefono: userData['telefono'] || '',
         });
 
+        // Cargar personalización del usuario después del login
+        await this.personalizacionService.cargarPersonalizacionUsuario(
+          userDoc.id
+        );
+
         this.router.navigate(['/private']);
         return true;
       } else {
@@ -61,6 +71,8 @@ export class AuthService {
 
   logout(): void {
     this.clearUserData();
+    // Resetear personalización a valores por defecto
+    this.personalizacionService.resetearADefecto();
     this.router.navigate(['/public/sign-in']);
   }
 
@@ -79,8 +91,10 @@ export class AuthService {
   getCurrentUser(): any {
     if (!this.isLoggedIn()) return null;
 
+    const userId = localStorage.getItem('userId');
     return {
-      id: localStorage.getItem('userId'),
+      id: userId,
+      uid: userId, // Alias para compatibilidad con Firebase Auth
       nombre: localStorage.getItem('nombre'),
       email: localStorage.getItem('email'),
       rol: localStorage.getItem('rol'),
@@ -95,9 +109,10 @@ export class AuthService {
 
     // ROOT tiene todos los permisos
     if (user.rol === 'ROOT') return true;
-    
+
     // Administrador tiene todos los permisos excepto app_shutdown
-    if (user.rol === 'Administrador' && permission !== 'app_shutdown') return true;
+    if (user.rol === 'Administrador' && permission !== 'app_shutdown')
+      return true;
 
     return user.permisos.includes(permission);
   }

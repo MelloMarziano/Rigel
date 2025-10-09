@@ -6,13 +6,30 @@
       <span>Control y conteo de stock por fechas</span>
     </div>
     <div class="col text-end">
-      <button
-        class="btn btn-danger"
-        (click)="abrirModalNuevoInventario()"
-        [disabled]="isLoading"
-      >
-        <i class="bi bi-plus-lg me-2"></i> Nuevo Inventario
-      </button>
+      <div class="btn-group" role="group">
+        <button
+          class="btn btn-outline-info"
+          (click)="abrirModalHistorial()"
+          [disabled]="isLoading"
+        >
+          <i class="bi bi-clock-history me-2"></i> Historial
+        </button>
+        <button
+          class="btn btn-warning"
+          (click)="abrirModalAgregarProductos()"
+          [disabled]="isLoading || !inventarioActual || inventarioActual.estado === 'finalizado'"
+          title="Agregar productos nuevos al inventario actual"
+        >
+          <i class="bi bi-plus-circle me-2"></i> Agregar Productos
+        </button>
+        <button
+          class="btn btn-danger"
+          (click)="abrirModalNuevoInventario()"
+          [disabled]="isLoading"
+        >
+          <i class="bi bi-plus-lg me-2"></i> Nuevo Inventario
+        </button>
+      </div>
     </div>
   </div>
 
@@ -132,10 +149,25 @@
     <div class="row mt-3" *ngIf="inventarioActual.estado === 'finalizado'">
       <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
-          <span class="badge bg-success fs-6">
-            <i class="bi bi-check-circle me-1"></i>
-            Inventario Finalizado
-          </span>
+          <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-success fs-6">
+              <i class="bi bi-check-circle me-1"></i>
+              Inventario Finalizado
+            </span>
+            <button
+              class="btn btn-warning btn-sm"
+              (click)="actualizarProductosInventario()"
+              [disabled]="isSaving"
+              title="Actualizar stocks de productos con los valores contados"
+            >
+              <span
+                *ngIf="isSaving"
+                class="spinner-border spinner-border-sm me-2"
+              ></span>
+              <i class="bi bi-arrow-repeat me-1" *ngIf="!isSaving"></i>
+              {{ isSaving ? 'Actualizando...' : 'Actualizar Productos' }}
+            </button>
+          </div>
           <small class="text-muted">
             Finalizado el {{ inventarioActual.fechaActualizacion |
             date:'dd/MM/yyyy HH:mm' }}
@@ -283,24 +315,77 @@
       <div class="col-12">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white border-0 py-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">
-                Productos del Inventario ({{ productosFiltrados.length }} de {{
-                inventarioActual.productos.length }})
-                <span
-                  *ngIf="inventarioActual.estado === 'borrador'"
-                  class="badge bg-warning ms-2"
-                  >Borrador</span
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+              <div>
+                <h5 class="mb-0">
+                  Productos del Inventario ({{ productosFiltrados.length }} de {{
+                  inventarioActual.productos.length }})
+                  <span
+                    *ngIf="inventarioActual.estado === 'borrador'"
+                    class="badge bg-warning ms-2"
+                    >Borrador</span
+                  >
+                  <span
+                    *ngIf="inventarioActual.estado === 'finalizado'"
+                    class="badge bg-success ms-2"
+                    >Finalizado</span
+                  >
+                  <span *ngIf="familiaSeleccionada" class="badge bg-info ms-2"
+                    >{{ getNombreFamiliaSeleccionada() }}</span
+                  >
+                </h5>
+              </div>
+
+              <!-- Buscador de productos -->
+              <div class="d-flex align-items-center gap-2">
+                <div class="position-relative" style="min-width: 300px;">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="busquedaProducto"
+                    (input)="filtrarProductosPorBusqueda()"
+                    placeholder="Buscar producto por nombre..."
+                    autocomplete="off"
+                  />
+                  <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                </div>
+
+                <!-- Botón para limpiar búsqueda -->
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="limpiarBusqueda()"
+                  [disabled]="!busquedaProducto"
+                  title="Limpiar búsqueda"
                 >
-                <span
-                  *ngIf="inventarioActual.estado === 'finalizado'"
-                  class="badge bg-success ms-2"
-                  >Finalizado</span
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Información de filtros activos -->
+            <div class="mt-2" *ngIf="busquedaProducto || familiaSeleccionada">
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <small class="text-muted">Filtros activos:</small>
+
+                <span class="badge bg-primary" *ngIf="busquedaProducto">
+                  <i class="bi bi-search me-1"></i>
+                  "{{ busquedaProducto }}"
+                </span>
+
+                <span class="badge bg-info" *ngIf="familiaSeleccionada">
+                  <i class="bi bi-collection me-1"></i>
+                  {{ getNombreFamiliaSeleccionada() }}
+                </span>
+
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 text-decoration-none"
+                  (click)="limpiarTodosFiltros()"
                 >
-                <span *ngIf="familiaSeleccionada" class="badge bg-info ms-2"
-                  >{{ getNombreFamiliaSeleccionada() }}</span
-                >
-              </h5>
+                  <small>Limpiar todos</small>
+                </button>
+              </div>
             </div>
           </div>
           <div class="card-body p-0">
@@ -627,6 +712,288 @@
           ></span>
           <i class="bi bi-plus me-2" *ngIf="!isCreatingInventory"></i>
           {{ isCreatingInventory ? 'Creando...' : 'Crear Inventario' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Historial de Inventarios -->
+<div
+  class="modal fade"
+  id="modalHistorial"
+  tabindex="-1"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-clock-history me-2"></i>
+          Historial de Inventarios
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarModalHistorial()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Filtros del historial -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <label class="form-label small text-muted">Categoría</label>
+            <select class="form-select" [(ngModel)]="historialFiltroCategoria" (change)="filtrarHistorial()">
+              <option value="">Todas las categorías</option>
+              <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                {{ categoria.nombre }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small text-muted">Estado</label>
+            <select class="form-select" [(ngModel)]="historialFiltroEstado" (change)="filtrarHistorial()">
+              <option value="">Todos los estados</option>
+              <option value="borrador">Borrador</option>
+              <option value="finalizado">Finalizado</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small text-muted">Últimos</label>
+            <select class="form-select" [(ngModel)]="historialLimite" (change)="cargarHistorial()">
+              <option value="10">10 inventarios</option>
+              <option value="25">25 inventarios</option>
+              <option value="50">50 inventarios</option>
+              <option value="100">100 inventarios</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading del historial -->
+        <div *ngIf="isLoadingHistorial" class="text-center py-4">
+          <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Cargando historial...</span>
+          </div>
+          <p class="text-muted mt-2">Cargando historial de inventarios...</p>
+        </div>
+
+        <!-- Lista de inventarios -->
+        <div *ngIf="!isLoadingHistorial && historialInventarios.length > 0">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Categoría</th>
+                  <th>Estado</th>
+                  <th>Productos</th>
+                  <th>Inversión Total</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inventario of historialFiltrado">
+                  <td>
+                    <strong>{{ inventario.fecha | date:'dd/MM/yyyy' }}</strong>
+                    <br>
+                    <small class="text-muted">
+                      {{ inventario.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+                    </small>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary">
+                      {{ getCategoriaNombre(inventario.categoriaId) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class]="inventario.estado === 'finalizado' ? 'bg-success' : 'bg-warning'"
+                    >
+                      <i class="bi" [class]="inventario.estado === 'finalizado' ? 'bi-check-circle' : 'bi-clock'"></i>
+                      {{ inventario.estado === 'finalizado' ? 'Finalizado' : 'Borrador' }}
+                    </span>
+                  </td>
+                  <td>{{ inventario.totalProductos }}</td>
+                  <td>{{ inventario.inversionTotal | currency:'EUR':'symbol':'1.0-0' }}</td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        class="btn btn-outline-primary"
+                        (click)="cargarInventarioDesdeHistorial(inventario)"
+                        title="Cargar este inventario"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button
+                        class="btn btn-outline-danger"
+                        (click)="eliminarInventarioHistorial(inventario)"
+                        [disabled]="inventario.estado === 'finalizado'"
+                        title="Eliminar inventario"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sin inventarios -->
+        <div *ngIf="!isLoadingHistorial && historialInventarios.length === 0" class="text-center py-4">
+          <i class="bi bi-archive text-muted" style="font-size: 3rem;"></i>
+          <h5 class="text-muted mt-3">No hay inventarios registrados</h5>
+          <p class="text-muted">Crea tu primer inventario para comenzar</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalHistorial()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Agregar Productos -->
+<div
+  class="modal fade"
+  id="modalAgregarProductos"
+  tabindex="-1"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle me-2"></i>
+          Agregar Productos al Inventario
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarModalAgregarProductos()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Info del inventario actual -->
+        <div class="alert alert-info" *ngIf="inventarioActual">
+          <h6 class="mb-2">
+            <i class="bi bi-info-circle me-2"></i>
+            Inventario actual: {{ getCategoriaNombre(inventarioActual.categoriaId) }}
+          </h6>
+          <p class="mb-0">
+            Fecha: {{ inventarioActual.fecha | date:'dd/MM/yyyy' }} |
+            Productos actuales: {{ inventarioActual.totalProductos }}
+          </p>
+        </div>
+
+        <!-- Buscador de productos -->
+        <div class="mb-3">
+          <label class="form-label">Buscar productos para agregar</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="busquedaProductosNuevos"
+            (input)="filtrarProductosNuevos()"
+            placeholder="Escribe el nombre del producto..."
+          >
+        </div>
+
+        <!-- Lista de productos disponibles -->
+        <div class="mb-3" *ngIf="productosDisponiblesParaAgregar.length > 0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Productos disponibles</h6>
+            <span class="badge bg-primary">{{ productosDisponiblesParaAgregar.length }} productos</span>
+          </div>
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-sm table-hover">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th width="50">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [checked]="todosProductosSeleccionados()"
+                      (change)="toggleTodosProductos($event)"
+                    >
+                  </th>
+                  <th>Producto</th>
+                  <th>Stock</th>
+                  <th>Costo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let producto of productosDisponiblesParaAgregar">
+                  <td>
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [checked]="productosSeleccionadosParaAgregar.has(producto.id!)"
+                      (change)="toggleProductoSeleccionado(producto.id!, $event)"
+                    >
+                  </td>
+                  <td>
+                    <strong>{{ producto.nombre }}</strong>
+                    <br>
+                    <small class="text-muted">{{ producto.unidadMedida }}</small>
+                    <br>
+                    <span class="badge bg-secondary">{{ getCategoriaNombre(producto.categoriaId) }}</span>
+                  </td>
+                  <td>
+                    <span [class]="getStockClass(producto.stock || 0)">
+                      {{ producto.stock | number:'1.1-1' }}
+                    </span>
+                  </td>
+                  <td>{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Loading productos -->
+        <div *ngIf="isLoadingProductosNuevos" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando productos...</span>
+          </div>
+          <p class="text-muted mt-2">Cargando productos disponibles...</p>
+        </div>
+
+        <!-- Sin productos disponibles -->
+        <div *ngIf="productosDisponiblesParaAgregar.length === 0 && !isLoadingProductosNuevos" class="text-center py-4">
+          <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+          <h6 class="text-muted mt-3">No hay productos disponibles</h6>
+          <p class="text-muted">
+            <span *ngIf="busquedaProductosNuevos">No se encontraron productos con "{{ busquedaProductosNuevos }}"</span>
+            <span *ngIf="!busquedaProductosNuevos">Todos los productos de esta categoría ya están en el inventario</span>
+          </p>
+        </div>
+
+        <!-- Productos seleccionados -->
+        <div *ngIf="productosSeleccionadosParaAgregar.size > 0" class="alert alert-success">
+          <h6 class="mb-2">
+            <i class="bi bi-check-circle me-2"></i>
+            Productos seleccionados: {{ productosSeleccionadosParaAgregar.size }}
+          </h6>
+          <p class="mb-0">Se agregarán estos productos al inventario actual</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalAgregarProductos()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="agregarProductosSeleccionados()"
+          [disabled]="productosSeleccionadosParaAgregar.size === 0 || isAgregarProductos"
+        >
+          <span *ngIf="isAgregarProductos" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="bi bi-plus me-2" *ngIf="!isAgregarProductos"></i>
+          {{ isAgregarProductos ? 'Agregando...' : 'Agregar ' + productosSeleccionadosParaAgregar.size + ' Productos' }}
         </button>
       </div>
     </div>
