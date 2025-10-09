@@ -250,7 +250,7 @@
         <!-- Productos suministrados -->
         <div class="card border-0 bg-light mt-3">
           <div class="card-body">
-            <h6 class="mb-3"><i class="bi bi-box-seam-fill me-2 text-primary"></i>Productos Suministrados ({{proveedorSeleccionado.productos?.length || 0}})</h6>
+            <h6 class="mb-3"><i class="bi bi-box-seam-fill me-2 text-primary"></i>Productos Suministrados ({{proveedorSeleccionado.productos.length || 0}})</h6>
             <div class="d-flex flex-wrap gap-2" *ngIf="proveedorSeleccionado.productos && proveedorSeleccionado.productos.length > 0">
               <span class="badge bg-white text-dark border px-3 py-2" *ngFor="let productoId of proveedorSeleccionado.productos">
                 <i class="bi bi-box text-primary me-1"></i>
@@ -401,7 +401,7 @@
               <div class="list-group" style="max-height: 200px; overflow-y: auto;" formArrayName="productos">
                 <label class="list-group-item" *ngFor="let control of productosFormArray.controls; let i = index" [hidden]="!shouldShowProduct(i)">
                   <input class="form-check-input me-1" type="checkbox" [formControlName]="i">
-                  {{ productos[i]?.nombre || 'Producto sin nombre' }}
+                  {{ productos[i].nombre || 'Producto sin nombre' }}
                 </label>
               </div>
             </div>
