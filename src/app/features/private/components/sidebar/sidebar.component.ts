@@ -70,13 +70,13 @@ export class SidebarComponent implements OnInit {
       route: '/mermas',
       permission: 'mermas',
     },
-    {
-      name: 'POS',
-      icon: 'CreditCard',
-      iconColor: '#ffffff',
-      route: '/ventas',
-      permission: 'ventas',
-    },
+    // {
+    //   name: 'POS',
+    //   icon: 'CreditCard',
+    //   iconColor: '#ffffff',
+    //   route: '/ventas',
+    //   permission: 'ventas',
+    // },
     {
       name: 'Reportes',
       icon: 'trending-up',

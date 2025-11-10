@@ -15,6 +15,8 @@ import {
 } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import {
   Inventario,
@@ -1585,5 +1587,299 @@ export class InventarioPage implements OnInit, OnDestroy {
     this.productosSeleccionadosParaAgregar.clear();
     this.busquedaProductosNuevos = '';
     this.productosDisponiblesParaAgregar = [];
+  }
+
+  exportarInventarioPDF(): void {
+    if (!this.inventarioActual) {
+      Swal.fire('Sin datos', 'No hay inventario para exportar.', 'info');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Generando PDF...',
+      text: 'Por favor espera mientras se genera el documento',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    setTimeout(() => {
+      this.generarPDFInventario();
+      Swal.close();
+    }, 500);
+  }
+
+  private generarPDFInventario(): void {
+    if (!this.inventarioActual) return;
+
+    const doc = new jsPDF();
+    const fechaActual = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    // Configurar encabezado
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text('Inventario de Productos', 105, 20, { align: 'center' });
+
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Fecha del Inventario: ${this.inventarioActual.fecha}`, 105, 30, {
+      align: 'center',
+    });
+    doc.text(`Generado el ${fechaActual}`, 105, 36, { align: 'center' });
+
+    // Información del inventario
+    doc.setFontSize(10);
+    doc.setTextColor(40);
+    let yPosition = 50;
+
+    // Información general
+    doc.text(
+      `Categoría: ${this.getCategoriaNombre(
+        this.inventarioActual.categoriaId
+      )}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Estado: ${
+        this.inventarioActual.estado === 'finalizado'
+          ? 'Finalizado'
+          : 'Borrador'
+      }`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Total de Productos: ${this.inventarioActual.totalProductos}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Total de Unidades: ${this.inventarioActual.totalUnidades.toFixed(1)}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Inversión Total: ${this.inventarioActual.inversionTotal.toFixed(2)}€`,
+      20,
+      yPosition
+    );
+    yPosition += 15;
+
+    // Agrupar productos por familia
+    const productosAgrupados = this.agruparProductosPorFamilia();
+
+    // Generar contenido por familias
+    Object.keys(productosAgrupados).forEach((familiaId) => {
+      const familia =
+        familiaId === 'sin-familia'
+          ? 'Sin Familia'
+          : this.getNombreFamilia(familiaId);
+      const productos = productosAgrupados[familiaId];
+
+      // Verificar si necesitamos una nueva página
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      // Título de familia
+      doc.setFontSize(14);
+      doc.setTextColor(220, 53, 69);
+      doc.setFillColor(220, 53, 69);
+      doc.rect(20, yPosition - 5, 170, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text(`${familia} (${productos.length} productos)`, 25, yPosition, {
+        baseline: 'middle',
+      });
+      yPosition += 15;
+
+      // Preparar datos para la tabla
+      const tableData = productos.map((producto: InventarioProducto) => {
+        return [
+          producto.nombre || '',
+          (producto.stockActual || 0).toFixed(1),
+          `${(producto.costoUnitario || 0).toFixed(2)}€`,
+          producto.stockContado !== null && producto.stockContado !== undefined
+            ? producto.stockContado.toFixed(1)
+            : 'Sin contar',
+          (producto.diferencia || 0) !== 0
+            ? `${(producto.diferencia || 0) > 0 ? '+' : ''}${(
+                producto.diferencia || 0
+              ).toFixed(1)}`
+            : '0',
+          `${(producto.valorTotal || 0).toFixed(2)}€`,
+          producto.proveedor || '',
+        ];
+      });
+
+      // Generar tabla
+      autoTable(doc, {
+        head: [
+          [
+            'Producto',
+            'Stock Actual',
+            'Costo Unit.',
+            'Stock Contado',
+            'Diferencia',
+            'Valor Total',
+            'Proveedor',
+          ],
+        ],
+        body: tableData,
+        startY: yPosition,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [248, 249, 250],
+          textColor: [40, 40, 40],
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [249, 249, 249],
+        },
+        columnStyles: {
+          0: { cellWidth: 35 }, // Producto
+          1: { cellWidth: 20 }, // Stock Actual
+          2: { cellWidth: 20 }, // Costo Unit.
+          3: { cellWidth: 20 }, // Stock Contado
+          4: { cellWidth: 20 }, // Diferencia
+          5: { cellWidth: 25 }, // Valor Total
+          6: { cellWidth: 30 }, // Proveedor
+        },
+        didParseCell: (data) => {
+          // Colorear las celdas de diferencia según el valor
+          if (data.column.index === 4 && data.section === 'body') {
+            const producto = productos[data.row.index];
+            if (producto && (producto.diferencia || 0) !== 0) {
+              if ((producto.diferencia || 0) > 0) {
+                data.cell.styles.textColor = [21, 87, 36]; // Verde
+                data.cell.styles.fontStyle = 'bold';
+              } else {
+                data.cell.styles.textColor = [114, 28, 36]; // Rojo
+                data.cell.styles.fontStyle = 'bold';
+              }
+            }
+          }
+          // Colorear las celdas de stock contado si no están contadas
+          if (data.column.index === 3 && data.section === 'body') {
+            const producto = productos[data.row.index];
+            if (
+              producto &&
+              (producto.stockContado === null ||
+                producto.stockContado === undefined)
+            ) {
+              data.cell.styles.textColor = [133, 100, 4]; // Amarillo oscuro
+              data.cell.styles.fontStyle = 'italic';
+            }
+          }
+        },
+        margin: { left: 20, right: 20 },
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+    });
+
+    doc.text('Resumen del Inventario', 20, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(10);
+    doc.text(
+      `Total de productos: ${this.inventarioActual.totalProductos}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Total de unidades: ${this.inventarioActual.totalUnidades.toFixed(1)}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Inversión total: ${this.inventarioActual.inversionTotal.toFixed(2)}€`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Costo promedio: ${this.inventarioActual.costoPromedio.toFixed(2)}€`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+
+    // Estadísticas adicionales
+    const productosContados = this.inventarioActual.productos.filter(
+      (p) => p.stockContado !== null
+    ).length;
+    const productosSinContar =
+      this.inventarioActual.totalProductos - productosContados;
+
+    doc.text(`Productos contados: ${productosContados}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Productos sin contar: ${productosSinContar}`, 20, yPosition);
+    yPosition += 6;
+
+    if (this.inventarioActual.estado === 'finalizado') {
+      doc.text(
+        `Finalizado el: ${this.inventarioActual.fechaActualizacion}`,
+        20,
+        yPosition
+      );
+    }
+
+    // Descargar el PDF
+    const nombreArchivo = `inventario_${
+      this.inventarioActual.fecha
+    }_${this.getCategoriaNombre(this.inventarioActual.categoriaId)?.replace(
+      /\s+/g,
+      '_'
+    )}.pdf`;
+    doc.save(nombreArchivo);
+
+    Swal.fire({
+      title: '¡PDF Generado!',
+      text: `El archivo ${nombreArchivo} se ha descargado correctamente.`,
+      icon: 'success',
+      timer: 3000,
+      showConfirmButton: false,
+    });
+  }
+
+  private agruparProductosPorFamilia(): {
+    [key: string]: InventarioProducto[];
+  } {
+    if (!this.inventarioActual) return {};
+
+    const grupos: { [key: string]: InventarioProducto[] } = {};
+
+    this.inventarioActual.productos.forEach((producto) => {
+      const familiaId = (producto as any).familiaId || 'sin-familia';
+
+      if (!grupos[familiaId]) {
+        grupos[familiaId] = [];
+      }
+
+      grupos[familiaId].push(producto);
+    });
+
+    return grupos;
+  }
+
+  private getNombreFamilia(familiaId: string): string {
+    const familia = this.familiasDisponibles.find((f) => f.id === familiaId);
+    return familia?.nombre || 'Sin Familia';
   }
 }

@@ -21,6 +21,8 @@ import {
 import Swal from 'sweetalert2';
 import { Subscription, combineLatest, Observable, of } from 'rxjs';
 import { startWith, debounceTime, switchMap, map } from 'rxjs/operators';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Producto } from '../../../../core/models/producto.model';
 import {
   Categoria,
@@ -61,7 +63,7 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.productoForm = this.fb.group({
-      id: [''], // Cambiar de null a string vacío
+      id: [''],
       nombre: [
         '',
         {
@@ -97,7 +99,6 @@ export class ProductosPage implements OnInit, OnDestroy {
       this.detalleModal = new bootstrap.Modal(detalleModalEl);
     }
 
-    // Listener para cambios en la categoría
     this.subscriptions.add(
       this.productoForm
         .get('categoriaId')
@@ -147,7 +148,6 @@ export class ProductosPage implements OnInit, OnDestroy {
           const name = value.trim().toLowerCase();
           const currentId = this.productoForm?.get('id')?.value;
 
-          // Si no hay productos cargados aún, no validar
           if (!this.productos || this.productos.length === 0) {
             return of(null);
           }
@@ -176,7 +176,6 @@ export class ProductosPage implements OnInit, OnDestroy {
           (acc: number, p: Producto) => acc + (p.stock || 0) * p.costo,
           0
         );
-        // Calcular productos con stock bajo
         this.productosBajosEnStock = data.filter(
           (p: Producto) =>
             !p.esCombinado && (p.stock || 0) <= (p.stockMinimo || 0)
@@ -235,7 +234,6 @@ export class ProductosPage implements OnInit, OnDestroy {
   onCategoriaChange(categoriaId: string): void {
     const categoria = this.categorias.find((c) => c.id === categoriaId);
 
-    // Actualizar unidades disponibles
     this.unidadesDisponibles = categoria?.unidadesDisponibles || [];
     if (this.unidadesDisponibles.length > 0) {
       this.productoForm
@@ -245,10 +243,7 @@ export class ProductosPage implements OnInit, OnDestroy {
       this.productoForm.get('unidadMedida')?.setValue('');
     }
 
-    // Actualizar familias disponibles
     this.familiasDisponibles = categoria?.familias || [];
-
-    // Resetear la familia seleccionada
     this.productoForm.get('familiaId')?.setValue('');
   }
 
@@ -265,7 +260,6 @@ export class ProductosPage implements OnInit, OnDestroy {
       stockMinimoControl?.enable();
     }
   }
-
   async guardarProducto() {
     if (this.productoForm.invalid) {
       Swal.fire(
@@ -304,19 +298,16 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   editarProducto(producto: Producto) {
-    // Asegurar que el formulario tenga el control 'id'
     if (!this.productoForm.contains('id')) {
       this.productoForm.addControl('id', this.fb.control(''));
     }
 
-    // Primero cargar las familias disponibles basado en la categoría
     const categoria = this.categorias.find(
       (c) => c.id === producto.categoriaId
     );
     this.unidadesDisponibles = categoria?.unidadesDisponibles || [];
     this.familiasDisponibles = categoria?.familias || [];
 
-    // Luego cargar todos los datos del producto incluyendo el ID
     this.productoForm.patchValue({
       id: producto.id,
       nombre: producto.nombre,
@@ -366,7 +357,7 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   resetForm() {
     this.productoForm.reset({
-      id: '', // Limpiar el ID
+      id: '',
       nombre: '',
       descripcion: '',
       costo: 0,
@@ -399,11 +390,9 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   getCategoryBadgeClass(categoryId: string): string {
-    // Puedes personalizar los colores según tus categorías
     const categoria = this.categorias.find((c) => c.id === categoryId);
     if (!categoria) return 'bg-secondary';
 
-    // Asignar colores basados en el nombre de la categoría o usar un hash simple
     const colors = [
       'bg-primary',
       'bg-success',
@@ -416,9 +405,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   getPrecioVenta(producto: Producto): number {
-    // Calcular precio de venta aplicando el IVA al costo
     const costoConIva = producto.costo * (1 + (producto.IVA || 0) / 100);
-    // Puedes agregar un margen adicional aquí si lo necesitas
     return costoConIva;
   }
 
@@ -474,5 +461,246 @@ export class ProductosPage implements OnInit, OnDestroy {
     if (!proveedorId) return 'Sin proveedor';
     const proveedor = this.proveedores.find((p) => p.id === proveedorId);
     return proveedor ? proveedor.nombre : 'Sin proveedor';
+  }
+  exportarPDF(): void {
+    if (this.filteredProducts.length === 0) {
+      Swal.fire('Sin datos', 'No hay productos para exportar.', 'info');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Generando PDF...',
+      text: 'Por favor espera mientras se genera el documento',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Ordenar productos alfabéticamente y por categoría/familia
+    const productosOrdenados = [...this.filteredProducts].sort((a, b) => {
+      const categoriaA = this.getCategoryName(a.categoriaId);
+      const categoriaB = this.getCategoryName(b.categoriaId);
+
+      if (categoriaA !== categoriaB) {
+        return categoriaA.localeCompare(categoriaB);
+      }
+
+      const familiaA = this.getFamiliaName(a.categoriaId, a.familiaId);
+      const familiaB = this.getFamiliaName(b.categoriaId, b.familiaId);
+
+      if (familiaA !== familiaB) {
+        return familiaA.localeCompare(familiaB);
+      }
+
+      return a.nombre.localeCompare(b.nombre);
+    });
+
+    // Agrupar por categoría y familia
+    const productosAgrupados = this.agruparProductos(productosOrdenados);
+
+    // Crear el PDF
+    setTimeout(() => {
+      this.generarPDFConJsPDF(productosAgrupados);
+      Swal.close();
+    }, 500);
+  }
+
+  private agruparProductos(productos: Producto[]): any {
+    const grupos: any = {};
+
+    productos.forEach((producto) => {
+      const categoria = this.getCategoryName(producto.categoriaId);
+      const familia =
+        this.getFamiliaName(producto.categoriaId, producto.familiaId) ||
+        'Sin familia';
+
+      if (!grupos[categoria]) {
+        grupos[categoria] = {};
+      }
+
+      if (!grupos[categoria][familia]) {
+        grupos[categoria][familia] = [];
+      }
+
+      grupos[categoria][familia].push(producto);
+    });
+
+    return grupos;
+  }
+
+  private generarPDFConJsPDF(productosAgrupados: any): void {
+    const doc = new jsPDF();
+    const fechaActual = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    // Configurar encabezado
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text('Listado de Productos', 105, 20, { align: 'center' });
+
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generado el ${fechaActual}`, 105, 30, { align: 'center' });
+    doc.text(`Total de productos: ${this.filteredProducts.length}`, 105, 36, {
+      align: 'center',
+    });
+
+    let yPosition = 50;
+
+    // Generar contenido por categorías y familias
+    Object.keys(productosAgrupados).forEach((categoria) => {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      // Título de categoría
+      doc.setFontSize(14);
+      doc.setTextColor(220, 53, 69);
+      doc.setFillColor(220, 53, 69);
+      doc.rect(20, yPosition - 5, 170, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text(categoria, 25, yPosition, { baseline: 'middle' });
+      yPosition += 15;
+
+      Object.keys(productosAgrupados[categoria]).forEach((familia) => {
+        const productos = productosAgrupados[categoria][familia];
+
+        if (yPosition > 240) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Título de familia
+        doc.setFontSize(11);
+        doc.setTextColor(40);
+        doc.setFillColor(248, 249, 250);
+        doc.rect(20, yPosition - 3, 170, 6, 'F');
+        doc.setTextColor(51, 51, 51);
+        doc.text(`${familia} (${productos.length} productos)`, 25, yPosition);
+        yPosition += 10;
+
+        // Preparar datos para la tabla
+        const tableData = productos.map((producto: Producto) => {
+          const precioVenta = this.getPrecioVenta(producto);
+          return [
+            producto.nombre,
+            producto.descripcion || '-',
+            `${producto.cantidad} ${producto.unidadMedida}`,
+            `${producto.costo.toFixed(2)}€`,
+            `${producto.IVA}%`,
+            `${precioVenta.toFixed(2)}€`,
+            producto.esCombinado ? 'Receta' : (producto.stock || 0).toString(),
+            producto.esCombinado ? '-' : (producto.stockMinimo || 0).toString(),
+            this.getProveedorName(producto.proveedorId),
+          ];
+        });
+
+        // Generar tabla
+        autoTable(doc, {
+          head: [
+            [
+              'Producto',
+              'Descripción',
+              'Contenido',
+              'Costo',
+              'IVA',
+              'Precio + IVA',
+              'Stock',
+              'Stock Mín.',
+              'Proveedor',
+            ],
+          ],
+          body: tableData,
+          startY: yPosition,
+          styles: {
+            fontSize: 8,
+            cellPadding: 2,
+          },
+          headStyles: {
+            fillColor: [248, 249, 250],
+            textColor: [40, 40, 40],
+            fontStyle: 'bold',
+          },
+          alternateRowStyles: {
+            fillColor: [249, 249, 249],
+          },
+          columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 20 },
+            2: { cellWidth: 18 },
+            3: { cellWidth: 15 },
+            4: { cellWidth: 10 },
+            5: { cellWidth: 18 },
+            6: { cellWidth: 12 },
+            7: { cellWidth: 12 },
+            8: { cellWidth: 25 },
+          },
+          margin: { left: 20, right: 20 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 10;
+      });
+
+      yPosition += 5;
+    });
+
+    // Agregar resumen
+    if (yPosition > 220) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    const totalValorStock = this.filteredProducts
+      .filter((p) => !p.esCombinado)
+      .reduce((acc, p) => acc + (p.stock || 0) * p.costo, 0);
+
+    doc.setFontSize(14);
+    doc.setTextColor(40);
+    doc.text('Resumen', 20, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(10);
+    doc.text(
+      `Total de productos: ${this.filteredProducts.length}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Productos con stock bajo: ${this.productosBajosEnStock}`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Valor total en stock: ${totalValorStock.toFixed(2)}€`,
+      20,
+      yPosition
+    );
+    yPosition += 6;
+    doc.text(
+      `Categorías: ${Object.keys(productosAgrupados).length}`,
+      20,
+      yPosition
+    );
+
+    // Descargar el PDF
+    const nombreArchivo = `productos_${
+      new Date().toISOString().split('T')[0]
+    }.pdf`;
+    doc.save(nombreArchivo);
+
+    Swal.fire({
+      title: '¡PDF Generado!',
+      text: `El archivo ${nombreArchivo} se ha descargado correctamente.`,
+      icon: 'success',
+      timer: 3000,
+      showConfirmButton: false,
+    });
   }
 }

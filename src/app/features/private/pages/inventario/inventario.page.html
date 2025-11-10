@@ -15,6 +15,14 @@
           <i class="bi bi-clock-history me-2"></i> Historial
         </button>
         <button
+          class="btn btn-outline-primary"
+          (click)="exportarInventarioPDF()"
+          [disabled]="isLoading || !inventarioActual"
+          title="Exportar inventario a PDF"
+        >
+          <i class="bi bi-file-earmark-pdf me-2"></i> Exportar PDF
+        </button>
+        <button
           class="btn btn-warning"
           (click)="abrirModalAgregarProductos()"
           [disabled]="isLoading || !inventarioActual || inventarioActual.estado === 'finalizado'"
