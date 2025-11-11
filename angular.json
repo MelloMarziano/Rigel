@@ -45,6 +45,8 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/Rigel/",
+              "deployUrl": "/Rigel/",
               "budgets": [
                 {
                   "type": "initial",
@@ -111,7 +113,7 @@
         "deploy": {
           "builder": "angular-cli-ghpages:deploy",
           "options": {
-            "baseHref": "/rigel/",
+            "baseHref": "/Rigel/",
             "dir": "dist/rigel"
           }
         }
