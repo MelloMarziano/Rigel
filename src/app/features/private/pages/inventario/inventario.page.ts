@@ -342,19 +342,31 @@ export class InventarioPage implements OnInit, OnDestroy {
   }
 
   async crearNuevoInventario(): Promise<void> {
+    // Determinar si activar el nuevo inventario o crearlo en segundo plano
+    const categoriaId = this.categoriaFiltro.value;
+    let activarNuevoInventario = true;
     if (this.inventarioActual) {
-      const result = await Swal.fire({
-        title: '¿Crear nuevo inventario?',
-        text: 'Ya existe un inventario para esta fecha. ¿Deseas reemplazarlo?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, crear nuevo',
-        cancelButtonText: 'Cancelar',
-      });
+      const estadoActual = this.inventarioActual.estado;
+      const mismaCategoria =
+        categoriaId && this.inventarioActual.categoriaId === categoriaId;
+      if (estadoActual === 'borrador' && !mismaCategoria) {
+        // Permitir crear un borrador de otra categoría sin reemplazar el actual
+        activarNuevoInventario = false;
+      } else {
+        const result = await Swal.fire({
+          title: '¿Crear nuevo inventario?',
+          text: `Ya existe un inventario ${estadoActual} para esta fecha. ¿Deseas reemplazarlo?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, crear nuevo',
+          cancelButtonText: 'Cancelar',
+        });
 
-      if (!result.isConfirmed) return;
+        if (!result.isConfirmed) return;
+        activarNuevoInventario = true;
+      }
     }
 
     this.isCreatingInventory = true;
@@ -362,7 +374,7 @@ export class InventarioPage implements OnInit, OnDestroy {
       // Filtrar productos según los filtros seleccionados
       let productosFiltrados = [...this.productos];
 
-      const categoriaId = this.categoriaFiltro.value;
+      // categoriaId ya obtenido arriba
       const proveedorId = this.proveedorFiltro.value;
 
       if (categoriaId) {
@@ -437,21 +449,23 @@ export class InventarioPage implements OnInit, OnDestroy {
       const inventariosRef = collection(this.firestore, 'inventarios');
       const docRef = await addDoc(inventariosRef, inventarioData);
 
-      // Crear objeto local
-      this.inventarioActual = {
-        id: docRef.id,
-        fecha: this.fechaSeleccionada,
-        categoriaId: categoriaId || undefined,
-        proveedorId: proveedorId || undefined,
-        productos: productosInventario,
-        inversionTotal,
-        totalProductos,
-        totalUnidades,
-        costoPromedio,
-        fechaCreacion: new Date(),
-        usuarioId: this.authService.getCurrentUser()?.id,
-        estado: 'borrador',
-      };
+      // Crear objeto local si se va a activar; de lo contrario, mantener el actual
+      if (activarNuevoInventario) {
+        this.inventarioActual = {
+          id: docRef.id,
+          fecha: this.fechaSeleccionada,
+          categoriaId: categoriaId || undefined,
+          proveedorId: proveedorId || undefined,
+          productos: productosInventario,
+          inversionTotal,
+          totalProductos,
+          totalUnidades,
+          costoPromedio,
+          fechaCreacion: new Date(),
+          usuarioId: this.authService.getCurrentUser()?.id,
+          estado: 'borrador',
+        };
+      }
 
       // Obtener nombre de la categoría si está filtrada
       const categoriaSeleccionada = categoriaId
@@ -461,11 +475,24 @@ export class InventarioPage implements OnInit, OnDestroy {
         ? categoriaSeleccionada.nombre
         : 'General';
 
-      Swal.fire(
-        '¡Creado!',
-        `Inventario creado con ${totalProductos} productos. Puedes editarlo y luego finalizarlo.`,
-        'success'
-      );
+      if (activarNuevoInventario) {
+        Swal.fire(
+          '¡Creado!',
+          `Inventario de ${nombreCategoria} creado con ${totalProductos} productos. Puedes editarlo y luego finalizarlo.`,
+          'success'
+        );
+      } else {
+        // Cargar historial para reflejar el nuevo borrador creado
+        await this.cargarHistorial();
+        const nombreActivo = this.getCategoriaNombre(
+          this.inventarioActual?.categoriaId
+        );
+        Swal.fire(
+          '¡Creado!',
+          `Inventario de ${nombreCategoria} creado como borrador. Se mantiene abierto el inventario de ${nombreActivo}. Puedes cargar el nuevo desde Historial.`,
+          'success'
+        );
+      }
     } catch (error) {
       Swal.fire('Error', 'Error al crear el inventario', 'error');
     } finally {
@@ -901,36 +928,44 @@ export class InventarioPage implements OnInit, OnDestroy {
       return;
     }
 
+    // Definir si activar el nuevo inventario o crear en segundo plano
+    let activarNuevoInventario = true;
     if (this.inventarioActual) {
       const estadoActual = this.inventarioActual.estado;
-      const textoEstado =
-        estadoActual === 'borrador' ? 'en borrador' : 'finalizado';
+      const mismaCategoria =
+        this.inventarioActual.categoriaId === this.categoriaSeleccionada;
+      if (estadoActual === 'borrador' && !mismaCategoria) {
+        activarNuevoInventario = false;
+      } else {
+        const textoEstado =
+          estadoActual === 'borrador' ? 'en borrador' : 'finalizado';
+        const result = await Swal.fire({
+          title: '¿Crear nuevo inventario?',
+          text: `Ya existe un inventario ${textoEstado} para esta fecha. ¿Deseas reemplazarlo?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, reemplazar',
+          cancelButtonText: 'Cancelar',
+        });
 
-      const result = await Swal.fire({
-        title: '¿Crear nuevo inventario?',
-        text: `Ya existe un inventario ${textoEstado} para esta fecha. ¿Deseas reemplazarlo?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, reemplazar',
-        cancelButtonText: 'Cancelar',
-      });
+        if (!result.isConfirmed) return;
 
-      if (!result.isConfirmed) return;
-
-      // Eliminar el inventario anterior si existe
-      if (this.inventarioActual.id) {
-        try {
-          const inventarioAnteriorRef = doc(
-            this.firestore,
-            'inventarios',
-            this.inventarioActual.id
-          );
-          await deleteDoc(inventarioAnteriorRef);
-        } catch (error) {
-          console.error('Error eliminando inventario anterior:', error);
+        // Eliminar el inventario anterior si existe (solo si reemplazamos)
+        if (this.inventarioActual.id) {
+          try {
+            const inventarioAnteriorRef = doc(
+              this.firestore,
+              'inventarios',
+              this.inventarioActual.id
+            );
+            await deleteDoc(inventarioAnteriorRef);
+          } catch (error) {
+            console.error('Error eliminando inventario anterior:', error);
+          }
         }
+        activarNuevoInventario = true;
       }
     }
 
@@ -1024,32 +1059,47 @@ export class InventarioPage implements OnInit, OnDestroy {
       const inventariosRef = collection(this.firestore, 'inventarios');
       const docRef = await addDoc(inventariosRef, inventarioData);
 
-      // Crear objeto local
-      this.inventarioActual = {
-        id: docRef.id,
-        fecha: this.fechaSeleccionada,
-        categoriaId: this.categoriaSeleccionada,
-        productos: productosInventario,
-        inversionTotal,
-        totalProductos,
-        totalUnidades,
-        costoPromedio,
-        fechaCreacion: new Date(),
-        usuarioId: currentUser.id,
-        estado: 'borrador',
-      };
+      if (activarNuevoInventario) {
+        // Crear objeto local y activar
+        this.inventarioActual = {
+          id: docRef.id,
+          fecha: this.fechaSeleccionada,
+          categoriaId: this.categoriaSeleccionada,
+          productos: productosInventario,
+          inversionTotal,
+          totalProductos,
+          totalUnidades,
+          costoPromedio,
+          fechaCreacion: new Date(),
+          usuarioId: currentUser.id,
+          estado: 'borrador',
+        };
 
-      // Configurar familias disponibles y productos filtrados
-      this.configurarFamiliasDisponibles();
-      this.aplicarFiltroFamilia();
+        // Configurar familias disponibles y productos filtrados
+        this.configurarFamiliasDisponibles();
+        this.aplicarFiltroFamilia();
 
-      this.cerrarModalNuevoInventario();
-      const nombreCategoria = this.getNombreCategoriaSeleccionada();
-      Swal.fire(
-        '¡Creado!',
-        `Inventario de ${nombreCategoria} creado con ${totalProductos} productos. Puedes editarlo y luego finalizarlo.`,
-        'success'
-      );
+        this.cerrarModalNuevoInventario();
+        const nombreCategoria = this.getNombreCategoriaSeleccionada();
+        Swal.fire(
+          '¡Creado!',
+          `Inventario de ${nombreCategoria} creado con ${totalProductos} productos. Puedes editarlo y luego finalizarlo.`,
+          'success'
+        );
+      } else {
+        // No activar: solo cerrar modal y actualizar historial
+        this.cerrarModalNuevoInventario();
+        await this.cargarHistorial();
+        const nombreNuevo = this.getNombreCategoriaSeleccionada();
+        const nombreActivo = this.getCategoriaNombre(
+          this.inventarioActual?.categoriaId
+        );
+        Swal.fire(
+          '¡Creado!',
+          `Inventario de ${nombreNuevo} creado como borrador. Se mantiene abierto el inventario de ${nombreActivo}. Puedes cargar el nuevo desde Historial.`,
+          'success'
+        );
+      }
     } catch (error: any) {
       let mensajeError = 'Error al crear el inventario';
 
