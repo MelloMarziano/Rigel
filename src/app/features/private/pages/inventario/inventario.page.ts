@@ -1092,6 +1092,11 @@ export class InventarioPage implements OnInit, OnDestroy {
     this.aplicarFiltroFamilia();
   }
 
+  // Selección rápida desde modal compacto
+  seleccionarFamiliaDesdeModal(familiaId: string | null): void {
+    this.filtrarPorFamilia(familiaId ?? '');
+  }
+
   private aplicarFiltroFamilia(): void {
     if (!this.inventarioActual) return;
 
