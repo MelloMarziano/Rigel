@@ -136,6 +136,34 @@ export class InventarioPage implements OnInit, OnDestroy {
     return objetoLimpio;
   }
 
+  // Normalizar productos cargados para compatibilidad con registros antiguos
+  // Si stockContado está vacío y diferencia tiene valor, interpretar diferencia como el "contado" histórico
+  private normalizarProductosCargados(
+    productos: InventarioProducto[]
+  ): InventarioProducto[] {
+    return productos.map((p) => {
+      const contadoCompat =
+        (p.stockContado === null || p.stockContado === undefined) &&
+        p.diferencia !== null &&
+        p.diferencia !== undefined
+          ? p.diferencia
+          : p.stockContado ?? null;
+
+      const stockActual = p.stockActual ?? 0;
+      const costoUnitario = p.costoUnitario ?? 0;
+
+      const diferenciaRecalc = (contadoCompat ?? 0) - stockActual;
+      const valorTotalRecalc = (contadoCompat ?? 0) * costoUnitario;
+
+      return {
+        ...p,
+        stockContado: contadoCompat,
+        diferencia: diferenciaRecalc,
+        valorTotal: valorTotalRecalc,
+      };
+    });
+  }
+
   ngOnInit(): void {
     // Verificar que el usuario esté autenticado
     const currentUser = this.authService.getCurrentUser();
@@ -263,6 +291,17 @@ export class InventarioPage implements OnInit, OnDestroy {
           this.inventarioActual.fechaCreacion = this.convertirFecha(
             this.inventarioActual.fechaCreacion
           );
+
+          // Normalizar productos para mostrar valores contados históricos correctamente
+          if (
+            this.inventarioActual.productos &&
+            this.inventarioActual.productos.length > 0
+          ) {
+            this.inventarioActual.productos = this.normalizarProductosCargados(
+              this.inventarioActual.productos
+            );
+            this.recalcularTotales();
+          }
 
           // Mostrar mensaje si se cargó un borrador (se mostrará cuando las categorías estén cargadas)
           if (this.inventarioActual.estado === 'borrador') {
@@ -437,8 +476,14 @@ export class InventarioPage implements OnInit, OnDestroy {
   private recalcularTotales(): void {
     if (!this.inventarioActual) return;
 
+    // Calcular inversión total basada exclusivamente en lo contado
     this.inventarioActual.inversionTotal =
-      this.inventarioActual.productos.reduce((sum, p) => sum + p.valorTotal, 0);
+      this.inventarioActual.productos.reduce(
+        (sum, p) => sum + (p.stockContado ?? 0) * p.costoUnitario,
+        0
+      );
+
+    // Calcular total de unidades contadas
     this.inventarioActual.totalUnidades =
       this.inventarioActual.productos.reduce(
         (sum, p) => sum + (p.stockContado ?? 0),
@@ -1056,8 +1101,14 @@ export class InventarioPage implements OnInit, OnDestroy {
     if (!this.familiaSeleccionada) {
       this.productosFiltrados = [...this.inventarioActual.productos];
     } else {
+      // Preferir familiaId presente en el InventarioProducto para evitar depender
+      // de la carga asíncrona de this.productos
       this.productosFiltrados = this.inventarioActual.productos.filter(
         (producto) => {
+          if (producto.familiaId) {
+            return producto.familiaId === this.familiaSeleccionada;
+          }
+          // Fallback: buscar en catálogo de productos si no hay familiaId
           const productoCompleto = this.productos.find(
             (p) => p.id === producto.productoId
           );
@@ -1075,7 +1126,11 @@ export class InventarioPage implements OnInit, OnDestroy {
   getProductosPorFamilia(familiaId: string): InventarioProducto[] {
     if (!this.inventarioActual) return [];
 
+    // Usar familiaId del propio InventarioProducto cuando esté disponible
     return this.inventarioActual.productos.filter((producto) => {
+      if (producto.familiaId) {
+        return producto.familiaId === familiaId;
+      }
       const productoCompleto = this.productos.find(
         (p) => p.id === producto.productoId
       );
@@ -1101,7 +1156,9 @@ export class InventarioPage implements OnInit, OnDestroy {
     const productosFamilia = this.getProductosPorFamilia(familiaId);
     return productosFamilia.filter(
       (producto) =>
-        producto.stockContado === null || producto.stockContado === undefined
+        producto.stockContado === null ||
+        producto.stockContado === undefined ||
+        producto.diferencia === 0
     ).length;
   }
 
@@ -1131,7 +1188,9 @@ export class InventarioPage implements OnInit, OnDestroy {
 
     return this.inventarioActual.productos.filter(
       (producto) =>
-        producto.stockContado === null || producto.stockContado === undefined
+        producto.stockContado === null ||
+        producto.stockContado === undefined ||
+        producto.diferencia === 0
     ).length;
   }
 
@@ -1317,6 +1376,14 @@ export class InventarioPage implements OnInit, OnDestroy {
 
     // Cargar el inventario
     this.inventarioActual = { ...inventario };
+
+    // Normalizar productos para compatibilidad con registros antiguos
+    if (this.inventarioActual?.productos?.length) {
+      this.inventarioActual.productos = this.normalizarProductosCargados(
+        this.inventarioActual.productos
+      );
+      this.recalcularTotales();
+    }
 
     // Configurar familias y filtros
     this.configurarFamiliasDisponibles();
