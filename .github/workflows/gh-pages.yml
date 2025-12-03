@@ -2,8 +2,12 @@ name: Deploy to GitHub Pages
 
 on:
   push:
+    # Ejecuta el workflow en cualquier commit a cualquier rama
     branches:
-      - main
+      - '**'
+  pull_request:
+    branches:
+      - '**'
   workflow_dispatch: {}
 
 permissions:
@@ -21,7 +25,9 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build -- --configuration production --base-href "/${{ github.event.repository.name }}/"
       - run: cp dist/rigel/index.html dist/rigel/404.html
+      # Desplegar solo cuando el commit esté en la rama main
       - uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist/rigel
