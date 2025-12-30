@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { RecetasPage } from './recetas.page';
 import { RecetasPageRoutingModule } from './recetas.page-routing.module';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     RecetasPageRoutingModule,
@@ -13,6 +15,7 @@ import { RecetasPageRoutingModule } from './recetas.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [RecetasPage],
 })

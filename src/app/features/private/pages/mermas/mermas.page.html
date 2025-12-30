@@ -250,7 +250,7 @@
               </div>
               <div class="col-6">
                 <small class="text-muted d-block">Costo Pérdida</small>
-                <strong class="text-danger">{{ merma.costoPerdida | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                <strong class="text-danger">{{ merma.costoPerdida | appCurrency:'symbol':'1.2-2' }}</strong>
               </div>
             </div>
             <small class="text-muted d-block mt-2">
@@ -386,7 +386,7 @@
               <div class="card border-0 bg-danger bg-opacity-10 h-100">
                 <div class="card-body text-center">
                   <i class="bi bi-cash-coin text-danger fs-2 d-block mb-2"></i>
-                  <h3 class="mb-0 text-danger">{{ mermaSeleccionada.costoPerdida | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                  <h3 class="mb-0 text-danger">{{ mermaSeleccionada.costoPerdida | appCurrency:'symbol':'1.2-2' }}</h3>
                   <small class="text-muted">Costo de la pérdida</small>
                 </div>
               </div>
@@ -504,7 +504,7 @@
                       <br>
                       <small class="text-muted">{{ producto.cantidad }} {{ producto.unidadMedida }}</small>
                     </div>
-                    <span class="badge bg-primary">{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}</span>
+                    <span class="badge bg-primary">{{ producto.costo | appCurrency:'symbol':'1.2-2' }}</span>
                   </div>
                 </button>
               </div>
@@ -592,7 +592,7 @@
                 Costo de la Pérdida:
               </h6>
               <h4 class="mb-0 text-danger">
-                {{ calcularCostoPerdida(mermaForm.get('productoId')?.value, mermaForm.get('cantidadPerdida')?.value) | currency:'EUR':'symbol':'1.2-2' }}
+                {{ calcularCostoPerdida(mermaForm.get('productoId')?.value, mermaForm.get('cantidadPerdida')?.value) | appCurrency:'symbol':'1.2-2' }}
               </h4>
             </div>
           </div>

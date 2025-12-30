@@ -42,7 +42,7 @@
       <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
           <h2 class="text-warning mb-0">
-            {{ costoPromedio | currency:'EUR':'symbol':'1.2-2' }}
+            {{ costoPromedio | appCurrency:'symbol':'1.2-2' }}
           </h2>
           <span class="text-muted">Costo Promedio</span>
         </div>
@@ -100,10 +100,10 @@
               <span
                 *ngIf="receta.costoTotal !== undefined && receta.costoTotal !== null && isFinite(receta.costoTotal); else noCosto"
               >
-                {{ receta.costoTotal | currency:'EUR':'symbol':'1.2-2' }}
+                {{ receta.costoTotal | appCurrency:'symbol':'1.2-2' }}
               </span>
               <ng-template #noCosto>
-                <span class="text-muted">€0.00</span>
+                <span class="text-muted">{{ simboloMoneda }}0.00</span>
               </ng-template>
             </div>
           </div>
@@ -212,7 +212,7 @@
                 <i class="bi bi-cash-coin text-warning fs-2 d-block mb-2"></i>
                 <h3 class="mb-0 text-warning">
                   {{ recetaSeleccionada.costoTotal |
-                  currency:'EUR':'symbol':'1.2-2' }}
+                  appCurrency:'symbol':'1.2-2' }}
                 </h3>
                 <small class="text-muted">Costo Total de la Receta</small>
               </div>
@@ -244,14 +244,14 @@
                       <br />
                       <small class="text-muted">
                         Costo/unidad: {{ (ing.costo || 0) / ing.cantidad |
-                        currency:'EUR':'symbol':'1.3-3' }}
+                        appCurrency:'symbol':'1.3-3' }}
                       </small>
                     </td>
                     <td class="text-end">
                       {{ ing.cantidad }} {{ ing.unidadMedida }}
                     </td>
                     <td class="text-end">
-                      {{ ing.costo | currency:'EUR':'symbol':'1.2-2' }}
+                      {{ ing.costo | appCurrency:'symbol':'1.2-2' }}
                     </td>
                     <td class="text-end">
                       <span class="badge bg-secondary">
@@ -299,7 +299,7 @@
                   <div>
                     <h3 class="mb-0">
                       {{ recetaSeleccionada.costoTotal |
-                      currency:'EUR':'symbol':'1.2-2' }}
+                      appCurrency:'symbol':'1.2-2' }}
                     </h3>
                     <small class="text-muted">costo de preparación</small>
                   </div>
@@ -446,7 +446,7 @@
                         >
                           Stock: {{ producto.cantidad }} {{
                           producto.unidadMedida }} - {{ producto.costo |
-                          currency:'EUR':'symbol':'1.2-2' }}
+                          appCurrency:'symbol':'1.2-2' }}
                         </option>
                       </datalist>
                       <input type="hidden" formControlName="productoId" />
@@ -464,7 +464,7 @@
                         <small class="text-info d-block">
                           <i class="bi bi-cash me-1"></i>
                           Costo: {{ producto.costo |
-                          currency:'EUR':'symbol':'1.2-2' }}
+                          appCurrency:'symbol':'1.2-2' }}
                         </small>
                       </div>
                     </div>
@@ -508,11 +508,11 @@
                         >Costo</label
                       >
                       <div class="input-group input-group-sm">
-                        <span class="input-group-text">€</span>
+                        <span class="input-group-text">{{ simboloMoneda }}</span>
                         <input
                           type="text"
                           class="form-control form-control-sm"
-                          [value]="calcularCostoIngredientePreview(i) | currency:'EUR':'symbol-narrow':'1.3-3'"
+                          [value]="calcularCostoIngredientePreview(i) | appCurrency:'symbol-narrow':'1.3-3'"
                           readonly
                           style="background-color: #f8f9fa"
                         />
@@ -556,7 +556,7 @@
             <div class="text-center">
               <small class="text-muted d-block">Costo Total</small>
               <strong class="fs-4 text-warning"
-                >{{ costoPreview.costoTotal | currency:'EUR':'symbol':'1.2-2'
+                >{{ costoPreview.costoTotal | appCurrency:'symbol':'1.2-2'
                 }}</strong
               >
             </div>

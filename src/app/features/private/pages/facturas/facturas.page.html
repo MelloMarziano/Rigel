@@ -55,7 +55,7 @@
       <div class="card border-0 shadow-sm h-100">
         <div class="card-body text-center">
           <h2 class="text-info fw-bold mb-1">
-            {{ estadisticas.valorTotal | currency:'EUR':'symbol':'1.2-2' }}
+            {{ estadisticas.valorTotal | appCurrency:'symbol':'1.2-2' }}
           </h2>
           <p class="text-muted mb-0">Valor Total</p>
         </div>
@@ -165,19 +165,19 @@
             <div class="col-4">
               <small class="text-muted">Subtotal</small>
               <div class="fw-bold">
-                {{ factura.subtotal | currency:'EUR':'symbol':'1.2-2' }}
+                {{ factura.subtotal | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
             <div class="col-4">
               <small class="text-muted">IVA</small>
               <div class="fw-bold">
-                {{ factura.iva | currency:'EUR':'symbol':'1.2-2' }}
+                {{ factura.iva | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
             <div class="col-4">
               <small class="text-muted">Total</small>
               <div class="fw-bold text-danger">
-                {{ factura.total | currency:'EUR':'symbol':'1.2-2' }}
+                {{ factura.total | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@
               >
                 <span class="small">{{ producto.productoNombre }}</span>
                 <span class="small text-muted"
-                  >{{ producto.cantidad }} x {{ producto.precioUnitario | currency:'EUR':'symbol':'1.2-2' }}</span
+                  >{{ producto.cantidad }} x {{ producto.precioUnitario | appCurrency:'symbol':'1.2-2' }}</span
                 >
               </div>
               <div
@@ -390,16 +390,16 @@
                       <span class="badge bg-secondary">{{item.cantidad}}</span>
                     </td>
                     <td class="text-end">
-                      {{item.precioUnitario | currency:'EUR':'symbol':'1.2-2'}}
+                      {{item.precioUnitario | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td class="text-end">
-                      {{item.subtotal | currency:'EUR':'symbol':'1.2-2'}}
+                      {{item.subtotal | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td class="text-end text-info">
-                      {{item.ivaImporte | currency:'EUR':'symbol':'1.2-2'}}
+                      {{item.ivaImporte | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td class="text-end fw-bold">
-                      {{item.total | currency:'EUR':'symbol':'1.2-2'}}
+                      {{item.total | appCurrency:'symbol':'1.2-2'}}
                     </td>
                   </tr>
                 </tbody>
@@ -407,21 +407,21 @@
                   <tr>
                     <td colspan="3" class="text-end fw-bold">Subtotal:</td>
                     <td class="text-end fw-bold">
-                      {{facturaSeleccionada.subtotal | currency:'EUR':'symbol':'1.2-2'}}
+                      {{facturaSeleccionada.subtotal | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td colspan="2"></td>
                   </tr>
                   <tr>
                     <td colspan="3" class="text-end fw-bold">IVA Total:</td>
                     <td class="text-end fw-bold text-info">
-                      {{facturaSeleccionada.iva | currency:'EUR':'symbol':'1.2-2'}}
+                      {{facturaSeleccionada.iva | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td colspan="2"></td>
                   </tr>
                   <tr>
                     <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
                     <td class="text-end fw-bold fs-5 text-success">
-                      {{facturaSeleccionada.total | currency:'EUR':'symbol':'1.2-2'}}
+                      {{facturaSeleccionada.total | appCurrency:'symbol':'1.2-2'}}
                     </td>
                     <td colspan="2"></td>
                   </tr>
@@ -614,7 +614,7 @@
                         class="text-center p-3 bg-warning bg-opacity-10 rounded mb-3"
                       >
                         <h4 class="mb-1">
-                          {{ subtotalFactura | currency:'EUR':'symbol':'1.2-2'
+                          {{ subtotalFactura | appCurrency:'symbol':'1.2-2'
                           }}
                         </h4>
                         <small class="text-muted">Subtotal</small>
@@ -631,7 +631,7 @@
                           <small class="text-muted">IVA {{ iva.porcentaje }}%:</small>
                         </div>
                         <div class="col-6">
-                          <small class="fw-bold">{{ iva.importe | currency:'EUR':'symbol':'1.2-2' }}</small>
+                          <small class="fw-bold">{{ iva.importe | appCurrency:'symbol':'1.2-2' }}</small>
                         </div>
                       </div>
                       <hr class="my-2">
@@ -640,7 +640,7 @@
                           <strong>Total IVA:</strong>
                         </div>
                         <div class="col-6">
-                          <strong>{{ ivaFactura | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                          <strong>{{ ivaFactura | appCurrency:'symbol':'1.2-2' }}</strong>
                         </div>
                       </div>
                     </div>
@@ -650,7 +650,7 @@
                     class="text-center p-3 bg-danger bg-opacity-10 rounded mb-3"
                   >
                     <h3 class="mb-1 text-danger">
-                      {{ totalFactura | currency:'EUR':'symbol':'1.2-2' }}
+                      {{ totalFactura | appCurrency:'symbol':'1.2-2' }}
                     </h3>
                     <small class="text-muted">Total</small>
                   </div>
@@ -742,19 +742,19 @@
                       <td>
                         <span class="fw-bold"
                           >{{ getProductoSubtotal(i) |
-                          currency:'EUR':'symbol':'1.2-2' }}</span
+                          appCurrency:'symbol':'1.2-2' }}</span
                         >
                       </td>
                       <td>
                         <span class="fw-bold text-info"
                           >{{ getProductoIvaImporte(i) |
-                          currency:'EUR':'symbol':'1.2-2' }}</span
+                          appCurrency:'symbol':'1.2-2' }}</span
                         >
                       </td>
                       <td>
                         <span class="fw-bold text-success"
                           >{{ getProductoTotal(i) |
-                          currency:'EUR':'symbol':'1.2-2' }}</span
+                          appCurrency:'symbol':'1.2-2' }}</span
                         >
                       </td>
                       <td>

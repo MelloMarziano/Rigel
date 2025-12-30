@@ -201,6 +201,27 @@
               </div>
             </div>
 
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Moneda *</label>
+                <select class="form-select" formControlName="moneda">
+                  <option value="EUR">Euro (EUR)</option>
+                  <option value="USD">Dólar Estadounidense (USD)</option>
+                  <option value="GBP">Libra Esterlina (GBP)</option>
+                  <option value="COP">Peso Colombiano (COP)</option>
+                  <option value="MXN">Peso Mexicano (MXN)</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-6 mb-3">
+                <label class="form-label">Símbolo *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="simboloMoneda"
+                  placeholder="€, $">
+              </div>
+            </div>
+
             <div class="d-flex justify-content-end mt-4" *ngIf="esPrimeraConfiguracion || modoEdicion">
               <div class="d-flex gap-2">
                 <button

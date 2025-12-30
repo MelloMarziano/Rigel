@@ -2,7 +2,8 @@ import { NgModule } from '@angular/core';
 import { PrivateModule } from '../../private.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { BaseChartDirective } from 'ng2-charts';
+import { NgChartsModule } from 'ng2-charts';
+import { SharedModule } from '../../../../shared/shared.module';
 
 import { DashboardPage } from './dashboard.page';
 import { DashboardPageRoutingModule } from './dashboard.page-routing.module';
@@ -14,7 +15,8 @@ import { DashboardPageRoutingModule } from './dashboard.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    BaseChartDirective,
+    NgChartsModule,
+    SharedModule,
   ],
   declarations: [DashboardPage],
 })

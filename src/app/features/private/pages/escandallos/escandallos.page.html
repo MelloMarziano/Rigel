@@ -83,13 +83,13 @@
             <div class="col-6">
               <div class="text-muted small">Costo</div>
               <div class="fw-bold text-danger" style="font-size: 1.1rem;">
-                {{ escandallo.costoTotalConMermas | currency:'EUR':'symbol':'1.2-2' }}
+                {{ escandallo.costoTotalConMermas | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
             <div class="col-6">
               <div class="text-muted small">Precio Venta</div>
               <div class="fw-bold text-success" style="font-size: 1.1rem;">
-                {{ escandallo.precioVenta | currency:'EUR':'symbol':'1.2-2' }}
+                {{ escandallo.precioVenta | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
           </div>
@@ -170,7 +170,7 @@
             <div class="card border-0 bg-danger bg-opacity-10 h-100">
               <div class="card-body text-center">
                 <i class="bi bi-cash-coin text-danger fs-2 d-block mb-2"></i>
-                <h3 class="mb-0 text-danger">{{ escandalloSeleccionado.costoTotalConMermas | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <h3 class="mb-0 text-danger">{{ escandalloSeleccionado.costoTotalConMermas | appCurrency:'symbol':'1.2-2' }}</h3>
                 <small class="text-muted">Costo Total</small>
               </div>
             </div>
@@ -179,7 +179,7 @@
             <div class="card border-0 bg-success bg-opacity-10 h-100">
               <div class="card-body text-center">
                 <i class="bi bi-tag text-success fs-2 d-block mb-2"></i>
-                <h3 class="mb-0 text-success">{{ escandalloSeleccionado.precioVenta | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <h3 class="mb-0 text-success">{{ escandalloSeleccionado.precioVenta | appCurrency:'symbol':'1.2-2' }}</h3>
                 <small class="text-muted">Precio Venta</small>
               </div>
             </div>
@@ -188,7 +188,7 @@
             <div class="card border-0 bg-warning bg-opacity-10 h-100">
               <div class="card-body text-center">
                 <i class="bi bi-graph-up text-warning fs-2 d-block mb-2"></i>
-                <h3 class="mb-0 text-warning">{{ escandalloSeleccionado.margen | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <h3 class="mb-0 text-warning">{{ escandalloSeleccionado.margen | appCurrency:'symbol':'1.2-2' }}</h3>
                 <small class="text-muted">Ganancia</small>
               </div>
             </div>
@@ -228,7 +228,7 @@
                       <strong>{{ ing.productoNombre }}</strong>
                     </td>
                     <td class="text-end">{{ ing.cantidad }} {{ ing.unidadMedida }}</td>
-                    <td class="text-end">{{ ing.costoSinMerma | currency:'EUR':'symbol':'1.2-2' }}</td>
+                    <td class="text-end">{{ ing.costoSinMerma | appCurrency:'symbol':'1.2-2' }}</td>
                     <td class="text-center">
                       <span class="badge" [ngClass]="ing.porcentajeMerma > 0 ? 'bg-warning text-dark' : 'bg-secondary'">
                         <i class="bi bi-scissors me-1" *ngIf="ing.porcentajeMerma > 0"></i>
@@ -236,7 +236,7 @@
                       </span>
                     </td>
                     <td class="text-end">
-                      <strong>{{ ing.costoConMerma | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                      <strong>{{ ing.costoConMerma | appCurrency:'symbol':'1.2-2' }}</strong>
                     </td>
                   </tr>
                 </tbody>
@@ -268,7 +268,7 @@
                     </td>
                     <td class="text-end">{{ rec.cantidad }} {{ rec.unidadMedida }}</td>
                     <td class="text-end">
-                      <strong>{{ rec.costo | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                      <strong>{{ rec.costo | appCurrency:'symbol':'1.2-2' }}</strong>
                     </td>
                   </tr>
                 </tbody>
@@ -306,7 +306,7 @@
                 <div class="d-flex align-items-center">
                   <i class="bi bi-cash-stack fs-2 text-success me-3"></i>
                   <div>
-                    <h3 class="mb-0">{{ escandalloSeleccionado.costoPorPorcion | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                    <h3 class="mb-0">{{ escandalloSeleccionado.costoPorPorcion | appCurrency:'symbol':'1.2-2' }}</h3>
                     <small class="text-muted">por porción</small>
                   </div>
                 </div>
@@ -421,7 +421,7 @@
                                 <br>
                                 <small class="text-muted">{{ producto.cantidad }} {{ producto.unidadMedida }}</small>
                               </div>
-                              <span class="badge bg-primary">{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}</span>
+                              <span class="badge bg-primary">{{ producto.costo | appCurrency:'symbol':'1.2-2' }}</span>
                             </div>
                           </button>
                         </div>
@@ -507,7 +507,7 @@
                                 <br>
                                 <small class="text-muted">{{ rec.rendimiento }} {{ rec.unidadRendimiento }}</small>
                               </div>
-                              <span class="badge bg-success">{{ rec.costoTotal | currency:'EUR':'symbol':'1.2-2' }}</span>
+                              <span class="badge bg-success">{{ rec.costoTotal | appCurrency:'symbol':'1.2-2' }}</span>
                             </div>
                           </button>
                         </div>
@@ -544,16 +544,16 @@
             <div class="row">
               <div class="col-md-3">
                 <small class="text-muted d-block">Costo Total:</small>
-                <strong class="fs-5 text-danger">{{ costoPreview.costoConMermas | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                <strong class="fs-5 text-danger">{{ costoPreview.costoConMermas | appCurrency:'symbol':'1.2-2' }}</strong>
               </div>
               <div class="col-md-3">
                 <small class="text-muted d-block">Precio Venta:</small>
-                <strong class="fs-5 text-success">{{ escandalloForm.get('precioVenta')?.value | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                <strong class="fs-5 text-success">{{ escandalloForm.get('precioVenta')?.value | appCurrency:'symbol':'1.2-2' }}</strong>
               </div>
               <div class="col-md-3">
                 <small class="text-muted d-block">Ganancia:</small>
                 <strong class="fs-5" [ngClass]="costoPreview.margen >= 0 ? 'text-success' : 'text-danger'">
-                  {{ costoPreview.margen | currency:'EUR':'symbol':'1.2-2' }}
+                  {{ costoPreview.margen | appCurrency:'symbol':'1.2-2' }}
                 </strong>
               </div>
               <div class="col-md-3">

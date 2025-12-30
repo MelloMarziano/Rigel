@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { VentasPage } from './ventas.page';
 import { VentasPageRoutingModule } from './ventas.page-routing.module';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     VentasPageRoutingModule,
@@ -13,6 +15,7 @@ import { VentasPageRoutingModule } from './ventas.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [VentasPage],
 })

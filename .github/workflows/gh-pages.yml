@@ -21,13 +21,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.19.0'
-          cache: 'yarn'
-      - run: rm -f package-lock.json
-      - run: yarn install --frozen-lockfile
-      - run: yarn build --configuration production --base-href "/${{ github.event.repository.name }}/"
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build -- --configuration production --base-href "/${{ github.event.repository.name }}/"
       - run: cp dist/rigel/index.html dist/rigel/404.html
-      # Desplegar solo cuando el commit esté en la rama main
+      # Desplegar solo cuando el commit esté en la rama main o locked
       - uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/locked'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist/rigel

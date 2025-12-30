@@ -88,7 +88,7 @@
           <i class="fas fa-euro-sign"></i>
         </div>
         <div class="card-content">
-          <h3>{{ resumenVentas.totalIngresos | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <h3>{{ resumenVentas.totalIngresos | appCurrency:'symbol':'1.2-2' }}</h3>
           <p>Ingresos Totales</p>
         </div>
       </div>
@@ -98,7 +98,7 @@
           <i class="fas fa-chart-line"></i>
         </div>
         <div class="card-content">
-          <h3>{{ resumenVentas.ventaPromedio | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <h3>{{ resumenVentas.ventaPromedio | appCurrency:'symbol':'1.2-2' }}</h3>
           <p>Venta Promedio</p>
         </div>
       </div>
@@ -138,7 +138,7 @@
           <tbody>
             <tr *ngFor="let venta of reporteVentas">
               <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td class="precio">{{ venta.total | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td class="precio">{{ venta.total | appCurrency:'symbol':'1.2-2' }}</td>
               <td>{{ venta.cliente || 'Sin cliente' }}</td>
               <td>
                 <span class="metodo-pago" [class]="venta.metodoPago.toLowerCase()">
@@ -195,7 +195,7 @@
                 </div>
               </td>
               <td class="cantidad">{{ producto.cantidadVendida }}</td>
-              <td class="precio">{{ producto.ingresoTotal | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td class="precio">{{ producto.ingresoTotal | appCurrency:'symbol':'1.2-2' }}</td>
               <td>
                 <span class="categoria-tag">{{ producto.categoria }}</span>
               </td>
@@ -230,7 +230,7 @@
           <i class="fas fa-shopping-bag"></i>
         </div>
         <div class="card-content">
-          <h3>{{ resumenAlbaranes.totalCompras | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <h3>{{ resumenAlbaranes.totalCompras | appCurrency:'symbol':'1.2-2' }}</h3>
           <p>Total Compras</p>
         </div>
       </div>
@@ -240,7 +240,7 @@
           <i class="fas fa-calculator"></i>
         </div>
         <div class="card-content">
-          <h3>{{ resumenAlbaranes.compraPromedio | currency:'EUR':'symbol':'1.2-2' }}</h3>
+          <h3>{{ resumenAlbaranes.compraPromedio | appCurrency:'symbol':'1.2-2' }}</h3>
           <p>Compra Promedio</p>
         </div>
       </div>
@@ -283,7 +283,7 @@
               <td>{{ albaran.fecha | date:'dd/MM/yyyy' }}</td>
               <td class="proveedor">{{ albaran.proveedor }}</td>
               <td class="numero-albaran">{{ albaran.numeroAlbaran }}</td>
-              <td class="precio">{{ albaran.total | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td class="precio">{{ albaran.total | appCurrency:'symbol':'1.2-2' }}</td>
               <td>
                 <span class="estado-badge" [class]="albaran.estado.toLowerCase()">
                   {{ albaran.estado }}

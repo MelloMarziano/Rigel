@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { FacturasPage } from './facturas.page';
 import { FacturasPageRoutingModule } from './facturas.page-routing.module';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     FacturasPageRoutingModule,
@@ -13,6 +15,7 @@ import { FacturasPageRoutingModule } from './facturas.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [FacturasPage],
 })

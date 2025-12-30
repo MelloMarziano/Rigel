@@ -117,7 +117,7 @@
             <div class="col-6">
               <div class="text-muted small">Costo</div>
               <div class="fw-bold text-danger" style="font-size: 1.1rem;">
-                {{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}
+                {{ producto.costo | appCurrency:'symbol':'1.2-2' }}
               </div>
             </div>
             <div class="col-6" *ngIf="!producto.esCombinado">
@@ -204,7 +204,7 @@
             <div class="card border-0 bg-danger bg-opacity-10 h-100">
               <div class="card-body text-center">
                 <i class="bi bi-cash-coin text-danger fs-2 d-block mb-2"></i>
-                <h3 class="mb-0 text-danger">{{ productoSeleccionado.costo | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <h3 class="mb-0 text-danger">{{ productoSeleccionado.costo | appCurrency:'symbol':'1.2-2' }}</h3>
                 <small class="text-muted">Costo</small>
               </div>
             </div>
@@ -222,7 +222,7 @@
             <div class="card border-0 bg-success bg-opacity-10 h-100">
               <div class="card-body text-center">
                 <i class="bi bi-calculator text-success fs-2 d-block mb-2"></i>
-                <h3 class="mb-0 text-success">{{ getPrecioVenta(productoSeleccionado) | currency:'EUR':'symbol':'1.2-2' }}</h3>
+                <h3 class="mb-0 text-success">{{ getPrecioVenta(productoSeleccionado) | appCurrency:'symbol':'1.2-2' }}</h3>
                 <small class="text-muted">Precio + IVA</small>
               </div>
             </div>
@@ -298,7 +298,7 @@
                 <div *ngIf="!productoSeleccionado.esCombinado">
                   <small class="text-muted d-block">Valor en stock</small>
                   <strong class="fs-5 text-success">
-                    {{ ((productoSeleccionado.stock || 0) * productoSeleccionado.costo) | currency:'EUR':'symbol':'1.2-2' }}
+                    {{ ((productoSeleccionado.stock || 0) * productoSeleccionado.costo) | appCurrency:'symbol':'1.2-2' }}
                   </strong>
                 </div>
               </div>

@@ -80,7 +80,7 @@
         </div>
         <div class="product-info">
           <h6 class="product-name">{{ producto.nombre }}</h6>
-          <p class="product-price">{{ producto.precio | currency:'EUR':'symbol':'1.2-2' }}</p>
+          <p class="product-price">{{ producto.precio | appCurrency:'symbol':'1.2-2' }}</p>
         </div>
       </div>
     </div>
@@ -201,7 +201,7 @@
           <span class="badge">{{ item.tamano || 'M' }}</span>
         </div>
         <div class="item-price">
-          <span>{{ item.precio * item.cantidad | currency:'EUR':'symbol':'1.0-0' }}</span>
+          <span>{{ item.precio * item.cantidad | appCurrency:'symbol':'1.0-0' }}</span>
           <button class="btn-remove" (click)="eliminarDelCarrito(i)">
             <i class="bi bi-trash"></i>
           </button>
@@ -228,7 +228,7 @@
       <div class="discount-section">
         <div class="discount-badge">
           <i class="bi bi-tag"></i>
-          Ahorra {{ descuento | currency:'EUR':'symbol':'1.0-0' }} en esta orden
+          Ahorra {{ descuento | appCurrency:'symbol':'1.0-0' }} en esta orden
         </div>
         <button class="btn-apply">Aplicar</button>
       </div>
@@ -236,15 +236,15 @@
       <div class="totals">
         <div class="total-row">
           <span>Subtotal</span>
-          <span>{{ subtotal | currency:'EUR':'symbol':'1.2-2' }}</span>
+          <span>{{ subtotal | appCurrency:'symbol':'1.2-2' }}</span>
         </div>
         <div class="total-row">
           <span>Descuento</span>
-          <span>{{ descuento | currency:'EUR':'symbol':'1.2-2' }}</span>
+          <span>{{ descuento | appCurrency:'symbol':'1.2-2' }}</span>
         </div>
         <div class="total-row total-final">
           <span>Total a Pagar</span>
-          <span>{{ total | currency:'EUR':'symbol':'1.2-2' }}</span>
+          <span>{{ total | appCurrency:'symbol':'1.2-2' }}</span>
         </div>
       </div>
 

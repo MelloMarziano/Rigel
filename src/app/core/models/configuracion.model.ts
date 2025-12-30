@@ -10,6 +10,8 @@ export interface ConfiguracionEmpresa {
   codigoPostal: string;
   ciudad: string;
   provincia: string;
+  moneda?: string;
+  simboloMoneda?: string;
   fechaCreacion?: Date;
   fechaActualizacion?: Date;
 }

@@ -7,6 +7,8 @@ import { MermasPage } from './mermas.page';
 import { MermasPageRoutingModule } from './mermas.page-routing.module';
 import { ReportesMermasComponent } from './reportes-mermas/reportes-mermas.component';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     MermasPageRoutingModule,
@@ -14,6 +16,7 @@ import { ReportesMermasComponent } from './reportes-mermas/reportes-mermas.compo
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [MermasPage, ReportesMermasComponent],
 })

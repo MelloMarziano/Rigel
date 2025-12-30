@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { InventarioPage } from './inventario.page';
 import { InventarioPageRoutingModule } from './inventario.page-routing.module';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     InventarioPageRoutingModule,
@@ -13,6 +15,7 @@ import { InventarioPageRoutingModule } from './inventario.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [InventarioPage],
 })

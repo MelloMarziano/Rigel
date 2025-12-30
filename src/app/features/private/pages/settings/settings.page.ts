@@ -146,6 +146,8 @@ export class SettingsPage implements OnInit, OnDestroy {
       codigoPostal: ['', [Validators.required]],
       ciudad: ['', [Validators.required]],
       provincia: ['', [Validators.required]],
+      moneda: ['EUR', [Validators.required]],
+      simboloMoneda: ['€', [Validators.required]],
     });
   }
 

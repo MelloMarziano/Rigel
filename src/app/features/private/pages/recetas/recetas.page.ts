@@ -13,6 +13,7 @@ import {
 import Swal from 'sweetalert2';
 import { Subscription } from 'rxjs';
 import { Producto } from '../../../../core/models/producto.model';
+import { ConfiguracionService } from '../../../../core/services/configuracion.service';
 
 declare var bootstrap: any;
 
@@ -88,10 +89,21 @@ export class RecetasPage implements OnInit, OnDestroy {
     },
   };
 
+  simboloMoneda = '€';
+
   private subscriptions = new Subscription();
 
-  constructor(private fb: FormBuilder, private firestore: Firestore) {
+  constructor(
+    private fb: FormBuilder,
+    private firestore: Firestore,
+    private configService: ConfiguracionService
+  ) {
     this.inicializarForm();
+    this.subscriptions.add(
+      this.configService.configuracion$.subscribe((c) => {
+        if (c?.simboloMoneda) this.simboloMoneda = c.simboloMoneda;
+      })
+    );
   }
 
   ngOnInit(): void {

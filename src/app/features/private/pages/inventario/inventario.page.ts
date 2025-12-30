@@ -28,6 +28,7 @@ import {
   FamiliaCategoria,
 } from 'src/app/core/models/categoria.model';
 import { Proveedor } from 'src/app/core/models/proveedor.model';
+import { ConfiguracionService } from 'src/app/core/services/configuracion.service';
 
 declare var bootstrap: any;
 
@@ -86,7 +87,11 @@ export class InventarioPage implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
 
-  constructor(private firestore: Firestore, private authService: AuthService) {}
+  constructor(
+    private firestore: Firestore,
+    private authService: AuthService,
+    private configService: ConfiguracionService
+  ) {}
 
   // Helper para convertir fechas de Firebase
   private convertirFecha(fecha: any): Date | undefined {
@@ -1229,11 +1234,14 @@ export class InventarioPage implements OnInit, OnDestroy {
 
   // Formatear moneda de forma más legible
   formatearMoneda(valor: number): string {
-    return valor.toLocaleString('es-CO', {
+    const config = this.configService.getConfiguracionActual();
+    const currency = config?.moneda || 'EUR';
+
+    return valor.toLocaleString('es-ES', {
       style: 'currency',
-      currency: 'COP',
+      currency: currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     });
   }
 

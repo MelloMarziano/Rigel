@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { EscandallosPage } from './escandallos.page';
 import { EscandallosRoutingModule } from './escandallos.page-routing.module';
 
+import { SharedModule } from '../../../../shared/shared.module';
+
 @NgModule({
   imports: [
     EscandallosRoutingModule,
@@ -13,6 +15,7 @@ import { EscandallosRoutingModule } from './escandallos.page-routing.module';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    SharedModule,
   ],
   declarations: [EscandallosPage],
 })

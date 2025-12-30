@@ -191,11 +191,11 @@
           <div class="card-body text-center">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted small">Inversión Total</span>
-              <i class="bi bi-currency-euro text-danger"></i>
+              <i class="bi bi-cash-coin text-danger"></i>
             </div>
             <h3 class="text-danger fw-bold mb-0">
               {{ inventarioActual.inversionTotal |
-              currency:'EUR':'symbol':'1.0-0' }}
+              appCurrency:'symbol':'1.0-0' }}
             </h3>
           </div>
         </div>
@@ -235,7 +235,7 @@
             </div>
             <h3 class="text-warning fw-bold mb-0">
               {{ inventarioActual.costoPromedio |
-              currency:'EUR':'symbol':'1.0-0' }}
+              appCurrency:'symbol':'1.0-0' }}
             </h3>
           </div>
         </div>
@@ -446,7 +446,7 @@
                     </td>
                     <td>
                       {{ producto.costoUnitario |
-                      currency:'EUR':'symbol':'1.2-2' }}
+                      appCurrency:'symbol':'1.2-2' }}
                     </td>
                     <td>
                       <input
@@ -472,7 +472,7 @@
                       <strong
                         [class]="producto.diferencia !== 0 ? 'text-danger' : 'text-success'"
                       >
-                        {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
+                        {{ producto.valorTotal | appCurrency:'symbol':'1.0-0'
                         }}
                       </strong>
                     </td>
@@ -534,7 +534,7 @@
                           >
                           <span class="fw-bold">
                             {{ producto.costoUnitario |
-                            currency:'EUR':'symbol':'1.2-2' }}
+                            appCurrency:'symbol':'1.2-2' }}
                           </span>
                         </div>
                       </div>
@@ -575,7 +575,7 @@
                         [class]="producto.diferencia !== 0 ? 'text-danger' : 'text-success'"
                         class="fs-5"
                       >
-                        {{ producto.valorTotal | currency:'EUR':'symbol':'1.0-0'
+                        {{ producto.valorTotal | appCurrency:'symbol':'1.0-0'
                         }}
                       </strong>
                     </div>
@@ -653,7 +653,7 @@
             </div>
             <div class="d-flex w-100 justify-content-between mt-1">
               <small class="text-muted">Sin contar: {{ getProductosSinContarPorFamilia(fam.id) }}</small>
-              <small class="text-muted">Costo familia: {{ getCostoTotalPorFamilia(fam.id) | currency:'EUR':'symbol':'1.0-0' }}</small>
+              <small class="text-muted">Costo familia: {{ getCostoTotalPorFamilia(fam.id) | appCurrency:'symbol':'1.0-0' }}</small>
             </div>
           </button>
         </div>
@@ -894,7 +894,7 @@
                     </span>
                   </td>
                   <td>{{ inventario.totalProductos }}</td>
-                  <td>{{ inventario.inversionTotal | currency:'EUR':'symbol':'1.0-0' }}</td>
+                  <td>{{ inventario.inversionTotal | appCurrency:'symbol':'1.0-0' }}</td>
                   <td>
                     <div class="btn-group btn-group-sm">
                       <button
@@ -1026,7 +1026,7 @@
                       {{ producto.stock | number:'1.1-1' }}
                     </span>
                   </td>
-                  <td>{{ producto.costo | currency:'EUR':'symbol':'1.2-2' }}</td>
+                  <td>{{ producto.costo | appCurrency:'symbol':'1.2-2' }}</td>
                 </tr>
               </tbody>
             </table>
